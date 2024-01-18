@@ -13,7 +13,7 @@ resources:
     testS3Bucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: my-fire-horse-test.9999.tyme.com
+        BucketName: my-s3-test-bucket.9999.tyme.com
         LifecycleConfiguration:
           Rules:
             - Id: GlacierRule
