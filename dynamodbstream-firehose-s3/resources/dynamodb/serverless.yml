@@ -1,0 +1,61 @@
+service: dynamodb-resources
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  tableSuffix: table-${self:custom.stage}
+  testTableName: test-${self:custom.tableSuffix}
+  tableThroughputs:
+    prod: 5
+    default: 1
+  tableThroughput: ${self:custom.tableThroughputs.${self:custom.stage}, self:custom.tableThroughputs.default}
+
+provider:
+  name: aws
+  stage: dev
+
+resources:
+  Resources:
+    testTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${self:custom.testTableName}
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.tableThroughput}
+          WriteCapacityUnits: ${self:custom.tableThroughput}
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+    testTableNameSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /9999/${self:custom.stage}/test/table/name
+        Type: String
+        Value: ${self:custom.testTableName}
+        Tags:
+          Environment: ${self:custom.stage}
+    testTableArnSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /9999/${self:custom.stage}/test/table/arn
+        Type: String
+        Value: !GetAtt testTable.Arn
+        Tags:
+          Environment: ${self:custom.stage}
+    testTableStreamArnSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /9999/${self:custom.stage}/test/table/stream/arn
+        Type: String
+        Value: !GetAtt testTable.StreamArn
+        Tags:
+          Environment: ${self:custom.stage}

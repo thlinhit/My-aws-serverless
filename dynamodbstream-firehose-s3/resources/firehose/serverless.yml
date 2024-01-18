@@ -1,0 +1,49 @@
+service: firehorse-resources
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+
+provider:
+  name: aws
+  stage: dev
+
+resources:
+  Resources:
+    ActimizeIfmLogPutS3FireHose:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: actimize-ifm-log-put-s3-custom-FirehoseRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - firehose.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: root
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:PutObject
+                  Resource:
+                    - Fn::Sub: ${param:testS3BucketArn}
+                    - Fn::Sub: ${param:testS3BucketArn}/*
+
+    myFireHose:
+      Type: AWS::KinesisFirehose::DeliveryStream
+      Properties:
+        DeliveryStreamName: actimize-ifm-log-put-s3
+        S3DestinationConfiguration:
+          BucketARN:
+            Fn::Sub: ${param:testS3BucketArn}
+          BufferingHints:
+            IntervalInSeconds: 60
+            SizeInMBs: 5
+          CompressionFormat: UNCOMPRESSED
+          Prefix: ifm/logs/
+          RoleARN: !GetAtt ActimizeIfmLogPutS3FireHose.Arn

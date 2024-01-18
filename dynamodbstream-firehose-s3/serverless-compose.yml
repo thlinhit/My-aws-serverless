@@ -1,0 +1,25 @@
+services:
+  s3:
+    path: resources/s3
+
+  firehose:
+    path: resources/firehose
+    params:
+      testS3BucketArn: ${s3.testS3BucketArn}
+    dependsOn:
+      - s3
+
+  dynamodb:
+    path: resources/dynamodb
+
+  sqs:
+    path: resources/sqs
+
+  capturer:
+    path: stream-capturer
+    dependsOn:
+      - dynamodb
+      - firehose
+
+#  lambdas:
+#    path: lambda-multiple-funcs

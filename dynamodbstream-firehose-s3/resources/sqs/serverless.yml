@@ -1,0 +1,16 @@
+service: s3-resources
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+
+provider:
+  name: aws
+  stage: dev
+
+resources:
+  Resources:
+    TestSQSQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: tp-actimize-ifm-dlq

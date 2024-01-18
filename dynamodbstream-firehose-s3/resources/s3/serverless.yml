@@ -1,0 +1,31 @@
+service: s3-resources
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+
+provider:
+  name: aws
+  stage: dev
+
+resources:
+  Resources:
+    testS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: my-fire-horse-test.9999.tyme.com
+        LifecycleConfiguration:
+          Rules:
+            - Id: GlacierRule
+              Prefix: ifm/check-log
+              Status: Enabled
+              Transitions:
+                - TransitionInDays: 7
+                  StorageClass: GLACIER
+                - TransitionInDays: 365
+                  StorageClass: DEEP_ARCHIVE
+
+
+  Outputs:
+    testS3BucketArn:
+      Value: !GetAtt testS3Bucket.Arn

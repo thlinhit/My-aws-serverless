@@ -1,0 +1,109 @@
+service: ${self:custom.servicePrefix}-functions
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: test-capturer
+
+  # plugin: serverless-python-requirements
+  pythonRequirements:
+    slim: true
+    layer: true
+    noDeploy:
+      - pytest
+    package:
+      individually: true
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+
+provider:
+  name: aws
+  stage: local
+  runtime: python3.9
+  memorySize: 128
+  architecture: arm64
+  region: us-east-1
+  environment:
+    RUNNING_STAGE: ${self:custom.stage}
+    EXTENSION_DEBUG: "false"
+    TZ: "Asia/Ho_Chi_Minh"
+
+#############
+# FUNCTIONS #
+#############
+functions:
+  functionA:
+    name: function-A
+    handler: src/functionA/main.handler
+    events:
+      - sqs:
+          arn: arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:test-sqs-queue
+    iamRoleStatementsName: ${self:custom.servicePrefix}-functionA-${self:custom.stage}-${self:custom.region}-custom-lambdaRole
+    iamRoleStatements:
+      - Effect: Allow
+        Sid: DynamoDBTableAccess
+        Action:
+          - dynamodb:BatchGetItem
+          - dynamodb:GetItem
+          - dynamodb:GetRecords
+          - dynamodb:Query
+        Resource:
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/test-table-${self:custom.stage}
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/test-table-${self:custom.stage}/index/*
+#          batchSize: 10
+#          maximumBatchingWindow: 60
+#          functionResponseType: ReportBatchItemFailures
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+    package:
+      patterns:
+        - '!src/**'
+        - 'src/functionA/**'
+        - 'src/shared/**'
+      individually: true
+  functionB:
+    name: function-B
+    handler: src/functionB/main.handler
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+    package:
+      patterns:
+        - '!src/**'
+        - 'src/functionB/**'
+        - 'src/shared/**'
+      individually: true
+
+
+###########
+# PLUGINS #
+###########
+plugins:
+  - serverless-python-requirements
+  - serverless-cloudformation-sub-variables
+  - serverless-iam-roles-per-function
+
+
+#############
+# RESOURCES #
+#############
+#resources:
+
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules'
+    - '!.serverless/requirements'
+    - "!${opt:package, '.serverless'}"
+    - '!configs'
+    - '!*.yml*'
+    - '!*.yaml*'
+    - '!*.json'
+    - '!*.sh'
+    - 'lib'
+    - '*.py'
+    - '!venv'
+    - '!*.md'
+    - '!*.txt'
+  excludeDevDependencies: true

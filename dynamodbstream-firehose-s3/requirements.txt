@@ -1,0 +1,2 @@
+aws-lambda-powertools==2.24.0
+orjson==3.9.7

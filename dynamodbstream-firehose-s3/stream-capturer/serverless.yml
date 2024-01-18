@@ -1,0 +1,108 @@
+service: ${self:custom.servicePrefix}-functions
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: test-capturer
+
+  # plugin: serverless-python-requirements
+  pythonRequirements:
+    slim: true
+    layer: true
+    noDeploy:
+      - pytest
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+
+provider:
+  name: aws
+  stage: local
+  runtime: python3.9
+  memorySize: 128
+  region: us-east-1
+  lambdaHashingVersion: 20201221
+  environment:
+    RUNNING_STAGE: ${self:custom.stage}
+    EXTENSION_DEBUG: "false"
+    TZ: "Asia/Ho_Chi_Minh"
+    FIREHOSE_STREAM_NAME: actimize-ifm-log-put-s3
+
+#############
+# FUNCTIONS #
+#############
+functions:
+  tableStreamCaptureFn:
+    name: ${self:custom.servicePrefix}-log-capture-fn
+    handler: src/archive_fn/main.handler
+    events:
+      - stream:
+          type: dynamodb
+          startingPosition: LATEST
+          batchSize: 10
+          maximumBatchingWindow: 60
+          enabled: true
+          maximumConcurrency: 10
+          functionResponseType: ReportBatchItemFailures
+          arn: ${ssm:/9999/${self:custom.stage}/test/table/stream/arn}
+          filterPatterns:
+             - eventName: [INSERT, REMOVE]
+    iamRoleStatementsName: ${self:custom.servicePrefix}-log-capture-fn-custom-lambdaRole
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - firehose:DescribeDeliveryStream
+          - firehose:PutRecordBatch
+        Resource:
+          - !Sub arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/actimize-ifm-log-put-s3
+      - Effect: Allow
+        Sid: AllowActionOnDLQ
+        Action:
+          - sqs:SendMessage
+          - sqs:GetQueueUrl
+        Resource:
+          - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:tp-actimize-ifm-dlq
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+    environment:
+       POWERTOOLS_SERVICE_NAME:  ${self:custom.servicePrefix}-log-capture-fn
+#       POWERTOOLS_LOGGER_LOG_EVENT: True
+       LOG_LEVEL: DEBUG
+       ACTIMIZE_591_ENABLE_STORE_LOGS_S3: "True"
+       FIREHOSE_STREAM_NAME: actimize-ifm-log-put-s3
+       DEFAULT_REGION: us-east-1
+    architecture: arm64
+
+
+
+###########
+# PLUGINS #
+###########
+plugins:
+  - serverless-python-requirements
+  - serverless-cloudformation-sub-variables
+  - serverless-iam-roles-per-function
+
+
+#############
+# RESOURCES #
+#############
+#resources:
+
+
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules'
+    - '!.serverless/requirements'
+    - "!${opt:package, '.serverless'}"
+    - '!configs'
+    - '!*.yml*'
+    - '!*.yaml*'
+    - '!*.json'
+    - '!*.sh'
+    - 'lib'
+    - '*.py'
+    - '!requirements.txt'
+  excludeDevDependencies: true
