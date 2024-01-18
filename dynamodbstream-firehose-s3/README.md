@@ -7,10 +7,11 @@ aws configure --profile acloudguru
 ```
 
 ```bash
-AWS_PROFILE=acloudguru sls deploy
+AWS_PROFILE=acloudguru sls deploy --stage=dev
 ```
 
 ### Deploy product
 
 ```bash
-AWS_PROFILE=acloudguru sls products:deploy
+AWS_PROFILE=acloudguru sls s3:deploy --stage=dev
+```
