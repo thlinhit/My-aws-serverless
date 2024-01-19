@@ -13,17 +13,13 @@ from ..shared.sqs import sqs_service
 from . import data_accumulator
 from .firehose_client import put_records
 
-ACTIMIZE_591_ENABLE_STORE_LOGS_S3 = os.getenv("ACTIMIZE_591_ENABLE_STORE_LOGS_S3", "False")
 FIREHOSE_RECORD_MINIMAL_SIZE: int = os.getenv("FIREHOSE_RECORD_MINIMAL_SIZE", 5000)
-IFM_DLQ_NAME = os.getenv("IFM_DLQ_NAME", "tp-actimize-ifm-dlq")
+DQL_NAME = os.getenv("DQL_NAME", "test-dlq-sqs")
 FUNCTION_NAME = os.environ["POWERTOOLS_SERVICE_NAME"]
 
 
 @logger.inject_lambda_context
 def handler(event, context: LambdaContext):
-    if ACTIMIZE_591_ENABLE_STORE_LOGS_S3 != "True":
-        logger.debug("Feature Flag Off, Do nothing")
-        return
     logger.info(f"Start processing {len(event['Records'])} records")
     logger.debug(event)
 

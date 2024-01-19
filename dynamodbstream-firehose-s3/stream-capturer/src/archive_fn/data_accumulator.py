@@ -13,7 +13,7 @@ from src.shared.model import sqs_message
 from src.shared.sqs import sqs_service
 from src.shared.utils import dict_util, json_util, string_util
 
-IFM_DLQ_NAME = os.getenv("IFM_DLQ_NAME", "tp-actimize-ifm-dlq")
+DQL_NAME = os.getenv("DQL_NAME", "test-dlq-sqs")
 FUNCTION_NAME = os.environ["POWERTOOLS_SERVICE_NAME"]
 
 
@@ -22,7 +22,7 @@ def accumulate(records: list[StreamRecord]) -> str:
     for record in records:
         try:
             validate(record)
-            payload = extract(record)
+            # payload = extract(record)
             result += payload["item"]
             logger.info("successfully append record data into batch")
         except Exception as exception:
@@ -34,15 +34,12 @@ def accumulate(records: list[StreamRecord]) -> str:
 
 
 def send_to_dlq(exception: Exception, record: StreamRecord):
-    sqs_service.send_message(IFM_DLQ_NAME, sqs_message.build_dlq_message(function_name=FUNCTION_NAME, exception=exception, record=record))
+    sqs_service.send_message(DQL_NAME, sqs_message.build_dlq_message(function_name=FUNCTION_NAME, exception=exception, record=record))
 
 
 def validate(record: StreamRecord):
-    if not dict_util.key_exists(record, ["dynamodb", "Keys", "PK", "S"]) or string_util.is_blank(record["dynamodb"]["Keys"]["PK"]["S"]):
+    if not dict_util.key_exists(record, ["dynamodb", "Keys", "PK", "S"]) or string_util.is_blank(record["dynamodb"]["Keys"]["SK"]["S"]):
         raise DomainError(DomainCode.VALIDATION_ERROR, "The record does not have a key")
-
-    if not dict_util.key_exists(record, ["dynamodb", "OldImage"]):
-        raise DomainError(DomainCode.VALIDATION_ERROR, "The record does not have OldImage")
 
 
 def extract(record: StreamRecord) -> Dict[str, Union[str, str]]:

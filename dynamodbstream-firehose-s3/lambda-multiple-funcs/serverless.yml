@@ -27,6 +27,8 @@ provider:
   environment:
     RUNNING_STAGE: ${self:custom.stage}
     EXTENSION_DEBUG: "false"
+    REGION: ${self:provider.region}
+    DYNAMO_DB_TABLE: test-table-dev
     TZ: "Asia/Ho_Chi_Minh"
 
 #############
@@ -47,10 +49,12 @@ functions:
       - Effect: Allow
         Sid: DynamoDBTableAccess
         Action:
-          - dynamodb:BatchGetItem
-          - dynamodb:GetItem
-          - dynamodb:GetRecords
+          - dynamodb:Get*
           - dynamodb:Query
+          - dynamodb:PutItem
+          - dynamodb:Update*
+          - dynamodb:BatchWriteItem
+          - dynamodb:BatchGet*
         Resource:
           - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/test-table-${self:custom.stage}
           - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/test-table-${self:custom.stage}/index/*

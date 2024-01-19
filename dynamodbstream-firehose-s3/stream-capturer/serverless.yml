@@ -27,6 +27,7 @@ provider:
     EXTENSION_DEBUG: "false"
     TZ: "Asia/Ho_Chi_Minh"
     FIREHOSE_STREAM_NAME: test-firehose-log-put-s3
+    DQL_NAME: ${param:dlqName}
 
 #############
 # FUNCTIONS #
@@ -46,7 +47,7 @@ functions:
           functionResponseType: ReportBatchItemFailures
           arn: ${ssm:/9999/${self:custom.stage}/test/table/stream/arn}
           filterPatterns:
-             - eventName: [INSERT, REMOVE]
+             - eventName: [INSERT, REMOVE, MODIFY]
     iamRoleStatementsName: ${self:custom.servicePrefix}-log-capture-fn-custom-lambdaRole
     iamRoleStatements:
       - Effect: Allow

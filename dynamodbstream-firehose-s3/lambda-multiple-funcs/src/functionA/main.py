@@ -1,6 +1,12 @@
-from src.shared.event_bridge_log_handler import send_to_event_bus
+import os
+import uuid
 
+from src.shared.repository.dynamodb_repository import put_item
 
+DYNAMO_DB_TABLE = os.environ["DYNAMO_DB_TABLE"]
 def handler(event, context):
-    send_to_event_bus(event)
-    # print(event)
+    put_item(DYNAMO_DB_TABLE, {
+        "PK": "TESTPK",
+        "SK": str(uuid.uuid4()),
+        "testKey1": "testValue1"
+    })

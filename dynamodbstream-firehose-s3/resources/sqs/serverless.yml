@@ -14,3 +14,8 @@ resources:
       Type: "AWS::SQS::Queue"
       Properties:
         QueueName: my-test-sqs-01
+    TestDLQQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: 
+          Fn::Sub: ${param:dlqSQSName}
