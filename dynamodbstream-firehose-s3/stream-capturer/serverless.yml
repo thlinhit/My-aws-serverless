@@ -26,7 +26,7 @@ provider:
     RUNNING_STAGE: ${self:custom.stage}
     EXTENSION_DEBUG: "false"
     TZ: "Asia/Ho_Chi_Minh"
-    FIREHOSE_STREAM_NAME: actimize-ifm-log-put-s3
+    FIREHOSE_STREAM_NAME: test-firehose-log-put-s3
 
 #############
 # FUNCTIONS #
@@ -54,14 +54,14 @@ functions:
           - firehose:DescribeDeliveryStream
           - firehose:PutRecordBatch
         Resource:
-          - !Sub arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/actimize-ifm-log-put-s3
+          - !Sub arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/test-firehose-log-put-s3
       - Effect: Allow
         Sid: AllowActionOnDLQ
         Action:
           - sqs:SendMessage
           - sqs:GetQueueUrl
         Resource:
-          - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:tp-actimize-ifm-dlq
+          - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:my-test-sqs-01
     layers:
       - Ref: PythonRequirementsLambdaLayer
     environment:
@@ -69,7 +69,7 @@ functions:
 #       POWERTOOLS_LOGGER_LOG_EVENT: True
        LOG_LEVEL: DEBUG
        ACTIMIZE_591_ENABLE_STORE_LOGS_S3: "True"
-       FIREHOSE_STREAM_NAME: actimize-ifm-log-put-s3
+       FIREHOSE_STREAM_NAME: test-firehose-log-put-s3
        DEFAULT_REGION: us-east-1
     architecture: arm64
 

@@ -18,6 +18,8 @@ services:
 
   capturer:
     path: stream-capturer
+    params:
+      bucketName: ${s3.bucketName}
     dependsOn:
       - dynamodb
       - firehose
