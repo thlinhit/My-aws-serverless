@@ -29,3 +29,5 @@ resources:
   Outputs:
     testS3BucketArn:
       Value: !GetAtt testS3Bucket.Arn
+    bucketName:
+      Value: my-s3-test-bucket.9999.tyme.com

@@ -13,7 +13,7 @@ resources:
     ActimizeIfmLogPutS3FireHose:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: actimize-ifm-log-put-s3-custom-FirehoseRole
+        RoleName: test-log-put-s3-custom-FirehoseRole
         AssumeRolePolicyDocument:
           Version: '2012-10-17'
           Statement:
@@ -37,7 +37,7 @@ resources:
     myFireHose:
       Type: AWS::KinesisFirehose::DeliveryStream
       Properties:
-        DeliveryStreamName: actimize-ifm-log-put-s3
+        DeliveryStreamName: test-firehose-log-put-s3
         S3DestinationConfiguration:
           BucketARN:
             Fn::Sub: ${param:testS3BucketArn}
@@ -45,5 +45,5 @@ resources:
             IntervalInSeconds: 60
             SizeInMBs: 5
           CompressionFormat: UNCOMPRESSED
-          Prefix: ifm/logs/
+          Prefix: test/logs/
           RoleARN: !GetAtt ActimizeIfmLogPutS3FireHose.Arn

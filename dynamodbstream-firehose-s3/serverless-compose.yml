@@ -6,6 +6,7 @@ services:
     path: resources/firehose
     params:
       testS3BucketArn: ${s3.testS3BucketArn}
+      bucketName: ${s3.bucketName}
     dependsOn:
       - s3
 

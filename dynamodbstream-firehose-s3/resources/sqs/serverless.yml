@@ -13,4 +13,4 @@ resources:
     TestSQSQueue:
       Type: "AWS::SQS::Queue"
       Properties:
-        QueueName: tp-actimize-ifm-dlq
+        QueueName: my-test-sqs-01
