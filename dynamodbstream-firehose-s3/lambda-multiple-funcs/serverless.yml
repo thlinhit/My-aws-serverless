@@ -38,7 +38,10 @@ functions:
     handler: src/functionA/main.handler
     events:
       - sqs:
-          arn: arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:test-sqs-queue
+          arn: arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:my-test-sqs-01
+        #          batchSize: 10
+        #          maximumBatchingWindow: 60
+        #          functionResponseType: ReportBatchItemFailures
     iamRoleStatementsName: ${self:custom.servicePrefix}-functionA-${self:custom.stage}-${self:custom.region}-custom-lambdaRole
     iamRoleStatements:
       - Effect: Allow
@@ -51,9 +54,7 @@ functions:
         Resource:
           - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/test-table-${self:custom.stage}
           - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/test-table-${self:custom.stage}/index/*
-#          batchSize: 10
-#          maximumBatchingWindow: 60
-#          functionResponseType: ReportBatchItemFailures
+
     layers:
       - Ref: PythonRequirementsLambdaLayer
     package:
