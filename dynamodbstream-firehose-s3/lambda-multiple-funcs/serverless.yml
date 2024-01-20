@@ -67,15 +67,15 @@ functions:
         - 'src/functionA/**'
         - 'src/shared/**'
       individually: true
-  functionB:
-    name: function-B
-    handler: src/functionB/main.handler
+  transformJsonToCsvFn:
+    name: transform-json-to-csv
+    handler: src/transformJsonToCsvFn/main.handler
     layers:
       - Ref: PythonRequirementsLambdaLayer
     package:
       patterns:
         - '!src/**'
-        - 'src/functionB/**'
+        - 'src/transformJsonToCsvFn/**'
         - 'src/shared/**'
       individually: true
 
