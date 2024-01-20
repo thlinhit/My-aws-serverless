@@ -1,6 +1,23 @@
-from src.shared.event_bridge_log_handler import send_to_event_bus
+import base64
+import json
 
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.logging.formatters.datadog import DatadogLogFormatter
 
+logger = Logger(logger_formatter=DatadogLogFormatter(), log_record_order=["level", "message", "location", "function_request_id"])
+
+ENCODING = 'utf-8'
+
+@logger.inject_lambda_context
 def handler(event, context):
-    send_to_event_bus(event)
-    # print(event)
+    records = []
+    output = []
+    logger.info(f"Received batch of {len(event['records'])} records")
+
+    for record in event['records']:
+        payload = base64.b64decode(record['data']).decode(ENCODING)
+        data = json.loads(payload)
+        logger.info(f"data: {data}")
+        output.append(data)
+
+    return {'records': output}

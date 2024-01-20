@@ -7,8 +7,10 @@ services:
     params:
       s3BucketArn: ${s3.s3BucketArn}
       s3BucketName: ${s3.s3BucketName}
+      transformJsonToCsvFnArn: ${utility-fns.TransformJsonToCsvFnLambdaFunctionQualifiedArn}
     dependsOn:
       - s3
+      - utility-fns
 
   dynamodb:
     path: resources/dynamodb
@@ -34,5 +36,4 @@ services:
       dynamoDBTableName: ${dynamodb.dynamoDBTableName}
     dependsOn:
       - dynamodb
-      - firehose
       - sqs

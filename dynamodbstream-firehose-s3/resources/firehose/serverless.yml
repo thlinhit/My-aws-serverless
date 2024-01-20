@@ -45,6 +45,13 @@ resources:
           BufferingHints:
             IntervalInSeconds: 60
             SizeInMBs: 5
+          ProcessingConfiguration:
+            Enabled: true
+            Processors:
+              - Type: Lambda
+                Parameters:
+                  - ParameterName: LambdaArn
+                    ParameterValue: ${param:transformJsonToCsvFnArn}
           CompressionFormat: UNCOMPRESSED
           Prefix: test/logs/
           RoleARN: !GetAtt LogPutS3FireHoseRole.Arn

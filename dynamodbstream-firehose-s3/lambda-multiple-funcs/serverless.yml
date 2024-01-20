@@ -67,6 +67,8 @@ functions:
         - 'src/functionA/**'
         - 'src/shared/**'
       individually: true
+
+
   transformJsonToCsvFn:
     name: transform-json-to-csv
     handler: src/transformJsonToCsvFn/main.handler
@@ -112,3 +114,7 @@ package:
     - '!*.md'
     - '!*.txt'
   excludeDevDependencies: true
+      Value: 
+        "Fn::GetAtt": ["transformJsonToCsvFn", "Arn"]
+      Export:
+        Name: transformJsonToCsvFnArn
