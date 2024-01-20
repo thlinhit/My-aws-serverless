@@ -35,27 +35,34 @@ resources:
           WriteCapacityUnits: ${self:custom.tableThroughput}
         StreamSpecification:
           StreamViewType: NEW_AND_OLD_IMAGES
-    testTableNameSSMParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /9999/${self:custom.stage}/test/table/name
-        Type: String
-        Value: ${self:custom.testTableName}
-        Tags:
-          Environment: ${self:custom.stage}
-    testTableArnSSMParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /9999/${self:custom.stage}/test/table/arn
-        Type: String
-        Value: !GetAtt testTable.Arn
-        Tags:
-          Environment: ${self:custom.stage}
-    testTableStreamArnSSMParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /9999/${self:custom.stage}/test/table/stream/arn
-        Type: String
-        Value: !GetAtt testTable.StreamArn
-        Tags:
-          Environment: ${self:custom.stage}
+  Outputs:
+    dynamoDBTableName:
+      Value: ${self:custom.testTableName}
+    dynamoDBTableArn:
+      Value: !GetAtt testTable.Arn
+    dynamoDBTableStreamArn:
+      Value: !GetAtt testTable.StreamArn
+    # testTableNameSSMParameter:
+    #   Type: AWS::SSM::Parameter
+    #   Properties:
+    #     Name: /9999/${self:custom.stage}/test/table/name
+    #     Type: String
+    #     Value: ${self:custom.testTableName}
+    #     Tags:
+    #       Environment: ${self:custom.stage}
+    # testTableArnSSMParameter:
+    #   Type: AWS::SSM::Parameter
+    #   Properties:
+    #     Name: /9999/${self:custom.stage}/test/table/arn
+    #     Type: String
+    #     Value: !GetAtt testTable.Arn
+    #     Tags:
+    #       Environment: ${self:custom.stage}
+    # testTableStreamArnSSMParameter:
+    #   Type: AWS::SSM::Parameter
+    #   Properties:
+    #     Name: /9999/${self:custom.stage}/test/table/stream/arn
+    #     Type: String
+    #     Value: !GetAtt testTable.StreamArn
+    #     Tags:
+    #       Environment: ${self:custom.stage}
