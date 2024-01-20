@@ -39,7 +39,7 @@ resources:
       Type: AWS::KinesisFirehose::DeliveryStream
       Properties:
         DeliveryStreamName: ${self:custom.firehoseStreamName}
-        S3DestinationConfiguration:
+        ExtendedS3DestinationConfiguration:
           BucketARN:
             Fn::Sub: ${param:s3BucketArn}
           BufferingHints:
