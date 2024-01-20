@@ -5,8 +5,8 @@ services:
   firehose:
     path: resources/firehose
     params:
-      testS3BucketArn: ${s3.testS3BucketArn}
-      bucketName: ${s3.bucketName}
+      s3BucketArn: ${s3.s3BucketArn}
+      s3BucketName: ${s3.s3BucketName}
     dependsOn:
       - s3
 
@@ -21,7 +21,7 @@ services:
   capturer:
     path: stream-capturer
     params:
-      bucketName: ${s3.bucketName}
+      bucketName: ${s3.s3BucketName}
       dlqName: my-dlq-sqs
     dependsOn:
       - dynamodb

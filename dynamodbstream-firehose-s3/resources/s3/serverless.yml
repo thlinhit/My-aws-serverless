@@ -14,7 +14,7 @@ resources:
     testS3Bucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self.custom.bucketName}
+        BucketName: ${self:custom.bucketName}
         LifecycleConfiguration:
           Rules:
             - Id: GlacierRule
@@ -28,7 +28,7 @@ resources:
 
 
   Outputs:
-    myTestS3BucketArn:
+    s3BucketArn:
       Value: !GetAtt testS3Bucket.Arn
-    myTestS3BucketName:
-      Value: ${self.custom.bucketName}
+    s3BucketName:
+      Value: ${self:custom.bucketName}

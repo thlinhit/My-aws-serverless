@@ -3,6 +3,7 @@ frameworkVersion: '3'
 
 custom:
   stage: ${opt:stage, self:provider.stage}
+  firehoseStreamName: test-firehose-log-put-s3
 
 provider:
   name: aws
@@ -10,7 +11,7 @@ provider:
 
 resources:
   Resources:
-    ActimizeIfmLogPutS3FireHose:
+    LogPutS3FireHose:
       Type: AWS::IAM::Role
       Properties:
         RoleName: test-log-put-s3-custom-FirehoseRole
@@ -31,19 +32,22 @@ resources:
                   Action:
                     - s3:PutObject
                   Resource:
-                    - Fn::Sub: ${param:testS3BucketArn}
-                    - Fn::Sub: ${param:testS3BucketArn}/*
+                    - Fn::Sub: ${param:s3BucketArn}
+                    - Fn::Sub: ${param:s3BucketArn}/*
 
     myFireHose:
       Type: AWS::KinesisFirehose::DeliveryStream
       Properties:
-        DeliveryStreamName: test-firehose-log-put-s3
+        DeliveryStreamName: ${self:custom.firehoseStreamName}
         S3DestinationConfiguration:
           BucketARN:
-            Fn::Sub: ${param:testS3BucketArn}
+            Fn::Sub: ${param:s3BucketArn}
           BufferingHints:
             IntervalInSeconds: 60
             SizeInMBs: 5
           CompressionFormat: UNCOMPRESSED
           Prefix: test/logs/
-          RoleARN: !GetAtt ActimizeIfmLogPutS3FireHose.Arn
+          RoleARN: !GetAtt LogPutS3FireHose.Arn
+  Outputs:
+    fireHoseDeliveryStreamName:
+      Value: ${self:custom.firehoseStreamName}
