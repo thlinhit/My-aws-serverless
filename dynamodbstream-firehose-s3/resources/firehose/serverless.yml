@@ -39,8 +39,7 @@ resources:
                     - lambda:InvokeFunction
                     - lambda:GetFunctionConfiguration
                   Resource:
-                    - !Sub ${param:transformJsonToCsvFnArn}
-                    - !Sub ${param:transformJsonToCsvFnArn}*
+                    - !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:transform-json-to-csv:$LATEST'
 
     myFireHose:
       Type: AWS::KinesisFirehose::DeliveryStream
@@ -58,7 +57,7 @@ resources:
               - Type: Lambda
                 Parameters:
                   - ParameterName: LambdaArn
-                    ParameterValue: ${param:transformJsonToCsvFnArn}
+                    ParameterValue: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:transform-json-to-csv:$LATEST'
           CompressionFormat: UNCOMPRESSED
           Prefix: test/logs/
           ErrorOutputPrefix: error/

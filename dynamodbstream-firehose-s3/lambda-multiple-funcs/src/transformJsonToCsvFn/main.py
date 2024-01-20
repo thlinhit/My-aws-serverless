@@ -19,7 +19,8 @@ def handler(event, context):
         logger.info(f"data: {payload}")
         output.append({
             'recordId': record['recordId'],
-            'event': dict(payload)
+            'result': 'Ok',
+            'data': base64.b64encode(dict(payload).encode(ENCODING)).decode(ENCODING)
         })
 
     return {'records': output}
