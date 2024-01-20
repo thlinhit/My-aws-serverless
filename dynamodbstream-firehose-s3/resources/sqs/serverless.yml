@@ -1,4 +1,4 @@
-service: s3-resources
+service: sqs-resources
 frameworkVersion: '3'
 
 custom:
