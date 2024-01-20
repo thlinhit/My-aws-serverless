@@ -34,6 +34,13 @@ resources:
                   Resource:
                     - Fn::Sub: ${param:s3BucketArn}
                     - Fn::Sub: ${param:s3BucketArn}/*
+                - Effect: Allow
+                  Action:
+                    - lambda:InvokeFunction
+                    - lambda:GetFunctionConfiguration
+                  Resource:
+                    - !Sub ${param:transformJsonToCsvFnArn}
+                    - !Sub ${param:transformJsonToCsvFnArn}*
 
     myFireHose:
       Type: AWS::KinesisFirehose::DeliveryStream
@@ -54,6 +61,7 @@ resources:
                     ParameterValue: ${param:transformJsonToCsvFnArn}
           CompressionFormat: UNCOMPRESSED
           Prefix: test/logs/
+          ErrorOutputPrefix: error/
           RoleARN: !GetAtt LogPutS3FireHoseRole.Arn
   Outputs:
     fireHoseDeliveryStreamName:
