@@ -68,12 +68,12 @@ functions:
         - 'src/shared/**'
       individually: true
 
-
   transformJsonToCsvFn:
     name: transform-json-to-csv
     handler: src/transformJsonToCsvFn/main.handler
     layers:
       - Ref: PythonRequirementsLambdaLayer
+    # role: MyDataTransformationLambdaRole
     package:
       patterns:
         - '!src/**'
@@ -114,7 +114,22 @@ package:
     - '!*.md'
     - '!*.txt'
   excludeDevDependencies: true
-      Value: 
-        "Fn::GetAtt": ["transformJsonToCsvFn", "Arn"]
-      Export:
-        Name: transformJsonToCsvFnArn
+
+# resources:
+#   Resources:
+#     DataTransformationLambdaRole:
+#       Type: AWS::IAM::Role
+#       Properties:
+#         RoleName: MyDataTransformationLambdaRole
+#         AssumeRolePolicyDocument:
+#           Version: '2012-10-17'
+#           Statement:
+#             - Effect: Allow
+#               Principal:
+#                 Service: lambda.amazonaws.com
+#               Action: sts:AssumeRole
+#         ManagedPolicyArns:
+#           - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  # Outputs:
+    # transformJsonToCsvFnArn:
+    #   Value: !GetAtt transformJsonToCsvFn.Arn
