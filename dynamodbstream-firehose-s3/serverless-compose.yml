@@ -19,8 +19,10 @@ services:
   capturer:
     path: stream-capturer
     params:
+      fireHoseDeliveryStreamName: ${firehose.fireHoseDeliveryStreamName}
       bucketName: ${s3.s3BucketName}
-      dlqName: my-dlq-sqs
+      tableStreamArn: ${dynamodb.dynamoDBTableStreamArn}
+      dlqName: ${sqs.dlQueue}
     dependsOn:
       - dynamodb
       - firehose
