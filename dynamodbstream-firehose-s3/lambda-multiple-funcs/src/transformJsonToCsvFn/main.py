@@ -13,14 +13,14 @@ def handler(event, context):
     records = []
     output = []
     logger.info(f"Received batch of {len(event['records'])} records")
-
+    logger.info(f"{event}")
     for record in event['records']:
         payload = json.loads(base64.b64decode(record['data']).decode(ENCODING))
         logger.info(f"data: {payload}")
         output.append({
             'recordId': record['recordId'],
             'result': 'Ok',
-            'data': base64.b64encode(dict(payload).encode(ENCODING)).decode(ENCODING)
+            'data': base64.b64encode((json.dumps(dict(payload)) + "\n").encode(ENCODING)).decode(ENCODING)
         })
 
     return {'records': output}
