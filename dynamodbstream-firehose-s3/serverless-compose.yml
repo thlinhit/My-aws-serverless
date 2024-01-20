@@ -15,8 +15,6 @@ services:
 
   sqs:
     path: resources/sqs
-    params:
-      dlqSQSName:  my-dlq-sqs
 
   capturer:
     path: stream-capturer

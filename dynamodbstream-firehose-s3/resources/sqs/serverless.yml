@@ -3,6 +3,8 @@ frameworkVersion: '3'
 
 custom:
   stage: ${opt:stage, self:provider.stage}
+  queue01Name: my-test-sqs-01
+  dlQueueName: my-dlq-sqs
 
 provider:
   name: aws
@@ -10,12 +12,21 @@ provider:
 
 resources:
   Resources:
-    TestSQSQueue:
+    Test01SQSQueue:
       Type: "AWS::SQS::Queue"
       Properties:
-        QueueName: my-test-sqs-01
-    TestDLQQueue:
+        QueueName: ${self:custom.queue01Name}
+    dlQueue:
       Type: "AWS::SQS::Queue"
       Properties:
         QueueName: 
-          Fn::Sub: ${param:dlqSQSName}
+          Fn::Sub: ${self:custom.dlQueueName}
+  Outputs:
+    test01SQSQueue:
+      Value: ${self:custom.queue01Name}
+    test01SQSQueueArn:
+      Value: !GetAtt Test01SQSQueue.Arn
+    dlQueue:
+      Value: ${self:custom.dlQueueName}
+    dlQueueArn:
+      Value: !GetAtt dlQueue.Arn
