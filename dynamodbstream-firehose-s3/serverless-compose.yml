@@ -27,8 +27,11 @@ services:
       - dynamodb
       - firehose
 
-  lambdas:
+  utility-fns:
     path: lambda-multiple-funcs
+    params:
+      test01SQSQueue: ${sqs.test01SQSQueue}
+      dynamoDBTableName: ${dynamodb.dynamoDBTableName}
     dependsOn:
       - dynamodb
       - firehose

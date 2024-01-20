@@ -4,7 +4,7 @@ frameworkVersion: '3'
 custom:
   stage: ${opt:stage, self:provider.stage}
   region: ${opt:region, self:provider.region}
-  servicePrefix: lambdas
+  servicePrefix: utility
 
   # plugin: serverless-python-requirements
   pythonRequirements:
@@ -28,7 +28,7 @@ provider:
     RUNNING_STAGE: ${self:custom.stage}
     EXTENSION_DEBUG: "false"
     REGION: ${self:provider.region}
-    DYNAMO_DB_TABLE: test-table-dev
+    DYNAMO_DB_TABLE: ${param:dynamoDBTableName}
     TZ: "Asia/Ho_Chi_Minh"
 
 #############
@@ -40,7 +40,7 @@ functions:
     handler: src/functionA/main.handler
     events:
       - sqs:
-          arn: arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:my-test-sqs-01
+          arn: arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:${param:test01SQSQueue}
         #          batchSize: 10
         #          maximumBatchingWindow: 60
         #          functionResponseType: ReportBatchItemFailures
@@ -56,8 +56,8 @@ functions:
           - dynamodb:BatchWriteItem
           - dynamodb:BatchGet*
         Resource:
-          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/test-table-${self:custom.stage}
-          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/test-table-${self:custom.stage}/index/*
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamoDBTableName}
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamoDBTableName}/index/*
 
     layers:
       - Ref: PythonRequirementsLambdaLayer
