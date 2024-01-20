@@ -22,8 +22,8 @@ def accumulate(records: list[StreamRecord]) -> str:
     for record in records:
         try:
             validate(record)
-            # payload = extract(record)
-            result += payload["item"]
+            payload = extract(record)
+            result += payload
             logger.info("successfully append record data into batch")
         except Exception as exception:
             error_message = str(exception)
@@ -43,23 +43,23 @@ def validate(record: StreamRecord):
 
 
 def extract(record: StreamRecord) -> Dict[str, Union[str, str]]:
-    dynamodb_payload = record["dynamodb"]
-    partition_key = str(dynamodb_payload["Keys"]["PK"]["S"])
+    # dynamodb_payload = record["dynamodb"]
+    # partition_key = str(dynamodb_payload["Keys"]["PK"]["S"])
 
-    transaction_key = None
+    # transaction_key = None
 
-    if partition_key.startswith("TXN#"):
-        transaction_key = partition_key.replace("TXN#", "")
-        logger.append_keys(transactionKey=transaction_key)
-    else:
-        logger.warning(
-            {
-                "description": "item does not belong to a transaction",
-                "pk": partition_key,
-                "sk": dynamodb_payload["Keys"]["SK"]["S"] if dict_util.key_exists(dynamodb_payload, ["Keys", "SK", "S"]) else None,
-            }
-        )
+    # if partition_key.startswith("TXN#"):
+    #     transaction_key = partition_key.replace("TXN#", "")
+    #     logger.append_keys(transactionKey=transaction_key)
+    # else:
+    #     logger.warning(
+    #         {
+    #             "description": "item does not belong to a transaction",
+    #             "pk": partition_key,
+    #             "sk": dynamodb_payload["Keys"]["SK"]["S"] if dict_util.key_exists(dynamodb_payload, ["Keys", "SK", "S"]) else None,
+    #         }
+    #     )
 
-    item: str = json_util.dumps_and_appends_new_line(dynamodb_helper.convert_to_python_obj(record["dynamodb"]["OldImage"]))
+    # item: str = json_util.dumps_and_appends_new_line(dynamodb_helper.convert_to_python_obj(record["dynamodb"]["OldImage"]))
 
-    return {"transactionKey": transaction_key, "item": item}
+    return json_util.dumps_and_appends_new_line(dynamodb_helper.convert_to_python_obj(record["dynamodb"]["NewImage"]))

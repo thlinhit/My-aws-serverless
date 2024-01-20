@@ -3,6 +3,7 @@ frameworkVersion: '3'
 
 custom:
   stage: ${opt:stage, self:provider.stage}
+  bucketName: my-s3-test-bucket.linhth.com
 
 provider:
   name: aws
@@ -13,11 +14,11 @@ resources:
     testS3Bucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: my-s3-test-bucket.9999.tyme.com
+        BucketName: ${self.custom.bucketName}
         LifecycleConfiguration:
           Rules:
             - Id: GlacierRule
-              Prefix: ifm/check-log
+              Prefix: data
               Status: Enabled
               Transitions:
                 - TransitionInDays: 7
@@ -27,7 +28,7 @@ resources:
 
 
   Outputs:
-    testS3BucketArn:
+    myTestS3BucketArn:
       Value: !GetAtt testS3Bucket.Arn
-    bucketName:
-      Value: my-s3-test-bucket.9999.tyme.com
+    myTestS3BucketName:
+      Value: ${self.custom.bucketName}
