@@ -10,17 +10,30 @@ ENCODING = 'utf-8'
 
 @logger.inject_lambda_context
 def handler(event, context):
-    records = []
+
     output = []
     logger.info(f"Received batch of {len(event['records'])} records")
     logger.info(f"{event}")
+
+    # headers = ['product_code', 'identity_id', 'identity_type', 'transaction_id', 'transaction_date', 'transaction_amount']
+    headers = ['PK', 'SK', 'testKey1']
+    header_included = False
+    source_records = []
+
     for record in event['records']:
-        payload = json.loads(base64.b64decode(record['data']).decode(ENCODING))
-        logger.info(f"data: {payload}")
-        output.append({
-            'recordId': record['recordId'],
-            'result': 'Ok',
-            'data': base64.b64encode((json.dumps(dict(payload)) + "\n").encode(ENCODING)).decode(ENCODING)
-        })
+        payload = convert_to_json(record['data'])
+        row_fields = [payload.get(field, '') for field in headers]
+        row_str = ",".join(row_fields)
+        data = (row_str if header_included is True else ",".join(headers) + "\n" + row_str)
+        output.append(
+            {
+                'recordId': record['recordId'],
+                'result': 'Ok',
+                'data': base64.b64encode((data + "\n").encode(ENCODING)).decode(ENCODING)
+            }
+        )
 
     return {'records': output}
+
+def convert_to_json(encoded_base64_data) -> object:
+    return json.loads(base64.b64decode(encoded_base64_data).decode(ENCODING))
