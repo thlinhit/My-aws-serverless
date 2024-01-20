@@ -11,7 +11,7 @@ provider:
 
 resources:
   Resources:
-    LogPutS3FireHose:
+    LogPutS3FireHoseRole:
       Type: AWS::IAM::Role
       Properties:
         RoleName: test-log-put-s3-custom-FirehoseRole
@@ -47,7 +47,7 @@ resources:
             SizeInMBs: 5
           CompressionFormat: UNCOMPRESSED
           Prefix: test/logs/
-          RoleARN: !GetAtt LogPutS3FireHose.Arn
+          RoleARN: !GetAtt LogPutS3FireHoseRole.Arn
   Outputs:
     fireHoseDeliveryStreamName:
       Value: ${self:custom.firehoseStreamName}
