@@ -18,16 +18,16 @@ services:
   sqs:
     path: resources/sqs
 
-  capturer:
-    path: stream-capturer
-    params:
-      fireHoseDeliveryStreamName: ${firehose.fireHoseDeliveryStreamName}
-      bucketName: ${s3.s3BucketName}
-      tableStreamArn: ${dynamodb.dynamoDBTableStreamArn}
-      dlqName: ${sqs.dlQueue}
-    dependsOn:
-      - dynamodb
-      - firehose
+  # capturer:
+  #   path: stream-capturer
+  #   params:
+  #     fireHoseDeliveryStreamName: ${firehose.fireHoseDeliveryStreamName}
+  #     bucketName: ${s3.s3BucketName}
+  #     tableStreamArn: ${dynamodb.dynamoDBTableStreamArn}
+  #     dlqName: ${sqs.dlQueue}
+  #   dependsOn:
+  #     - dynamodb
+  #     - firehose
 
   utility-fns:
     path: lambda-multiple-funcs

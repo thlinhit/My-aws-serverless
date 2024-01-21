@@ -17,7 +17,6 @@ def handler(event, context):
 
     headers = ['product_code', 'identity_id', 'identity_type', 'transaction_id', 'transaction_date', 'transaction_amount']
     header_included = False
-    source_records = []
 
     for record in event['records']:
         payload = convert_to_json(record['data'])
@@ -28,7 +27,7 @@ def handler(event, context):
             {
                 'recordId': record['recordId'],
                 'result': 'Ok',
-                'data': base64.b64encode((data + "\n").encode(ENCODING)).decode(ENCODING)
+                'data': base64.b64encode((data + "\n").encode(ENCODING))
             }
         )
 
