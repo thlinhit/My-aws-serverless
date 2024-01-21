@@ -15,8 +15,7 @@ def handler(event, context):
     logger.info(f"Received batch of {len(event['records'])} records")
     logger.info(f"{event}")
 
-    # headers = ['product_code', 'identity_id', 'identity_type', 'transaction_id', 'transaction_date', 'transaction_amount']
-    headers = ['PK', 'SK', 'testKey1']
+    headers = ['product_code', 'identity_id', 'identity_type', 'transaction_id', 'transaction_date', 'transaction_amount']
     header_included = False
     source_records = []
 
