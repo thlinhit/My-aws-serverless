@@ -71,6 +71,7 @@ functions:
   transformJsonToCsvFn:
     name: transform-json-to-csv
     handler: src/transformJsonToCsvFn/main.handler
+    timeout: 100
     layers:
       - Ref: PythonRequirementsLambdaLayer
     # role: MyDataTransformationLambdaRole

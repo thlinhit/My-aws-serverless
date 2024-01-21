@@ -1,6 +1,6 @@
 import base64
 import json
-
+import datetime
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.logging.formatters.datadog import DatadogLogFormatter
 
@@ -18,6 +18,12 @@ def handler(event, context):
     headers = ['product_code', 'identity_id', 'identity_type', 'transaction_id', 'transaction_date', 'transaction_amount']
     header_included = False
 
+    partition_keys = {"bankname": 'BANK_NAME',
+                      "product": "MCA",
+                      "partner": "PARTNER_NAME",
+                      "date": datetime.date.today().strftime("%Y%m%d")
+                      }
+
     for record in event['records']:
         payload = convert_to_json(record['data'])
         row_fields = [payload.get(field, '') for field in headers]
@@ -27,7 +33,8 @@ def handler(event, context):
             {
                 'recordId': record['recordId'],
                 'result': 'Ok',
-                'data': base64.b64encode((data + "\n").encode(ENCODING))
+                'data': base64.b64encode((data + "\n").encode(ENCODING)),
+                'metadata': {'partitionKeys': partition_keys}
             }
         )
 

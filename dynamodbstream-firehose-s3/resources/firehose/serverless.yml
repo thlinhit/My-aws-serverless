@@ -63,7 +63,7 @@ resources:
             RetryOptions:
               DurationInSeconds: 300
           CompressionFormat: UNCOMPRESSED
-          Prefix: "customer_transaction/bankname=!{partitionKeyFromLambda:bankname}/product=!{partitionKeyFromLambda:product}/partner=!{partitionKeyFromLambda:partner}/date=!{partitionKeyFromLambda:date}/"
+          Prefix: "customer_transaction/!{partitionKeyFromLambda:bankname}/!{partitionKeyFromLambda:product}/!{partitionKeyFromLambda:partner}/!{partitionKeyFromLambda:date}/"
           ErrorOutputPrefix: error/
           RoleARN: !GetAtt LogPutS3FireHoseRole.Arn
   Outputs:
