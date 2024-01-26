@@ -15,19 +15,6 @@ provider:
 # RESOURCES #
 #############
 resources:
-  Parameters:
-    VpcId:
-      Type: String
-      Default: vpc-01bbf3ec33d6990ac
-    SecurityGroup:
-      Type: String
-      Default: sg-0518ec06579ce9efe
-    SubnetA:
-      Type: String
-      Default: subnet-019955884c281ed28
-    SubnetB:
-      Type: String
-      Default: subnet-05873715ece21d710
   Mappings:
     SubnetConfig:
       VPC:

@@ -1,3 +1,10 @@
 services:
   vpc:
     path: resources/vpc
+  alb:
+    path: resources/alb
+    params:
+      vpcId: ${vpc.vpcId}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
