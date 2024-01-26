@@ -107,11 +107,11 @@ resources:
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateThree', 'CIDR' ]
   Outputs:
-    myVPCArn:
-      Value: !GetAtt MyVpc.Arn
-    myPrivateSubnetOneArn:
-      Value: !GetAtt PrivateSubnetOne.Arn
-    myPrivateSubnetTwoArn:
-      Value: !GetAtt PrivateSubnetTwo.Arn
-    myPrivateSubnetThreeArn:
-      Value: !GetAtt PrivateSubnetThree.Arn
+    vpcId:
+      Value: !Ref MyVpc
+    privateSubnetOneId:
+      Value: !Ref PrivateSubnetOne
+    privateSubnetTwoId:
+      Value: !Ref PrivateSubnetTwo
+    privateSubnetThreeId:
+      Value: !Ref PrivateSubnetThree
