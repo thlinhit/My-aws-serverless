@@ -31,63 +31,60 @@ resources:
       Default: ${param:publicSubnetThreeId}
 
   Resources:
-# Private internal load balancer, hosted in private subnets that is accessible
-# only from VPClink. Rules are added to this security group when VPC Link Security has been created
-    PublicLoadBalancerSecurityGroup:
-      Type: AWS::EC2::SecurityGroup
-      Properties:
-        GroupDescription: Public ALB - Access to the public facing load balancer
-        GroupName: Public ALB Security Group
-        VpcId: !Ref Vpc
-
     PublicLoadBalancer:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
       Properties:
         Name: public-alb
         Scheme: internet-facing
-        LoadBalancerAttributes:
-          - Key: idle_timeout.timeout_seconds
-            Value: '30'
-        Type: application
+#        LoadBalancerAttributes:
+#          - Key: idle_timeout.timeout_seconds
+#            Value: '30'
+#        Type: application
         Subnets:
-          -  !Ref PublicSubnetOne
-          -  !Ref PublicSubnetTwo
-          -  !Ref PublicSubnetThree
+          - !Ref PublicSubnetOne
+          - !Ref PublicSubnetTwo
+          - !Ref PublicSubnetThree
         IpAddressType: ipv4
         SecurityGroups:
           - !Ref PublicLoadBalancerSecurityGroup
 
-    ALBTargetGroupPrivate:
+    DefaultTargetGroup:
       Type: AWS::ElasticLoadBalancingV2::TargetGroup
       Properties:
-        TargetType: ip
-        HealthCheckIntervalSeconds: 10
-        HealthCheckProtocol: HTTP
-        HealthCheckTimeoutSeconds: 5
-        HealthyThresholdCount: 5
-        UnhealthyThresholdCount: 3
-        Matcher:
-          HttpCode: '200-299'
         Port: 80
         Protocol: HTTP
         VpcId: !Ref Vpc
-        TargetGroupAttributes:
-          - Key: deregistration_delay.timeout_seconds
-            Value: '5'
-          - Key: slow_start.duration_seconds
-            Value: '60'
 
-    PublicLoadBalancerListener:
+    ALBHttpListener:
       Type: AWS::ElasticLoadBalancingV2::Listener
       Properties:
         DefaultActions:
-          - TargetGroupArn: !Ref ALBTargetGroupPrivate
-            Type: forward
+          - Type: forward
+            ForwardConfig:
+              TargetGroups:
+                - TargetGroupArn: !Ref DefaultTargetGroup
+                  Weight: 1
         LoadBalancerArn: !Ref PublicLoadBalancer
         Port: 80
         Protocol: HTTP
+
+    PublicLoadBalancerSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Public ALB - Allow http to client host
+        VpcId: !Ref Vpc
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 80
+            ToPort: 80
+            CidrIp: 0.0.0.0/0
+
   Outputs:
+    albArb:
+      Value: !Ref PublicLoadBalancer
     albListenerArn:
-      Value: !Ref PublicLoadBalancerListener
+      Value: !Ref ALBHttpListener
     loadBalancerSecurityGroup:
       Value: !Ref PublicLoadBalancerSecurityGroup
+    loadBalancerDNSNAme:
+      Value: !GetAtt PublicLoadBalancer.DNSName

@@ -21,11 +21,11 @@ services:
   test-alb-fn:
     path: test-alb-fn
     params:
+      albArn: ${public-alb.albArb}
       albListenerArn: ${public-alb.albListenerArn}
-      privateSubnetOneId: ${vpc.privateSubnetOneId}
-      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
-      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
-      privateLoadBalancerSecurityGroup: ${alb.privateLoadBalancerSecurityGroup}
+#      privateSubnetOneId: ${vpc.privateSubnetOneId}
+#      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+#      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
 
   api-gateway:
     path: resources/api-gateway
