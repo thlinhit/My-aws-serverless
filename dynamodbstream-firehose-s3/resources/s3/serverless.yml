@@ -3,7 +3,7 @@ frameworkVersion: '3'
 
 custom:
   stage: ${opt:stage, self:provider.stage}
-  bucketName: my-s3-test-bucket-v1.linhth.com
+  bucketName: my-s3-test-bucket.linhth.com
 
 provider:
   name: aws
