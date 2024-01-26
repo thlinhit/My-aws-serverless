@@ -86,3 +86,6 @@ resources:
         LoadBalancerArn: !Ref PrivateLoadBalancer
         Port: 80
         Protocol: HTTP
+  Outputs:
+    albListenerArn:
+      Value: !Ref PrivateLoadBalancerListener

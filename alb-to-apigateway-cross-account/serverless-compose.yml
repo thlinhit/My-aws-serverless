@@ -11,3 +11,5 @@ services:
 
   test-alb-fn:
     path: test-alb-fn
+    params:
+      albListenerArn: ${alb.albListenerArn}
