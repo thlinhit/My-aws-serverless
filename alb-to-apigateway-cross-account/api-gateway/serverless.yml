@@ -128,21 +128,84 @@ resources:
           - Fn::GetAZs: !Ref 'AWS::Region'
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateThree', 'CIDR' ]
+
 #---------------------------------------------------------------------
 # Deploys ALB
 #---------------------------------------------------------------------
+#    SecurityGroupIngressFromPrivateALB:
+#      Type: AWS::EC2::SecurityGroup
+#      Properties:
+#        Description:  Allow http on port 80
+#        VpcId: !Ref MyVpc
+#        SecurityGroupIngress:
+#          - IpProtocol: tcp
+#            FromPort: 80
+#            ToPort: 80
+#            CidrIp: 0.0.0.0/0
 
-    SecurityGroupIngressFromPrivateALB:
+# Private internal load balancer, hosted in private subnets that is accessible
+# only from VPClink. Rules are added to this security group when VPC Link Security has been created
+    PrivateLoadBalancerSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
-        Description:  Allow http on port 80
+        GroupDescription: Access to the public facing load balancer
+        GroupName: ALB Security Group
         VpcId: !Ref MyVpc
-        SecurityGroupIngress:
-          - IpProtocol: tcp
-            FromPort: 80
-            ToPort: 80
-            CidrIp: 0.0.0.0/0
 
+    PrivateLoadBalancer:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        Name: private-alb
+        Scheme: internal
+        LoadBalancerAttributes:
+          - Key: idle_timeout.timeout_seconds
+            Value: '30'
+        Type: application
+        Subnets:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        IpAddressType: ipv4
+        SecurityGroups:
+          - !Ref PrivateLoadBalancerSecurityGroup
+
+
+    ALBTargetGroupPrivate:
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        TargetType: ip
+        HealthCheckIntervalSeconds: 10
+        HealthCheckProtocol: HTTP
+        HealthCheckTimeoutSeconds: 5
+        HealthyThresholdCount: 5
+        UnhealthyThresholdCount: 3
+        Matcher:
+          HttpCode: '200-299'
+        Port: 80
+        Protocol: HTTP
+        VpcId: !Ref MyVpc
+        TargetGroupAttributes:
+          - Key: deregistration_delay.timeout_seconds
+            Value: '5'
+          - Key: slow_start.duration_seconds
+            Value: '60'
+
+    PrivateLoadBalancerListener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        DefaultActions:
+          - TargetGroupArn: !Ref ALBTargetGroupPrivate
+            Type: 'forward'
+        LoadBalancerArn: !Ref PrivateLoadBalancer
+        Port: 80
+        Protocol: HTTP
+
+#    AlbLambdaPermission:
+#      Type: AWS::Lambda::Permission
+#      Properties:
+#        FunctionName: !GetAtt myFunction.Arn
+#        Action: lambda:InvokeFunction
+#        Principal: elasticloadbalancing.amazonaws.com
 
 #    PrivateLoadBalancer:
 #      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
