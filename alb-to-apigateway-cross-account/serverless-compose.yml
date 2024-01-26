@@ -8,3 +8,6 @@ services:
       privateSubnetOneId: ${vpc.privateSubnetOneId}
       privateSubnetTwoId: ${vpc.privateSubnetTwoId}
       privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+
+  test-alb-fn:
+    path: test-alb-fn
