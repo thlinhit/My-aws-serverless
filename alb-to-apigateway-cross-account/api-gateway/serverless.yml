@@ -128,6 +128,20 @@ resources:
           - Fn::GetAZs: !Ref 'AWS::Region'
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateThree', 'CIDR' ]
+#---------------------------------------------------------------------
+# Deploys ALB
+#---------------------------------------------------------------------
+
+    SecurityGroupIngressFromPrivateALB:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        Description:  Allow http on port 80
+        VpcId: !Ref MyVpc
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 80
+            ToPort: 80
+            CidrIp: 0.0.0.0/0
 
 
 #    PrivateLoadBalancer:
