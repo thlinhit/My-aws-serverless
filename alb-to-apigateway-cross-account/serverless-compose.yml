@@ -1,0 +1,3 @@
+services:
+  vpc:
+    path: resources/vpc

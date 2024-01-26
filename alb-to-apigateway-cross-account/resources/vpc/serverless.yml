@@ -1,0 +1,108 @@
+service: ${self:custom.servicePrefix}-vpc
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: us-east-1
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    VpcId:
+      Type: String
+      Default: vpc-01bbf3ec33d6990ac
+    SecurityGroup:
+      Type: String
+      Default: sg-0518ec06579ce9efe
+    SubnetA:
+      Type: String
+      Default: subnet-019955884c281ed28
+    SubnetB:
+      Type: String
+      Default: subnet-05873715ece21d710
+  Mappings:
+    SubnetConfig:
+      VPC:
+        CIDR: '10.0.0.0/16'
+      PublicOne:
+        CIDR: '10.0.0.0/24'
+      PublicTwo:
+        CIDR: '10.0.1.0/24'
+      PublicThree:
+        CIDR: '10.0.2.0/24'
+      PrivateOne:
+        CIDR: '10.0.100.0/24'
+      PrivateTwo:
+        CIDR: '10.0.101.0/24'
+      PrivateThree:
+        CIDR: '10.0.102.0/24'
+  Resources:
+    MyVpc:
+      Type: AWS::EC2::VPC
+      Properties:
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR' ]
+    PublicSubnetOne:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 0
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicOne', 'CIDR' ]
+        MapPublicIpOnLaunch: true
+    PublicSubnetTwo:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 1
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicTwo', 'CIDR' ]
+        MapPublicIpOnLaunch: true
+    PublicSubnetThree:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 2
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicThree', 'CIDR' ]
+        MapPublicIpOnLaunch: true
+
+    # Three private subnets where containers will only have private
+    # IP addresses, and will only be reachable by other members of the
+    # VPC and API Gateway
+    PrivateSubnetOne:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 0
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateOne', 'CIDR' ]
+    PrivateSubnetTwo:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 1
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateTwo', 'CIDR' ]
+    PrivateSubnetThree:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 2
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateThree', 'CIDR' ]
