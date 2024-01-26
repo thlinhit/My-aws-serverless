@@ -1,6 +1,7 @@
 services:
   vpc:
     path: resources/vpc
+
   alb:
     path: resources/alb
     params:
@@ -12,4 +13,13 @@ services:
   test-alb-fn:
     path: test-alb-fn
     params:
+      albListenerArn: ${alb.albListenerArn}
+
+  api-gateway:
+    path: resources/api-gateway
+    params:
+      vpcId: ${vpc.vpcId}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
       albListenerArn: ${alb.albListenerArn}
