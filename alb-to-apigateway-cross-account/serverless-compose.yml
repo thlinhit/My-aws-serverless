@@ -14,6 +14,10 @@ services:
     path: test-alb-fn
     params:
       albListenerArn: ${alb.albListenerArn}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      privateLoadBalancerSecurityGroup: ${alb.privateLoadBalancerSecurityGroup}
 
   api-gateway:
     path: resources/api-gateway

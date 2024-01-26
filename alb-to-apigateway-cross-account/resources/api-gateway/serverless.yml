@@ -85,6 +85,13 @@ resources:
         IntegrationUri: !Ref PrivateLoadBalancerListener
         PayloadFormatVersion: '1.0'
 
+    APIStage:
+      Type: AWS::ApiGatewayV2::Stage
+      Properties:
+        StageName: $default
+        AutoDeploy: true
+        ApiId: !Ref HttpApiGateway
+
   Outputs:
     APIURL:
       Description: Invoke URL

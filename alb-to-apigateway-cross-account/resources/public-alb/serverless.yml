@@ -1,4 +1,4 @@
-service: ${self:custom.servicePrefix}-alb
+service: ${self:custom.servicePrefix}-public-alb
 frameworkVersion: '3'
 
 custom:
@@ -20,42 +20,42 @@ resources:
     Vpc:
       Type: String
       Default: ${param:vpcId}
-    PrivateSubnetOne:
+    PublicSubnetOne:
       Type: String
-      Default: ${param:privateSubnetOneId}
-    PrivateSubnetTwo:
+      Default: ${param:publicSubnetOneId}
+    PublicSubnetTwo:
       Type: String
-      Default: ${param:privateSubnetTwoId}
-    PrivateSubnetThree:
+      Default: ${param:publicSubnetTwoId}
+    PublicSubnetThree:
       Type: String
-      Default: ${param:privateSubnetThreeId}
+      Default: ${param:publicSubnetThreeId}
 
   Resources:
 # Private internal load balancer, hosted in private subnets that is accessible
 # only from VPClink. Rules are added to this security group when VPC Link Security has been created
-    PrivateLoadBalancerSecurityGroup:
+    PublicLoadBalancerSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: Access to the public facing load balancer
         GroupName: ALB Security Group
         VpcId: !Ref Vpc
 
-    PrivateLoadBalancer:
+    PublicLoadBalancer:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
       Properties:
-        Name: private-alb
-        Scheme: internal
+        Name: public-alb
+        Scheme: internet-facing
         LoadBalancerAttributes:
           - Key: idle_timeout.timeout_seconds
             Value: '30'
         Type: application
         Subnets:
-          -  !Ref PrivateSubnetOne
-          -  !Ref PrivateSubnetTwo
-          -  !Ref PrivateSubnetThree
+          -  !Ref PublicSubnetOne
+          -  !Ref PublicSubnetTwo
+          -  !Ref PublicSubnetThree
         IpAddressType: ipv4
         SecurityGroups:
-          - !Ref PrivateLoadBalancerSecurityGroup
+          - !Ref PublicLoadBalancerSecurityGroup
 
     ALBTargetGroupPrivate:
       Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -77,17 +77,17 @@ resources:
           - Key: slow_start.duration_seconds
             Value: '60'
 
-    PrivateLoadBalancerListener:
+    PublicLoadBalancerListener:
       Type: AWS::ElasticLoadBalancingV2::Listener
       Properties:
         DefaultActions:
           - TargetGroupArn: !Ref ALBTargetGroupPrivate
             Type: forward
-        LoadBalancerArn: !Ref PrivateLoadBalancer
+        LoadBalancerArn: !Ref PublicLoadBalancer
         Port: 80
         Protocol: HTTP
   Outputs:
     albListenerArn:
-      Value: !Ref PrivateLoadBalancerListener
-    privateLoadBalancerSecurityGroup:
-      Value: !Ref PrivateLoadBalancerSecurityGroup
+      Value: !Ref PublicLoadBalancerListener
+    PublicLoadBalancerSecurityGroup:
+      Value: !Ref PublicLoadBalancerSecurityGroup

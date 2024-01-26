@@ -102,3 +102,9 @@ resources:
       Value: !Ref PrivateSubnetTwo
     privateSubnetThreeId:
       Value: !Ref PrivateSubnetThree
+    publicSubnetOneId:
+      Value: !Ref PublicSubnetOne
+    publicSubnetTwoId:
+      Value: !Ref PublicSubnetTwo
+    publicSubnetThreeId:
+      Value: !Ref PublicSubnetThree
