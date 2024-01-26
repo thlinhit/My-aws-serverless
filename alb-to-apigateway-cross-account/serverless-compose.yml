@@ -10,6 +10,14 @@ services:
       privateSubnetTwoId: ${vpc.privateSubnetTwoId}
       privateSubnetThreeId: ${vpc.privateSubnetThreeId}
 
+  public-alb:
+    path: resources/public-alb
+    params:
+      vpcId: ${vpc.vpcId}
+      publicSubnetOneId: ${vpc.publicSubnetOneId}
+      publicSubnetTwoId: ${vpc.publicSubnetTwoId}
+      publicSubnetThreeId: ${vpc.publicSubnetThreeId}
+
   test-alb-fn:
     path: test-alb-fn
     params:

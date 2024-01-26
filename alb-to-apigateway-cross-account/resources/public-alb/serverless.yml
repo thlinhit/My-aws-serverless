@@ -36,8 +36,8 @@ resources:
     PublicLoadBalancerSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
-        GroupDescription: Access to the public facing load balancer
-        GroupName: ALB Security Group
+        GroupDescription: Public ALB - Access to the public facing load balancer
+        GroupName: Public ALB Security Group
         VpcId: !Ref Vpc
 
     PublicLoadBalancer:
@@ -89,5 +89,5 @@ resources:
   Outputs:
     albListenerArn:
       Value: !Ref PublicLoadBalancerListener
-    PublicLoadBalancerSecurityGroup:
+    loadBalancerSecurityGroup:
       Value: !Ref PublicLoadBalancerSecurityGroup
