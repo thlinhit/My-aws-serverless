@@ -106,3 +106,12 @@ resources:
           - Fn::GetAZs: !Ref 'AWS::Region'
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateThree', 'CIDR' ]
+  Outputs:
+    myVPCArn:
+      Value: !GetAtt MyVpc.Arn
+    myPrivateSubnetOneArn:
+      Value: !GetAtt PrivateSubnetOne.Arn
+    myPrivateSubnetTwoArn:
+      Value: !GetAtt PrivateSubnetTwo.Arn
+    myPrivateSubnetThreeArn:
+      Value: !GetAtt PrivateSubnetThree.Arn
