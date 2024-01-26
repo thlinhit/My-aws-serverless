@@ -21,7 +21,7 @@ services:
   test-alb-fn:
     path: test-alb-fn
     params:
-      albListenerArn: ${alb.albListenerArn}
+      albListenerArn: ${public-alb.albListenerArn}
       privateSubnetOneId: ${vpc.privateSubnetOneId}
       privateSubnetTwoId: ${vpc.privateSubnetTwoId}
       privateSubnetThreeId: ${vpc.privateSubnetThreeId}

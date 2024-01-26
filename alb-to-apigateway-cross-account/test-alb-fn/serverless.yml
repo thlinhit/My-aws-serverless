@@ -32,19 +32,19 @@ functions:
   tableStreamCaptureFn:
     name: ${self:custom.servicePrefix}-test-alb-fn
     handler: src/main.handler
-    vpc:
-      securityGroupIds:
-        - ${param:privateLoadBalancerSecurityGroup}
-      subnetIds:
-        - ${param:privateSubnetOneId}
-        - ${param:privateSubnetTwoId}
-        - ${param:privateSubnetThreeId}
+#    vpc:
+#      securityGroupIds:
+#        - ${param:privateLoadBalancerSecurityGroup}
+#      subnetIds:
+#        - ${param:privateSubnetOneId}
+#        - ${param:privateSubnetTwoId}
+#        - ${param:privateSubnetThreeId}
     events:
       - alb:
           listenerArn: ${param:albListenerArn}
           conditions:
             path: /hello
-          targetGroupName: customNameForTestAlb
+#          targetGroupName: customNameForTestAlb
           priority: 1
           method:
             - GET
