@@ -142,7 +142,7 @@ resources:
             CidrIp: 0.0.0.0/0
             Description: Allow HTTPS outbound
 
-    ManagedSgTxInfrastructureBase:
+    ManagedSgTxInfrastructureBaseSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: Security group for Infrastructure base
@@ -170,13 +170,28 @@ resources:
             ToPort: 80
             CidrIp: 0.0.0.0/0
             Description: Allow HTTP outbound
+          - IpProtocol: tcp
+            FromPort: 53
+            ToPort: 53
+            CidrIp: 0.0.0.0/0
+            Description: Allow DNS traffic
+          - IpProtocol: udp
+            FromPort: 53
+            ToPort: 53
+            CidrIp: 0.0.0.0/0
+            Description: Allow DNS traffic
+          - IpProtocol: udp
+            FromPort: 123
+            ToPort: 123
+            CidrIp: 0.0.0.0/0
+            Description: Allow NTP traffic
 
     ManagedSgTxInfrastructureBaseSelfIngress:
       Type: AWS::EC2::SecurityGroupIngress
-      DependsOn: ManagedSgTxInfrastructureBase
+      DependsOn: ManagedSgTxInfrastructureBaseSecurityGroup
       Properties:
-        GroupId: !Ref ManagedSgTxInfrastructureBase
-        SourceSecurityGroupId: !Ref ManagedSgTxInfrastructureBase
+        GroupId: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SourceSecurityGroupId: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
         IpProtocol: -1 # Allow all protocols
         FromPort: -1  # Allow all ports
         ToPort: -1
@@ -197,3 +212,7 @@ resources:
       Value: !Ref PublicSubnetTwo
     publicSubnetThreeId:
       Value: !Ref PublicSubnetThree
+    managedSgTxToolingBaseSecurityGroup:
+      Value: !Ref ManagedSgTxToolingBaseSecurityGroup
+    ManagedSgTxInfrastructureBaseSecurityGroup:
+      Value: !Ref ManagedSgTxInfrastructureBaseSecurityGroup

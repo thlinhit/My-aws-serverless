@@ -10,22 +10,22 @@ services:
 #      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
 #      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
 
-  public-alb:
-    path: resources/public-alb
-    params:
-      vpcId: ${vpc.vpcId}
-      publicSubnetOneId: ${vpc.publicSubnetOneId}
-      publicSubnetTwoId: ${vpc.publicSubnetTwoId}
-      publicSubnetThreeId: ${vpc.publicSubnetThreeId}
-
-  test-alb-fn:
-    path: test-alb-fn
-    params:
-      albArn: ${public-alb.albArb}
-      albListenerArn: ${public-alb.albListenerArn}
-#      privateSubnetOneId: ${vpc.privateSubnetOneId}
-#      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
-#      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+#  public-alb:
+#    path: resources/public-alb
+#    params:
+#      vpcId: ${vpc.vpcId}
+#      publicSubnetOneId: ${vpc.publicSubnetOneId}
+#      publicSubnetTwoId: ${vpc.publicSubnetTwoId}
+#      publicSubnetThreeId: ${vpc.publicSubnetThreeId}
+#
+#  test-alb-fn:
+#    path: test-alb-fn
+#    params:
+#      albArn: ${public-alb.albArb}
+#      albListenerArn: ${public-alb.albListenerArn}
+##      privateSubnetOneId: ${vpc.privateSubnetOneId}
+##      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+##      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
 
 #  ingress-api-gateway:
 #    path: resources/ingress-api-gateway
