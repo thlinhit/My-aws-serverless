@@ -32,67 +32,60 @@ resources:
     PrivateLoadBalancerListener:
       Type: String
       Default: ${param:albListenerArn}
+    InfrastructureBaseSecurityGroupId:
+      Type: String
+      Default: ${param:infrastructureBaseSecurityGroupId}
   Resources:
-    APIGWVPClinkSG:
-      Type: AWS::EC2::SecurityGroup
+    RestApiGateway:
+      Type: AWS::ApiGateway::RestApi
       Properties:
-        VpcId: !Ref Vpc
-        GroupName: vpclink-security-group
-        GroupDescription: APIGW vpclink security group
-        SecurityGroupIngress:
-          - IpProtocol: tcp
-            FromPort: 80
-            ToPort: 80
-            CidrIp: 0.0.0.0/0
+        Name: ${self:custom.servicePrefix}-ingress-rest-api-gateway
+        Description: Ingress - Rest Api Gateway
+        EndpointConfiguration:
+          Types:
+            - PRIVATE
 
-    PrivateAPIGWvpcLink:
-      Type: AWS::ApiGatewayV2::VpcLink
-      Properties:
-        Name: private-apigw-vpclink
-        SecurityGroupIds:
-          - !Ref APIGWVPClinkSG
-        SubnetIds:
-          - !Ref PrivateSubnetOne
-          - !Ref PrivateSubnetTwo
-          - !Ref PrivateSubnetThree
-
-    HttpApiGateway:
-      Type: AWS::ApiGatewayV2::Api
-      Properties:
-        Name: ${self:custom.servicePrefix}-ingress-api-gateway
-        Description: Ingress - Api Gateway for http
-        ProtocolType: HTTP
-
-    APIRoute:
-      Type: AWS::ApiGatewayV2::Route
-      Properties:
-        ApiId: !Ref HttpApiGateway
-        RouteKey: 'ANY /'
-        Target: !Join
-          - /
-          - - integrations
-            - !Ref APIAlbIntegration
-
-    APIAlbIntegration:
-      Type: AWS::ApiGatewayV2::Integration
-      Properties:
-        ApiId: !Ref HttpApiGateway
-        Description: Private ALB Integration
-        IntegrationType: HTTP_PROXY
-        IntegrationMethod: ANY
-        ConnectionType: VPC_LINK
-        ConnectionId: !Ref PrivateAPIGWvpcLink
-        IntegrationUri: !Ref PrivateLoadBalancerListener
-        PayloadFormatVersion: '1.0'
-
-    APIStage:
-      Type: AWS::ApiGatewayV2::Stage
-      Properties:
-        StageName: $default
-        AutoDeploy: true
-        ApiId: !Ref HttpApiGateway
+#    PrivateAPIGWvpcLink:
+#      Type: AWS::ApiGatewayV2::VpcLink
+#      Properties:
+#        Name: private-apigw-vpclink
+#        SecurityGroupIds:
+#          - !Ref InfrastructureBaseSecurityGroupId
+#        SubnetIds:
+#          - !Ref PrivateSubnetOne
+#          - !Ref PrivateSubnetTwo
+#          - !Ref PrivateSubnetThree
+#
+#    APIRoute:
+#      Type: AWS::ApiGatewayV2::Route
+#      Properties:
+#        ApiId: !Ref HttpApiGateway
+#        RouteKey: 'ANY /'
+#        Target: !Join
+#          - /
+#          - - integrations
+#            - !Ref APIAlbIntegration
+#
+#    APIAlbIntegration:
+#      Type: AWS::ApiGatewayV2::Integration
+#      Properties:
+#        ApiId: !Ref HttpApiGateway
+#        Description: Private ALB Integration
+#        IntegrationType: HTTP_PROXY
+#        IntegrationMethod: ANY
+#        ConnectionType: VPC_LINK
+#        ConnectionId: !Ref PrivateAPIGWvpcLink
+#        IntegrationUri: !Ref PrivateLoadBalancerListener
+#        PayloadFormatVersion: '1.0'
+#
+#    APIStage:
+#      Type: AWS::ApiGatewayV2::Stage
+#      Properties:
+#        StageName: $default
+#        AutoDeploy: true
+#        ApiId: !Ref HttpApiGateway
 
   Outputs:
     APIURL:
       Description: Invoke URL
-      Value: !Sub https://${HttpApiGateway}.execute-api.${AWS::Region}.amazonaws.com/
+      Value: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/

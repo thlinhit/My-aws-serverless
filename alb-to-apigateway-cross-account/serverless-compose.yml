@@ -21,6 +21,15 @@ services:
       infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
       managedSgTxToolingBaseSecurityGroupId: ${vpc.managedSgTxToolingBaseSecurityGroup}
 
+  ingress-api-gateway:
+    path: resources/ingress-api-gateway
+    params:
+      vpcId: ${vpc.vpcId}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      albListenerArn: ${private-alb.albListenerArn}
+      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
 
 #  public-alb:
 #    path: resources/public-alb
@@ -38,12 +47,3 @@ services:
 ##      privateSubnetOneId: ${vpc.privateSubnetOneId}
 ##      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
 ##      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
-
-#  ingress-api-gateway:
-#    path: resources/ingress-api-gateway
-#    params:
-#      vpcId: ${vpc.vpcId}
-#      privateSubnetOneId: ${vpc.privateSubnetOneId}
-#      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
-#      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
-#      albListenerArn: ${private-alb.albListenerArn}
