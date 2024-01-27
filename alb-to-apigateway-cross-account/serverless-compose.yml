@@ -21,7 +21,7 @@ services:
       infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
       managedSgTxToolingBaseSecurityGroupId: ${vpc.managedSgTxToolingBaseSecurityGroup}
 
-  ingress-api-gateway:
+  ingress-rest-api-gateway:
     path: resources/ingress-rest-api-gateway
     params:
       vpcId: ${vpc.vpcId}

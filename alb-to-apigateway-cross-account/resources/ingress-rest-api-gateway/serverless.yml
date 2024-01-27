@@ -45,6 +45,28 @@ resources:
           Types:
             - PRIVATE
 
+    ProxyResource:
+      Type: AWS::ApiGateway::Resource
+      Properties:
+        ParentId: !GetAtt RestApiGateway.RootResourceId  # Attach to the root resource
+        PathPart: '{proxy+}'  # Use the greedy path parameter for a proxy resource
+        RestApiId: !Ref RestApiGateway
+
+    ProxyMethod:
+      Type: AWS::ApiGateway::Method
+      Properties:
+        ResourceId: !Ref ProxyResource
+        RestApiId: !Ref RestApiGateway
+        HttpMethod: ANY
+        ApiKeyRequired: false
+        AuthorizationType: NONE
+        Integration:
+          Type: HTTP_PROXY
+          IntegrationHttpMethod: ANY
+          Uri: http://internal-private-alb-790965056.us-east-1.elb.amazonaws.com
+          ConnectionType: VPC_LINK
+          ConnectionId: !Ref PrivateAPIGWvpcLink
+
     privateNlb:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
       Properties:
@@ -76,7 +98,7 @@ resources:
 #    APIAlbIntegration:
 #      Type: AWS::ApiGatewayV2::Integration
 #      Properties:
-#        ApiId: !Ref HttpApiGateway
+#        ApiId: !Ref RestApiGateway
 #        Description: Private ALB Integration
 #        IntegrationType: HTTP_PROXY
 #        IntegrationMethod: ANY
