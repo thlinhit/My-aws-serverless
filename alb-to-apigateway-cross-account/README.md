@@ -32,7 +32,7 @@ AWS_PROFILE=acloudguru2 sls ingress-api-gateway:deploy
 
 
 ----
-https://serverlessland.com/patterns/alb-lambda-rust
+https://serverlessland.com/patterns/alb-lambda-rust ✅
 
 
 
