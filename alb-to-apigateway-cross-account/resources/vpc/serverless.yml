@@ -129,6 +129,20 @@ resources:
         SubnetId: !Ref PublicSubnetThree
         RouteTableId: !Ref PublicRouteTable
 
+    ManagedSgTxToolingBaseSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Security group for Infrastructure base
+        GroupName: managed-sg-tx-tooling-base
+        VpcId: !Ref MyVpc
+        SecurityGroupEgress:
+          - IpProtocol: tcp
+            FromPort: 443
+            ToPort: 443
+            CidrIp: 0.0.0.0/0
+            Description: Allow HTTPS outbound
+
+
   Outputs:
     vpcId:
       Value: !Ref MyVpc
