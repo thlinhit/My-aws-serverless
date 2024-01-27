@@ -22,6 +22,11 @@ AWS_PROFILE=acloudguru2 sls private-alb:deploy
 ```
 
 ```bash
+AWS_PROFILE=acloudguru2 sls test-private-alb-fn:deploy
+```
+
+
+```bash
 AWS_PROFILE=acloudguru2 sls test-alb-fn:deploy
 ```
 

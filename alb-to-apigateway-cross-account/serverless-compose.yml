@@ -11,6 +11,17 @@ services:
       privateSubnetThreeId: ${vpc.privateSubnetThreeId}
       infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
 
+  test-private-alb-fn:
+    path: test-private-alb-fn
+    params:
+      albListenerArn: ${private-alb.albListenerArn}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
+      managedSgTxToolingBaseSecurityGroupId: ${vpc.managedSgTxToolingBaseSecurityGroup}
+
+
 #  public-alb:
 #    path: resources/public-alb
 #    params:
