@@ -35,7 +35,6 @@ AWS_PROFILE=acloudguru2 sls ingress-api-gateway:deploy
 https://serverlessland.com/patterns/alb-lambda-rust ✅
 
 
-
 https://github.com/aws-samples/aws-apigw-http-api-private--integrations/blob/main/templates/APIGW-HTTP-private-integration-ALB-ecs.yml
 
 
