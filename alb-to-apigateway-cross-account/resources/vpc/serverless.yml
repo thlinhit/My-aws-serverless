@@ -154,6 +154,22 @@ resources:
             FromPort: -1  # Allow all ports
             ToPort: -1
             Description: Allow Self VPC inbound
+        SecurityGroupEgress:
+          - IpProtocol: tcp
+            FromPort: 443
+            ToPort: 443
+            CidrIp: 0.0.0.0/0
+            Description: Allow HTTPS outbound
+          - CidrIp: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR' ]
+            IpProtocol: -1 # Allow all protocols
+            FromPort: -1  # Allow all ports
+            ToPort: -1
+            Description: Allow all traffice outbound internal
+          - IpProtocol: tcp
+            FromPort: 80
+            ToPort: 80
+            CidrIp: 0.0.0.0/0
+            Description: Allow HTTP outbound
 
     ManagedSgTxInfrastructureBaseSelfIngress:
       Type: AWS::EC2::SecurityGroupIngress
