@@ -45,6 +45,16 @@ resources:
           Types:
             - PRIVATE
 
+    privateNlb:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        Name: ${self:custom.servicePrefix}-private-nlb
+        Type: network
+        Subnets:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+
 #    PrivateAPIGWvpcLink:
 #      Type: AWS::ApiGatewayV2::VpcLink
 #      Properties:
