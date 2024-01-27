@@ -214,5 +214,5 @@ resources:
       Value: !Ref PublicSubnetThree
     managedSgTxToolingBaseSecurityGroup:
       Value: !Ref ManagedSgTxToolingBaseSecurityGroup
-    ManagedSgTxInfrastructureBaseSecurityGroup:
+    infrastructureBaseSecurityGroupId:
       Value: !Ref ManagedSgTxInfrastructureBaseSecurityGroup

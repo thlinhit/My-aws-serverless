@@ -29,65 +29,42 @@ resources:
     PrivateSubnetThree:
       Type: String
       Default: ${param:privateSubnetThreeId}
+    InfrastructureBaseSecurityGroupId:
+      Type: String
+      Default: ${param:infrastructureBaseSecurityGroupId}
 
   Resources:
-# Private internal load balancer, hosted in private subnets that is accessible
-# only from VPClink. Rules are added to this security group when VPC Link Security has been created
-    PrivateLoadBalancerSecurityGroup:
-      Type: AWS::EC2::SecurityGroup
-      Properties:
-        GroupDescription: Access to the public facing load balancer
-        GroupName: ALB Security Group
-        VpcId: !Ref Vpc
-
     PrivateLoadBalancer:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
       Properties:
         Name: private-alb
         Scheme: internal
-        LoadBalancerAttributes:
-          - Key: idle_timeout.timeout_seconds
-            Value: '30'
         Type: application
+#        LoadBalancerAttributes:
+#          - Key: idle_timeout.timeout_seconds
+#            Value: '30'
         Subnets:
           -  !Ref PrivateSubnetOne
           -  !Ref PrivateSubnetTwo
           -  !Ref PrivateSubnetThree
         IpAddressType: ipv4
         SecurityGroups:
-          - !Ref PrivateLoadBalancerSecurityGroup
+          - !Ref InfrastructureBaseSecurityGroupId
 
-    ALBTargetGroupPrivate:
-      Type: AWS::ElasticLoadBalancingV2::TargetGroup
-      Properties:
-        TargetType: ip
-        HealthCheckIntervalSeconds: 10
-        HealthCheckProtocol: HTTP
-        HealthCheckTimeoutSeconds: 5
-        HealthyThresholdCount: 5
-        UnhealthyThresholdCount: 3
-        Matcher:
-          HttpCode: '200-299'
-        Port: 80
-        Protocol: HTTP
-        VpcId: !Ref Vpc
-        TargetGroupAttributes:
-          - Key: deregistration_delay.timeout_seconds
-            Value: '5'
-          - Key: slow_start.duration_seconds
-            Value: '60'
-
-    PrivateLoadBalancerListener:
+    LoadBalancerListener:
       Type: AWS::ElasticLoadBalancingV2::Listener
       Properties:
         DefaultActions:
-          - TargetGroupArn: !Ref ALBTargetGroupPrivate
-            Type: forward
+          - Type: fixed-response
+            FixedResponseConfig:
+              ContentType: application/json
+              MessageBody: 'Page Not Found'
+              StatusCode: '404'
         LoadBalancerArn: !Ref PrivateLoadBalancer
         Port: 80
         Protocol: HTTP
   Outputs:
     albListenerArn:
-      Value: !Ref PrivateLoadBalancerListener
-    privateLoadBalancerSecurityGroup:
-      Value: !Ref PrivateLoadBalancerSecurityGroup
+      Value: !Ref LoadBalancerListener
+    albDnsName:
+      Value: !GetAtt PrivateLoadBalancer.DNSName

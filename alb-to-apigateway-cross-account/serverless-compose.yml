@@ -2,13 +2,14 @@ services:
   vpc:
     path: resources/vpc
 
-#  private-alb:
-#    path: resources/private-alb
-#    params:
-#      vpcId: ${vpc.vpcId}
-#      privateSubnetOneId: ${vpc.privateSubnetOneId}
-#      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
-#      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+  private-alb:
+    path: resources/private-alb
+    params:
+      vpcId: ${vpc.vpcId}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
 
 #  public-alb:
 #    path: resources/public-alb
