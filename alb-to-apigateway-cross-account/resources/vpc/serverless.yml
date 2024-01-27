@@ -142,6 +142,29 @@ resources:
             CidrIp: 0.0.0.0/0
             Description: Allow HTTPS outbound
 
+    ManagedSgTxInfrastructureBase:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Security group for Infrastructure base
+        GroupName: managed-sg-tx-infrastructure-base
+        VpcId: !Ref MyVpc
+        SecurityGroupIngress:
+          - CidrIp: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR' ]
+            IpProtocol: -1 # Allow all protocols
+            FromPort: -1  # Allow all ports
+            ToPort: -1
+            Description: Allow Self VPC inbound
+
+    ManagedSgTxInfrastructureBaseSelfIngress:
+      Type: AWS::EC2::SecurityGroupIngress
+      DependsOn: ManagedSgTxInfrastructureBase
+      Properties:
+        GroupId: !Ref ManagedSgTxInfrastructureBase
+        SourceSecurityGroupId: !Ref ManagedSgTxInfrastructureBase
+        IpProtocol: -1 # Allow all protocols
+        FromPort: -1  # Allow all ports
+        ToPort: -1
+        Description: Allow self traffic
 
   Outputs:
     vpcId:
