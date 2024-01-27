@@ -55,17 +55,14 @@ resources:
           - !Ref PrivateSubnetTwo
           - !Ref PrivateSubnetThree
 
-#    PrivateAPIGWvpcLink:
-#      Type: AWS::ApiGatewayV2::VpcLink
-#      Properties:
-#        Name: private-apigw-vpclink
-#        SecurityGroupIds:
-#          - !Ref InfrastructureBaseSecurityGroupId
-#        SubnetIds:
-#          - !Ref PrivateSubnetOne
-#          - !Ref PrivateSubnetTwo
-#          - !Ref PrivateSubnetThree
-#
+    PrivateAPIGWvpcLink:
+      Type: AWS::ApiGateway::VpcLink
+      Properties:
+        Name: private-rest-apigw-vpclink
+        Description: VPC link for my RestAPI
+        TargetArns:
+          - !Ref privateNlb
+
 #    APIRoute:
 #      Type: AWS::ApiGatewayV2::Route
 #      Properties:

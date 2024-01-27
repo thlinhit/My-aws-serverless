@@ -53,3 +53,6 @@ https://medium.com/swlh/aws-api-gateway-private-integration-with-http-api-and-a-
 
 
 https://manurana.medium.com/tutorial-connecting-an-api-gateway-to-a-vpc-using-vpc-link-682a21281263
+
+
+https://github.com/aws-samples/Implementing-custom-domain-names-for-Amazon-API-Gateway-private-endpoints
