@@ -31,7 +31,7 @@ AWS_PROFILE=acloudguru2 sls test-alb-fn:deploy
 ```
 
 ```bash
-AWS_PROFILE=acloudguru2 sls ingress-api-gateway:deploy
+AWS_PROFILE=acloudguru2 sls ingress-rest-api-gateway:deploy
 ```
 
 

@@ -1,4 +1,4 @@
-service: ${self:custom.servicePrefix}-ingress-api-gateway
+service: ${self:custom.servicePrefix}-ingress-rest-api-gateway
 frameworkVersion: '3'
 
 custom:

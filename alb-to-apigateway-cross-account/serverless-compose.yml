@@ -22,7 +22,7 @@ services:
       managedSgTxToolingBaseSecurityGroupId: ${vpc.managedSgTxToolingBaseSecurityGroup}
 
   ingress-api-gateway:
-    path: resources/ingress-api-gateway
+    path: resources/ingress-rest-api-gateway
     params:
       vpcId: ${vpc.vpcId}
       privateSubnetOneId: ${vpc.privateSubnetOneId}
