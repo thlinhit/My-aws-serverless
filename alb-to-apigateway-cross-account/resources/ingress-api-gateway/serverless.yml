@@ -1,4 +1,4 @@
-service: ${self:custom.servicePrefix}-api-gateway
+service: ${self:custom.servicePrefix}-ingress-api-gateway
 frameworkVersion: '3'
 
 custom:
@@ -59,8 +59,8 @@ resources:
     HttpApiGateway:
       Type: AWS::ApiGatewayV2::Api
       Properties:
-        Name: ${self:custom.servicePrefix}-api-gateway
-        Description: Api Gateway for http
+        Name: ${self:custom.servicePrefix}-ingress-api-gateway
+        Description: Ingress - Api Gateway for http
         ProtocolType: HTTP
 
     APIRoute:

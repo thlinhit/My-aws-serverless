@@ -2,8 +2,8 @@ services:
   vpc:
     path: resources/vpc
 
-  alb:
-    path: resources/alb
+  private-alb:
+    path: resources/private-alb
     params:
       vpcId: ${vpc.vpcId}
       privateSubnetOneId: ${vpc.privateSubnetOneId}
@@ -27,11 +27,11 @@ services:
 #      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
 #      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
 
-  api-gateway:
-    path: resources/api-gateway
+  ingress-api-gateway:
+    path: resources/ingress-api-gateway
     params:
       vpcId: ${vpc.vpcId}
       privateSubnetOneId: ${vpc.privateSubnetOneId}
       privateSubnetTwoId: ${vpc.privateSubnetTwoId}
       privateSubnetThreeId: ${vpc.privateSubnetThreeId}
-      albListenerArn: ${alb.albListenerArn}
+      albListenerArn: ${private-alb.albListenerArn}

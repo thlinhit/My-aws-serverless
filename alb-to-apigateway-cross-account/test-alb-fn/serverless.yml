@@ -1,4 +1,4 @@
-service: ${self:custom.servicePrefix}-test-alb-fn
+service: ${self:custom.servicePrefix}-test-private-alb-fn
 frameworkVersion: '3'
 
 custom:
@@ -30,7 +30,7 @@ provider:
 #############
 functions:
   testFn:
-    name: ${self:custom.servicePrefix}-test-alb-fn
+    name: ${self:custom.servicePrefix}-test-private-alb-fn
     handler: src/main.handler
 #    vpc:
 #      securityGroupIds:
