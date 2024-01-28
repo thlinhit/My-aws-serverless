@@ -64,10 +64,14 @@ resources:
         OperationName: "ProxyAllRequests"
         ApiKeyRequired: false
         AuthorizationType: NONE
+        RequestParameters:
+          method.request.path.proxy: true
         Integration:
+          RequestParameters:
+            integration.request.path.proxy: method.request.path.proxy
           Type: HTTP_PROXY
           IntegrationHttpMethod: ANY
-          Uri: !Sub "http://${privateNlb.DNSName}"
+          Uri: !Sub "http://${privateNlb.DNSName}/{proxy}"
           ConnectionType: VPC_LINK
           ConnectionId: !Ref PrivateAPIGWvpcLink
 
