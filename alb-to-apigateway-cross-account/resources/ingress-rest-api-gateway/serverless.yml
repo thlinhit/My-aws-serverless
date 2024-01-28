@@ -55,22 +55,22 @@ resources:
         PathPart: '{proxy+}'  # Use the greedy path parameter for a proxy resource
         RestApiId: !Ref RestApiGateway
 
-#    ProxyMethod:
-#      Type: AWS::ApiGateway::Method
-#      Properties:
-#        ResourceId: !Ref ProxyResource
-#        RestApiId: !Ref RestApiGateway
-#        HttpMethod: ANY
-#        OperationName: "ProxyAllRequests"
-#        ApiKeyRequired: false
-##        AuthorizationType: NONE
-#        Integration:
-#          Type: HTTP_PROXY
-#          IntegrationHttpMethod: ANY
-#          PassthroughBehavior: String
+    ProxyMethod:
+      Type: AWS::ApiGateway::Method
+      Properties:
+        ResourceId: !Ref ProxyResource
+        RestApiId: !Ref RestApiGateway
+        HttpMethod: ANY
+        OperationName: "ProxyAllRequests"
+        ApiKeyRequired: false
+        AuthorizationType: NONE
+        Integration:
+          Type: HTTP_PROXY
+          IntegrationHttpMethod: ANY
 #          Uri: !GetAtt privateNlb.DNSName
-#          ConnectionType: VPC_LINK
-#          ConnectionId: !Ref PrivateAPIGWvpcLink
+          Uri: !Sub "http://${privateNlb.DNSName}"
+          ConnectionType: VPC_LINK
+          ConnectionId: !Ref PrivateAPIGWvpcLink
 
     privateNlb:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
