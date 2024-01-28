@@ -67,7 +67,6 @@ resources:
         Integration:
           Type: HTTP_PROXY
           IntegrationHttpMethod: ANY
-#          Uri: !GetAtt privateNlb.DNSName
           Uri: !Sub "http://${privateNlb.DNSName}"
           ConnectionType: VPC_LINK
           ConnectionId: !Ref PrivateAPIGWvpcLink
