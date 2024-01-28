@@ -96,7 +96,7 @@ resources:
         HealthCheckEnabled: true
         HealthCheckProtocol: HTTP
         HealthCheckPort: traffic-port
-        HealthCheckPath: "/"
+        HealthCheckPath: "/health"
         HealthCheckIntervalSeconds: 30
         HealthCheckTimeoutSeconds: 5
         HealthyThresholdCount: 3
