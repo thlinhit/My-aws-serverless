@@ -120,35 +120,6 @@ resources:
         TargetArns:
           - !Ref privateNlb
 
-#    APIRoute:
-#      Type: AWS::ApiGatewayV2::Route
-#      Properties:
-#        ApiId: !Ref HttpApiGateway
-#        RouteKey: 'ANY /'
-#        Target: !Join
-#          - /
-#          - - integrations
-#            - !Ref APIAlbIntegration
-#
-#    APIAlbIntegration:
-#      Type: AWS::ApiGatewayV2::Integration
-#      Properties:
-#        ApiId: !Ref RestApiGateway
-#        Description: Private ALB Integration
-#        IntegrationType: HTTP_PROXY
-#        IntegrationMethod: ANY
-#        ConnectionType: VPC_LINK
-#        ConnectionId: !Ref PrivateAPIGWvpcLink
-#        IntegrationUri: !Ref PrivateLoadBalancerListener
-#        PayloadFormatVersion: '1.0'
-#
-#    APIStage:
-#      Type: AWS::ApiGatewayV2::Stage
-#      Properties:
-#        StageName: $default
-#        AutoDeploy: true
-#        ApiId: !Ref HttpApiGateway
-
   Outputs:
     APIURL:
       Description: Invoke URL
