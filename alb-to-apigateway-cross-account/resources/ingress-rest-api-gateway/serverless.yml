@@ -51,8 +51,8 @@ resources:
     ProxyResource:
       Type: AWS::ApiGateway::Resource
       Properties:
-        ParentId: !GetAtt RestApiGateway.RootResourceId  # Attach to the root resource
-        PathPart: '{proxy+}'  # Use the greedy path parameter for a proxy resource
+        ParentId: !GetAtt RestApiGateway.RootResourceId
+        PathPart: '{proxy+}'
         RestApiId: !Ref RestApiGateway
 
     ProxyMethod:
