@@ -56,3 +56,6 @@ https://manurana.medium.com/tutorial-connecting-an-api-gateway-to-a-vpc-using-vp
 
 
 https://github.com/aws-samples/Implementing-custom-domain-names-for-Amazon-API-Gateway-private-endpoints
+
+
+https://repost.aws/questions/QUcJ4P1_LhTUGzGgMin3NTMQ/getting-error-while-deploying-stack-through-cf-the-target-must-have-at-least-one-listener-that-matches-the-target-group-port

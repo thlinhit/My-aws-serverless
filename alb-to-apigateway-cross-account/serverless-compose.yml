@@ -29,6 +29,7 @@ services:
       privateSubnetTwoId: ${vpc.privateSubnetTwoId}
       privateSubnetThreeId: ${vpc.privateSubnetThreeId}
       albListenerArn: ${private-alb.albListenerArn}
+      albArn: ${private-alb.albArn}
       infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
 
 #  public-alb:

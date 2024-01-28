@@ -32,6 +32,9 @@ resources:
     PrivateLoadBalancerListener:
       Type: String
       Default: ${param:albListenerArn}
+    PrivateLoadBalancer:
+      Type: String
+      Default: ${param:albArn}
     InfrastructureBaseSecurityGroupId:
       Type: String
       Default: ${param:infrastructureBaseSecurityGroupId}
@@ -52,20 +55,22 @@ resources:
         PathPart: '{proxy+}'  # Use the greedy path parameter for a proxy resource
         RestApiId: !Ref RestApiGateway
 
-    ProxyMethod:
-      Type: AWS::ApiGateway::Method
-      Properties:
-        ResourceId: !Ref ProxyResource
-        RestApiId: !Ref RestApiGateway
-        HttpMethod: ANY
-        ApiKeyRequired: false
-        AuthorizationType: NONE
-        Integration:
-          Type: HTTP_PROXY
-          IntegrationHttpMethod: ANY
-          Uri: http://internal-private-alb-790965056.us-east-1.elb.amazonaws.com
-          ConnectionType: VPC_LINK
-          ConnectionId: !Ref PrivateAPIGWvpcLink
+#    ProxyMethod:
+#      Type: AWS::ApiGateway::Method
+#      Properties:
+#        ResourceId: !Ref ProxyResource
+#        RestApiId: !Ref RestApiGateway
+#        HttpMethod: ANY
+#        OperationName: "ProxyAllRequests"
+#        ApiKeyRequired: false
+##        AuthorizationType: NONE
+#        Integration:
+#          Type: HTTP_PROXY
+#          IntegrationHttpMethod: ANY
+#          PassthroughBehavior: String
+#          Uri: !GetAtt privateNlb.DNSName
+#          ConnectionType: VPC_LINK
+#          ConnectionId: !Ref PrivateAPIGWvpcLink
 
     privateNlb:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -76,6 +81,37 @@ resources:
           - !Ref PrivateSubnetOne
           - !Ref PrivateSubnetTwo
           - !Ref PrivateSubnetThree
+
+    # Create Target Group from Nlb To Alb
+    PrivateNlbToAlbTargetGroup:
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        Name: private-nlb-to-alb-target-group
+        Protocol: TCP
+        Port: 80
+        VpcId: !Ref Vpc
+        TargetType: alb
+        Targets:
+          - Id: !Ref PrivateLoadBalancer
+            Port: 80
+        HealthCheckEnabled: true
+        HealthCheckProtocol: HTTP
+        HealthCheckPort: traffic-port
+        HealthCheckPath: "/"
+        HealthCheckIntervalSeconds: 30
+        HealthCheckTimeoutSeconds: 5
+        HealthyThresholdCount: 3
+        UnhealthyThresholdCount: 5
+
+    NetworkLoadBalancerListener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn: !Ref PrivateNlbToAlbTargetGroup
+        LoadBalancerArn: !Ref privateNlb
+        Port: 80
+        Protocol: TCP
 
     PrivateAPIGWvpcLink:
       Type: AWS::ApiGateway::VpcLink

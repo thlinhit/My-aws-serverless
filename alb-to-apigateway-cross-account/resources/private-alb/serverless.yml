@@ -64,6 +64,8 @@ resources:
         Port: 80
         Protocol: HTTP
   Outputs:
+    albArn:
+      Value: !Ref PrivateLoadBalancer
     albListenerArn:
       Value: !Ref LoadBalancerListener
     albDnsName:
