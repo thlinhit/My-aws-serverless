@@ -28,7 +28,7 @@ def handle(event: SQSEvent, _: LambdaContext):
 
             if body["partner"] != PARTNER_NAME:
                 raise DomainError(
-                    DomainCode.VALIDATION_ERROR, f"Invalid partner name, expected: {PARTNER_NAME}, actual: {body['partner']}"
+                    DomainCode.VALIDATION_ERROR, "partner", f"Invalid partner name, expected: {PARTNER_NAME}, actual: {body['partner']}"
                 )
 
             date = body["date"]
@@ -37,8 +37,6 @@ def handle(event: SQSEvent, _: LambdaContext):
             logger.info(f"Crawling transactions for date={date}, tenant_id={tenant_id}, version={version}")
 
             is_present, crawl_item = crawl_status_service.find_crawl_item(tenant=tenant_id, date=date, version=version)
-
-            logger.info(f"Crawling transactions for date={date}, tenant_id={tenant_id}, version={version}")
 
             if not is_present:
                 logger.info(f"Creating a new crawl item for date={date}, tenant_id={tenant_id}, version={version}")
@@ -64,9 +62,9 @@ def handle(event: SQSEvent, _: LambdaContext):
                 #   crawl_status_service.mark_crawled(crawl_item)
             else:
                 logger.info(f"Creating metadata for date={date}, tenant_id={tenant_id}, version={version}")
-                # metadata_file_service.build_and_upload_metadata_file_to_s3()
+                file_items = crawl_status_service.get_all_file_metadata(tenant=tenant_id, date=date, version=version)
+                logger.info(f"{file_items}")
                 crawl_status_service.mark_metadata_generated(crawl_item)
-
             logger.info(f"Crawl completed for date={date}, tenant_id={tenant_id}, version={version}")
         except DomainError as e:
             raise e

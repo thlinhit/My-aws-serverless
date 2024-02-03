@@ -1,16 +1,16 @@
 services:
-  s3:
-    path: resources/s3
+  # s3:
+  #   path: resources/s3
 
-  firehose:
-    path: resources/firehose
-    params:
-      s3BucketArn: ${s3.s3BucketArn}
-      s3BucketName: ${s3.s3BucketName}
-      transformJsonToCsvFnArn: ${utility-fns.TransformJsonToCsvFnLambdaFunctionQualifiedArn}
-    dependsOn:
-      - s3
-      - utility-fns
+  # firehose:
+  #   path: resources/firehose
+  #   params:
+  #     s3BucketArn: ${s3.s3BucketArn}
+  #     s3BucketName: ${s3.s3BucketName}
+  #     transformJsonToCsvFnArn: ${utility-fns.TransformJsonToCsvFnLambdaFunctionQualifiedArn}
+  #   dependsOn:
+  #     - s3
+  #     - utility-fns
 
   dynamodb:
     path: resources/dynamodb
@@ -18,22 +18,22 @@ services:
   sqs:
     path: resources/sqs
 
-  capturer:
-    path: stream-capturer
-    params:
-      fireHoseDeliveryStreamName: ${firehose.fireHoseDeliveryStreamName}
-      bucketName: ${s3.s3BucketName}
-      tableStreamArn: ${dynamodb.dynamoDBTableStreamArn}
-      dlqName: ${sqs.dlQueue}
-    dependsOn:
-      - dynamodb
-      - firehose
+  # capturer:
+  #   path: stream-capturer
+  #   params:
+  #     fireHoseDeliveryStreamName: ${firehose.fireHoseDeliveryStreamName}
+  #     bucketName: ${s3.s3BucketName}
+  #     tableStreamArn: ${dynamodb.dynamoDBTableStreamArn}
+  #     dlqName: ${sqs.dlQueue}
+  #   dependsOn:
+  #     - dynamodb
+  #     - firehose
 
-  utility-fns:
-    path: lambda-multiple-funcs
-    params:
-      test01SQSQueue: ${sqs.test01SQSQueue}
-      dynamoDBTableName: ${dynamodb.dynamoDBTableName}
-    dependsOn:
-      - dynamodb
-      - sqs
+  # utility-fns:
+  #   path: lambda-multiple-funcs
+  #   params:
+  #     test01SQSQueue: ${sqs.test01SQSQueue}
+  #     dynamoDBTableName: ${dynamodb.dynamoDBTableName}
+  #   dependsOn:
+  #     - dynamodb
+  #     - sqs

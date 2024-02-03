@@ -6,7 +6,6 @@ from boto3.dynamodb.conditions import Attr, ConditionBase
 from botocore.config import Config as BotoCfg
 from botocore.exceptions import ClientError
 
-from src.shared.dynamodb import dynamodb_helper
 from src.shared.exception.domain_code import DomainCode
 from src.shared.exception.domain_error import DomainError
 from src.shared.log.logger import logger
@@ -69,7 +68,7 @@ def find_item(table_name, pk: str, sk: str):
         table = get_table(table_name)
         response = table.get_item(Key={"pk": pk, "sk": sk})
         is_present = True if "Item" in response else False
-        item = dynamodb_helper.convert_to_python_obj(response["Item"]) if "Item" in response else None
+        item = response["Item"] if "Item" in response else None
         return is_present, item
     except Exception as ex:
         raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, pk, sk, repr(ex))
@@ -85,7 +84,7 @@ def find_by_sort_key_prefix(table_name, pk: str, sk_prefix: str) -> list:
         )
         items = response["Items"] if "Items" in response else []
         logger.info("Found {} items in table: {}, pk: {}, sk_prefix: {}".format(len(items), table_name, pk, sk_prefix))
-        return list(map(dynamodb_helper.convert_to_python_obj, items))
+        return items
     except Exception as ex:
         raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, pk, sk_prefix, str(ex))
 
@@ -101,7 +100,7 @@ def find_latest_by_sort_key_prefix(table_name, pk: str, sk_prefix: str):
             Limit=1,
         )
         is_present = True if "Items" in response else False
-        item = dynamodb_helper.convert_to_python_obj(response["Items"][0]) if "Items" in response and len(response["Items"]) > 0 else None
+        item = response["Items"][0] if "Items" in response and len(response["Items"]) > 0 else None
         return is_present, item
     except Exception as ex:
         raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, pk, sk_prefix, str(ex))
