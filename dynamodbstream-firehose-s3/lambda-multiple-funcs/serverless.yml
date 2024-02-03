@@ -27,7 +27,7 @@ provider:
   environment:
     RUNNING_STAGE: ${self:custom.stage}
     EXTENSION_DEBUG: "false"
-    REGION: ${self:provider.region}
+    DEFAULT_REGION: ${self:provider.region}
     DYNAMO_DB_TABLE: ${param:dynamoDBTableName}
     TZ: "Asia/Ho_Chi_Minh"
 
@@ -37,7 +37,7 @@ provider:
 functions:
   functionA:
     name: function-A
-    handler: src/functionA/main.handler
+    handler: src/functionA/main.handle
     events:
       - sqs:
           arn: arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:${param:test01SQSQueue}

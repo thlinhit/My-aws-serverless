@@ -69,10 +69,10 @@ def find_item(table_name, pk: str, sk: str):
         table = get_table(table_name)
         response = table.get_item(Key={"pk": pk, "sk": sk})
         is_present = True if "Item" in response else False
-        item = response["Item"] if "Item" in response else None
+        item = dynamodb_helper.convert_to_python_obj(response["Item"]) if "Item" in response else None
         return is_present, item
     except Exception as ex:
-        raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, pk, sk, str(ex))
+        raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, pk, sk, repr(ex))
 
 
 def find_by_sort_key_prefix(table_name, pk: str, sk_prefix: str) -> list:

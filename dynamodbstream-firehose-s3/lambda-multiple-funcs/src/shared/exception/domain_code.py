@@ -22,11 +22,17 @@ class DomainCode(Enum):
 
     DYNAMODB_ERROR = (
         "004",
-        "Failed integrate with DynamoDB, tableName:{}, message:{}, error:{}",
-    ),
+        "Dynamodb error, table:{}, pk:{}, sk:{}, error:{}",
+    )
+
     DYNAMODB_CONDITIONAL_CHECK_FAILED_ERROR = (
         "005",
         "Dynamodb conditional check failed error, table:{}, pk:{}, sk:{}",
+    )
+
+    REQUIRED_FIELD_ERROR = (
+        "006",
+        "Field is mandatory, field:{}",
     )
 
     EXCEEDED_MAX_ATTEMPTS = ("005", "Exceeded max attempts")
