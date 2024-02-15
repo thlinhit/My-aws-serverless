@@ -3,7 +3,7 @@ frameworkVersion: '3'
 
 custom:
   stage: ${opt:stage, self:provider.stage}
-  bucketName: my-s3-test-bucket.linhth.com
+  bucketName: offer-management-batch-workflow-1998
 
 provider:
   name: aws
