@@ -154,11 +154,11 @@ resources:
             FromPort: -1  # Allow all ports
             ToPort: -1
             Description: Allow Self VPC inbound
-          - CidrIp: 10.92.0.0/16 # TODO: How to get this ip
-            IpProtocol: -1 # Allow all protocols
-            FromPort: -1  # Allow all ports
-            ToPort: -1
-            Description: Allow VPC-X inbound
+#          - CidrIp: 10.92.0.0/16 # TODO: How to get this ip
+#            IpProtocol: -1 # Allow all protocols
+#            FromPort: -1  # Allow all ports
+#            ToPort: -1
+#            Description: Allow VPC-X inbound
         SecurityGroupEgress:
           - IpProtocol: tcp
             FromPort: 443
