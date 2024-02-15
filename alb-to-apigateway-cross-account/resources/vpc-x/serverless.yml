@@ -38,6 +38,9 @@ resources:
         EnableDnsSupport: true
         EnableDnsHostnames: true
         CidrBlock: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR' ]
+        Tags:
+          - Key: Name
+            Value: VPC-X
     PublicSubnetOne:
       Type: AWS::EC2::Subnet
       Properties:
@@ -133,7 +136,7 @@ resources:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: Security group for Infrastructure base
-        GroupName: managed-sg-tx-tooling-base
+        GroupName: managed-sg-tx-tooling-base-x
         VpcId: !Ref MyVpc
         SecurityGroupEgress:
           - IpProtocol: tcp
@@ -146,7 +149,7 @@ resources:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: Security group for Infrastructure base
-        GroupName: managed-sg-tx-infrastructure-base
+        GroupName: managed-sg-tx-infrastructure-base-x
         VpcId: !Ref MyVpc
         SecurityGroupIngress:
           - CidrIp: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR' ]
