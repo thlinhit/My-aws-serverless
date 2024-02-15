@@ -2,6 +2,8 @@ services:
   vpc:
     path: resources/vpc
 
+  vpc-x:
+    path: resources/vpc-x
 #  private-alb:
 #    path: resources/private-alb
 #    params:
