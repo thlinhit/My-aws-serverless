@@ -15,6 +15,10 @@ provider:
 # RESOURCES #
 #############
 resources:
+  Parameters:
+    VpcName:
+      Type: String
+      Default: VPC-X
   Mappings:
     SubnetConfig:
       VPC:
@@ -40,7 +44,7 @@ resources:
         CidrBlock: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR' ]
         Tags:
           - Key: Name
-            Value: VPC-X
+            Value: !Ref VpcName
     PublicSubnetOne:
       Type: AWS::EC2::Subnet
       Properties:
@@ -201,6 +205,8 @@ resources:
         Description: Allow self traffic
 
   Outputs:
+    vpcName:
+      Value: !Ref VpcName
     vpcId:
       Value: !Ref MyVpc
     privateSubnetOneId:
