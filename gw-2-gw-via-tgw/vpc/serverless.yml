@@ -1,0 +1,230 @@
+service: ${self:custom.servicePrefix}-vpc
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: us-east-1
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Mappings:
+    SubnetConfig:
+      VPC:
+        CIDR: '10.90.64.0/19'
+      PublicOne:
+        CIDR: '10.90.64.0/24'
+      PublicTwo:
+        CIDR: '10.90.65.0/24'
+      PublicThree:
+        CIDR: '10.90.66.0/24'
+      PrivateOne:
+        CIDR: '10.90.72.0/22'
+      PrivateTwo:
+        CIDR: '10.90.76.0/22'
+      PrivateThree:
+        CIDR: '10.90.80.0/22'
+  Resources:
+    MyVpc:
+      Type: AWS::EC2::VPC
+      Properties:
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR' ]
+        Tags:
+          - Key: Name
+            Value: VPC
+    PublicSubnetOne:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 0
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicOne', 'CIDR' ]
+        MapPublicIpOnLaunch: true
+    PublicSubnetTwo:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 1
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicTwo', 'CIDR' ]
+        MapPublicIpOnLaunch: true
+    PublicSubnetThree:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 2
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicThree', 'CIDR' ]
+        MapPublicIpOnLaunch: true
+
+    # Three private subnets where containers will only have private
+    # IP addresses, and will only be reachable by other members of the
+    # VPC and API Gateway
+    PrivateSubnetOne:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 0
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateOne', 'CIDR' ]
+    PrivateSubnetTwo:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 1
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateTwo', 'CIDR' ]
+    PrivateSubnetThree:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 2
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateThree', 'CIDR' ]
+
+    # Setup networking resources for the public subnets.
+    InternetGateway:
+      Type: AWS::EC2::InternetGateway
+      DependsOn: MyVpc
+
+    GatewayAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        VpcId: !Ref MyVpc
+        InternetGatewayId: !Ref InternetGateway
+
+    PublicRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref MyVpc
+
+    PublicRoute:
+      Type: AWS::EC2::Route
+      DependsOn: GatewayAttachment
+      Properties:
+        RouteTableId: !Ref 'PublicRouteTable'
+        DestinationCidrBlock: '0.0.0.0/0'
+        GatewayId: !Ref InternetGateway
+    PublicSubnetOneRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PublicSubnetOne
+        RouteTableId: !Ref PublicRouteTable
+    PublicSubnetTwoRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PublicSubnetTwo
+        RouteTableId: !Ref PublicRouteTable
+    PublicSubnetThreeRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PublicSubnetThree
+        RouteTableId: !Ref PublicRouteTable
+
+    ManagedSgTxToolingBaseSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Security group for Infrastructure base
+        GroupName: managed-sg-tx-tooling-base
+        VpcId: !Ref MyVpc
+        SecurityGroupEgress:
+          - IpProtocol: tcp
+            FromPort: 443
+            ToPort: 443
+            CidrIp: 0.0.0.0/0
+            Description: Allow HTTPS outbound
+
+    ManagedSgTxInfrastructureBaseSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Security group for Infrastructure base
+        GroupName: managed-sg-tx-infrastructure-base
+        VpcId: !Ref MyVpc
+        SecurityGroupIngress:
+          - CidrIp: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR' ]
+            IpProtocol: -1 # Allow all protocols
+            FromPort: -1  # Allow all ports
+            ToPort: -1
+            Description: Allow Self VPC inbound
+#          - CidrIp: 10.92.0.0/16 # TODO: How to get this ip
+#            IpProtocol: -1 # Allow all protocols
+#            FromPort: -1  # Allow all ports
+#            ToPort: -1
+#            Description: Allow VPC-X inbound
+        SecurityGroupEgress:
+          - IpProtocol: tcp
+            FromPort: 443
+            ToPort: 443
+            CidrIp: 0.0.0.0/0
+            Description: Allow HTTPS outbound
+          - CidrIp: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR' ]
+            IpProtocol: -1 # Allow all protocols
+            FromPort: -1  # Allow all ports
+            ToPort: -1
+            Description: Allow all traffic outbound internal
+          - IpProtocol: tcp
+            FromPort: 80
+            ToPort: 80
+            CidrIp: 0.0.0.0/0
+            Description: Allow HTTP outbound
+          - IpProtocol: tcp
+            FromPort: 53
+            ToPort: 53
+            CidrIp: 0.0.0.0/0
+            Description: Allow DNS traffic
+          - IpProtocol: udp
+            FromPort: 53
+            ToPort: 53
+            CidrIp: 0.0.0.0/0
+            Description: Allow DNS traffic
+          - IpProtocol: udp
+            FromPort: 123
+            ToPort: 123
+            CidrIp: 0.0.0.0/0
+            Description: Allow NTP traffic
+
+    ManagedSgTxInfrastructureBaseSelfIngress:
+      Type: AWS::EC2::SecurityGroupIngress
+      DependsOn: ManagedSgTxInfrastructureBaseSecurityGroup
+      Properties:
+        GroupId: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SourceSecurityGroupId: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        IpProtocol: -1 # Allow all protocols
+        FromPort: -1  # Allow all ports
+        ToPort: -1
+        Description: Allow self traffic
+
+  Outputs:
+    vpcId:
+      Value: !Ref MyVpc
+    privateSubnetOneId:
+      Value: !Ref PrivateSubnetOne
+    privateSubnetTwoId:
+      Value: !Ref PrivateSubnetTwo
+    privateSubnetThreeId:
+      Value: !Ref PrivateSubnetThree
+    publicSubnetOneId:
+      Value: !Ref PublicSubnetOne
+    publicSubnetTwoId:
+      Value: !Ref PublicSubnetTwo
+    publicSubnetThreeId:
+      Value: !Ref PublicSubnetThree
+    managedSgTxToolingBaseSecurityGroup:
+      Value: !Ref ManagedSgTxToolingBaseSecurityGroup
+    infrastructureBaseSecurityGroupId:
+      Value: !Ref ManagedSgTxInfrastructureBaseSecurityGroup

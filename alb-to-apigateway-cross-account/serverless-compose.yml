@@ -2,51 +2,49 @@ services:
   vpc:
     path: resources/vpc
 
-  vpc-x:
-    path: resources/vpc-x
-#  private-alb:
-#    path: resources/private-alb
-#    params:
-#      vpcId: ${vpc.vpcId}
-#      privateSubnetOneId: ${vpc.privateSubnetOneId}
-#      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
-#      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
-#      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
-#
-#  test-private-alb-fn:
-#    path: test-private-alb-fn
-#    params:
-#      albListenerArn: ${private-alb.albListenerArn}
-#      privateSubnetOneId: ${vpc.privateSubnetOneId}
-#      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
-#      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
-#      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
-#      managedSgTxToolingBaseSecurityGroupId: ${vpc.managedSgTxToolingBaseSecurityGroup}
-#
-#  ingress-rest-api-gateway:
-#    path: resources/ingress-rest-api-gateway
-#    params:
-#      vpcId: ${vpc.vpcId}
-#      privateSubnetOneId: ${vpc.privateSubnetOneId}
-#      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
-#      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
-#      albListenerArn: ${private-alb.albListenerArn}
-#      albArn: ${private-alb.albArn}
-#      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
+  private-alb:
+    path: resources/private-alb
+    params:
+      vpcId: ${vpc.vpcId}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
 
-#  public-alb:
-#    path: resources/public-alb
-#    params:
-#      vpcId: ${vpc.vpcId}
-#      publicSubnetOneId: ${vpc.publicSubnetOneId}
-#      publicSubnetTwoId: ${vpc.publicSubnetTwoId}
-#      publicSubnetThreeId: ${vpc.publicSubnetThreeId}
-#
-#  test-alb-fn:
-#    path: test-alb-fn
-#    params:
-#      albArn: ${public-alb.albArb}
-#      albListenerArn: ${public-alb.albListenerArn}
-##      privateSubnetOneId: ${vpc.privateSubnetOneId}
-##      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
-##      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+  test-private-alb-fn:
+    path: test-private-alb-fn
+    params:
+      albListenerArn: ${private-alb.albListenerArn}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
+      managedSgTxToolingBaseSecurityGroupId: ${vpc.managedSgTxToolingBaseSecurityGroup}
+
+  ingress-rest-api-gateway:
+    path: resources/ingress-rest-api-gateway
+    params:
+      vpcId: ${vpc.vpcId}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      albListenerArn: ${private-alb.albListenerArn}
+      albArn: ${private-alb.albArn}
+      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
+
+  public-alb:
+    path: resources/public-alb
+    params:
+      vpcId: ${vpc.vpcId}
+      publicSubnetOneId: ${vpc.publicSubnetOneId}
+      publicSubnetTwoId: ${vpc.publicSubnetTwoId}
+      publicSubnetThreeId: ${vpc.publicSubnetThreeId}
+
+  test-alb-fn:
+    path: test-alb-fn
+    params:
+      albArn: ${public-alb.albArb}
+      albListenerArn: ${public-alb.albListenerArn}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}

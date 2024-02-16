@@ -1,0 +1,6 @@
+services:
+  vpc:
+    path: vpc
+
+  vpc-x:
+    path: vpc-x
