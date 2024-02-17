@@ -1,6 +1,15 @@
 services:
   vpc:
-    path: vpc
+    path: account-A/vpc
 
   vpc-x:
-    path: vpc-x
+    path: account-X/vpc-x
+
+  vpc-x-ingress-rest-gw:
+    path: account-X/x-private-gw
+    params:
+      vpcName: ${vpc-x.vpcName}
+      vpcId: ${vpc-x.vpcId}
+      privateSubnetOneId: ${vpc-x.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc-x.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc-x.privateSubnetThreeId}

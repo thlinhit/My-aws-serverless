@@ -13,10 +13,12 @@ AWS_PROFILE=acloudguru2 sls deploy
 
 ### Each Service
 
+#### Account A
 ```bash
 AWS_PROFILE=acloudguru2 sls vpc:deploy
 ```
 
+#### Account X
 ```bash
 AWS_PROFILE=acloudguru2 sls vpc-x:deploy
 ```
