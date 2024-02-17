@@ -136,6 +136,7 @@ resources:
         SubnetId: !Ref PublicSubnetThree
         RouteTableId: !Ref PublicRouteTable
 
+    # Security Groups
     ManagedSgTxToolingBaseSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
@@ -203,6 +204,21 @@ resources:
         FromPort: -1  # Allow all ports
         ToPort: -1
         Description: Allow self traffic
+
+    # VPC Endpoints - API GW
+    GWVPCEndpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties:
+        ServiceName: com.amazonaws.execute-api
+        VpcId: !Ref MyVpc
+        SubnetIds:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        SecurityGroupIds:
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+          - !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+          - !Ref ManagedSgTxInfrastructureBaseSelfIngress
 
   Outputs:
     vpcName:

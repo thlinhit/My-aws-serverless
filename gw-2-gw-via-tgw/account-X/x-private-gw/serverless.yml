@@ -72,15 +72,15 @@ resources:
 #    PrivateLoadBalancer:
 #      Type: String
 #      Default: ${param:albArn}
-  Resources:
-    RestApiGateway:
-      Type: AWS::ApiGateway::RestApi
-      Properties:
-        Name: ${self:custom.servicePrefix}-ingress-rest-api-gateway-${param:vpcName}
-        Description: Ingress - Rest Api Gateway - ${param:vpcName}
-        EndpointConfiguration:
-          Types:
-            - PRIVATE
+#  Resources:
+#    RestApiGateway:
+#      Type: AWS::ApiGateway::RestApi
+#      Properties:
+#        Name: ${self:custom.servicePrefix}-ingress-rest-api-gateway-${param:vpcName}
+#        Description: Ingress - Rest Api Gateway - ${param:vpcName}
+#        EndpointConfiguration:
+#          Types:
+#            - PRIVATE
 
 #    ProxyResource:
 #      Type: AWS::ApiGateway::Resource
@@ -158,7 +158,7 @@ resources:
 #        TargetArns:
 #          - !Ref privateNlb
 
-  Outputs:
-    APIURL:
-      Description: Invoke URL
-      Value: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/
+#  Outputs:
+#    APIURL:
+#      Description: Invoke URL
+#      Value: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/

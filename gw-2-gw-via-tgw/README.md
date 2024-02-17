@@ -22,6 +22,9 @@ AWS_PROFILE=acloudguru2 sls vpc:deploy
 ```bash
 AWS_PROFILE=acloudguru2 sls vpc-x:deploy
 ```
+```bash
+AWS_PROFILE=acloudguru2 sls vpc-x-ingress-rest-gw:deploy
+```
 
 
 
