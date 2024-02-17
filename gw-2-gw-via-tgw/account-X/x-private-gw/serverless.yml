@@ -25,6 +25,8 @@ provider:
       - ${param:privateSubnetOneId}
       - ${param:privateSubnetTwoId}
       - ${param:privateSubnetThreeId}
+  logs:
+    restApi: true
   tracing:
     apiGateway: true
   apiGateway:
