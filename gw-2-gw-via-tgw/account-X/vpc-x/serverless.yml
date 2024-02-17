@@ -209,8 +209,9 @@ resources:
     GWVPCEndpoint:
       Type: AWS::EC2::VPCEndpoint
       Properties:
-        ServiceName: com.amazonaws.execute-api
+        ServiceName: com.amazonaws.${self:provider.region}.execute-api
         VpcId: !Ref MyVpc
+        VpcEndpointType: Interface
         SubnetIds:
           - !Ref PrivateSubnetOne
           - !Ref PrivateSubnetTwo
@@ -218,7 +219,6 @@ resources:
         SecurityGroupIds:
           - !Ref ManagedSgTxToolingBaseSecurityGroup
           - !Ref ManagedSgTxInfrastructureBaseSecurityGroup
-          - !Ref ManagedSgTxInfrastructureBaseSelfIngress
 
   Outputs:
     vpcName:
@@ -241,3 +241,5 @@ resources:
       Value: !Ref ManagedSgTxToolingBaseSecurityGroup
     infrastructureBaseSecurityGroupId:
       Value: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+    vpcEndpointId:
+      Value: !Ref GWVPCEndpoint
