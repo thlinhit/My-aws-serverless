@@ -25,21 +25,25 @@ provider:
       - ${param:privateSubnetOneId}
       - ${param:privateSubnetTwoId}
       - ${param:privateSubnetThreeId}
-  resourcePolicy:
-    - Effect: Allow
-      Principal: '*'
-      Action: execute-api:Invoke
-      Resource:
-        - 'arn:aws:execute-api:*:*:*'
-    - Effect: Deny
-      Principal: '*'
-      Action: execute-api:Invoke
-      Resource:
-        - 'arn:aws:execute-api:*:*:*'
-      Condition:
-        StringNotEquals:
-          aws:SourceVpce:
-            - ${param:vpcEndpointId}
+  tracing:
+    apiGateway: true
+  apiGateway:
+    metrics: true
+    resourcePolicy:
+      - Effect: Allow
+        Principal: '*'
+        Action: execute-api:Invoke
+        Resource:
+          - 'arn:aws:execute-api:*:*:*'
+      - Effect: Deny
+        Principal: '*'
+        Action: execute-api:Invoke
+        Resource:
+          - 'arn:aws:execute-api:*:*:*'
+        Condition:
+          StringNotEquals:
+            aws:SourceVpce:
+              - ${param:vpcEndpointId}
 
 
 functions:
