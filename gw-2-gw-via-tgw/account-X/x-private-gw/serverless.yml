@@ -15,6 +15,32 @@ provider:
   versionFunctions: false
   memorySize: 512
   endpointType: PRIVATE
+  vpcEndpointIds:
+    - ${param:vpcEndpointId}
+  vpc:
+    securityGroupIds:
+      - ${param:managedSgTxToolingBaseSecurityGroup}
+      - ${param:infrastructureBaseSecurityGroupId}
+    subnetIds:
+      - ${param:privateSubnetOneId}
+      - ${param:privateSubnetTwoId}
+      - ${param:privateSubnetThreeId}
+  resourcePolicy:
+    - Effect: Allow
+      Principal: '*'
+      Action: execute-api:Invoke
+      Resource:
+        - 'arn:aws:execute-api:*:*:*'
+    - Effect: Deny
+      Principal: '*'
+      Action: execute-api:Invoke
+      Resource:
+        - 'arn:aws:execute-api:*:*:*'
+      Condition:
+        StringNotEquals:
+          aws:SourceVpce:
+            - ${param:vpcEndpointId}
+
 
 functions:
   gateway:
