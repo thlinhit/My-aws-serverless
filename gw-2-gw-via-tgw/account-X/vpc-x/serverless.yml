@@ -212,6 +212,7 @@ resources:
         ServiceName: com.amazonaws.${self:provider.region}.execute-api
         VpcId: !Ref MyVpc
         VpcEndpointType: Interface
+        PrivateDnsEnabled: true
         SubnetIds:
           - !Ref PrivateSubnetOne
           - !Ref PrivateSubnetTwo
