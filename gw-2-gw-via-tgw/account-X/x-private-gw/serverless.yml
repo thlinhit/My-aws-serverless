@@ -46,7 +46,18 @@ provider:
           StringNotEquals:
             aws:SourceVpce:
               - ${param:vpcEndpointId}
-
+    apiKeys:
+      - value: key-6uov2ynha5cl3bwo3nxhekmkau
+        description: My Custom Key
+        customerId: MyKeyCustomerId
+    usagePlan:
+      quota:
+        limit: 5000
+        offset: 2
+        period: MONTH
+      throttle:
+        burstLimit: 200
+        rateLimit: 100
 
 functions:
   gateway:

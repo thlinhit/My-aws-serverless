@@ -54,6 +54,9 @@ resources:
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicOne', 'CIDR' ]
         MapPublicIpOnLaunch: true
+        Tags:
+          - Key: Name
+            Value: VPC-X-Public-1
     PublicSubnetTwo:
       Type: AWS::EC2::Subnet
       Properties:
@@ -63,6 +66,9 @@ resources:
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicTwo', 'CIDR' ]
         MapPublicIpOnLaunch: true
+        Tags:
+          - Key: Name
+            Value: VPC-X-Public-2
     PublicSubnetThree:
       Type: AWS::EC2::Subnet
       Properties:
@@ -72,6 +78,9 @@ resources:
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicThree', 'CIDR' ]
         MapPublicIpOnLaunch: true
+        Tags:
+          - Key: Name
+            Value: VPC-X-Public-3
 
     # Three private subnets where containers will only have private
     # IP addresses, and will only be reachable by other members of the
@@ -84,6 +93,9 @@ resources:
           - Fn::GetAZs: !Ref 'AWS::Region'
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateOne', 'CIDR' ]
+        Tags:
+          - Key: Name
+            Value: VPC-X-Private-1
     PrivateSubnetTwo:
       Type: AWS::EC2::Subnet
       Properties:
@@ -92,6 +104,9 @@ resources:
           - Fn::GetAZs: !Ref 'AWS::Region'
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateTwo', 'CIDR' ]
+        Tags:
+          - Key: Name
+            Value: VPC-X-Private-2
     PrivateSubnetThree:
       Type: AWS::EC2::Subnet
       Properties:
@@ -100,6 +115,9 @@ resources:
           - Fn::GetAZs: !Ref 'AWS::Region'
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateThree', 'CIDR' ]
+        Tags:
+          - Key: Name
+            Value: VPC-X-Private-3
 
     # Setup networking resources for the public subnets.
     InternetGateway:
