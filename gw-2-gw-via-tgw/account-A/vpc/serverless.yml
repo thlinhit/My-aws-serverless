@@ -84,6 +84,9 @@ resources:
           - Fn::GetAZs: !Ref 'AWS::Region'
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateOne', 'CIDR' ]
+        Tags:
+          - Key: Name
+            Value: VPC-Private-1
     PrivateSubnetTwo:
       Type: AWS::EC2::Subnet
       Properties:
@@ -92,6 +95,9 @@ resources:
           - Fn::GetAZs: !Ref 'AWS::Region'
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateTwo', 'CIDR' ]
+        Tags:
+          - Key: Name
+            Value: VPC-Private-2
     PrivateSubnetThree:
       Type: AWS::EC2::Subnet
       Properties:
@@ -100,6 +106,9 @@ resources:
           - Fn::GetAZs: !Ref 'AWS::Region'
         VpcId: !Ref MyVpc
         CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateThree', 'CIDR' ]
+        Tags:
+          - Key: Name
+            Value: VPC-Private-3
 
     # Setup networking resources for the public subnets.
     InternetGateway:
