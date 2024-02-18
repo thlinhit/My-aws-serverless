@@ -122,6 +122,8 @@ resources:
     # Setup networking resources for the public subnets.
     InternetGateway:
       Type: AWS::EC2::InternetGateway
+      DependsOn: MyVpc
+
     GatewayAttachment:
       Type: AWS::EC2::VPCGatewayAttachment
       Properties:
