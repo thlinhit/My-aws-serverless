@@ -50,6 +50,7 @@ provider:
 
 functions:
   gateway:
+    tracing: true
     handler: empty.handle
     events:
       - http:
