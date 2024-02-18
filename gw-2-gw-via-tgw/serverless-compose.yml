@@ -16,3 +16,13 @@ services:
       privateSubnetThreeId: ${vpc-x.privateSubnetThreeId}
       managedSgTxToolingBaseSecurityGroup: ${vpc-x.managedSgTxToolingBaseSecurityGroup}
       infrastructureBaseSecurityGroupId: ${vpc-x.infrastructureBaseSecurityGroupId}
+
+  vpc-x-ec2:
+    path: account-X/test-ec2
+    params:
+      vpcId: ${vpc-x.vpcId}
+      privateSubnetOneId: ${vpc-x.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc-x.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc-x.privateSubnetThreeId}
+      managedSgTxToolingBaseSecurityGroup: ${vpc-x.managedSgTxToolingBaseSecurityGroup}
+      infrastructureBaseSecurityGroupId: ${vpc-x.infrastructureBaseSecurityGroupId}
