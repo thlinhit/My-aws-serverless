@@ -80,16 +80,16 @@ resources:
         Tags:
           - Key: Name
             Value: VPC Ping Target
-#    EC2InstanceConnectEndpoint:
-#      Type: AWS::EC2::InstanceConnectEndpoint
-#      Properties:
-#        SecurityGroupIds:
-#          - !Ref InfrastructureBaseSecurityGroupId
-#          - !Ref ManagedSgTxToolingBaseSecurityGroup
-#        SubnetId: !Ref PrivateSubnetOne
-#        Tags:
-#          - Key: Name
-#            Value: VPC EC2 ICE
+    EC2InstanceConnectEndpoint:
+      Type: AWS::EC2::InstanceConnectEndpoint
+      Properties:
+        SecurityGroupIds:
+          - !Ref InfrastructureBaseSecurityGroupId
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+        SubnetId: !Ref PrivateSubnetOne
+        Tags:
+          - Key: Name
+            Value: VPC EC2 ICE
 
 #  Outputs:
 #    APIURL:
