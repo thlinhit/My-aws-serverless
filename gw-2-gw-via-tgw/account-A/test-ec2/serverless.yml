@@ -79,7 +79,7 @@ resources:
         SourceDestCheck: false
         Tags:
           - Key: Name
-            Value: VPCX Ping Target
+            Value: VPC Ping Target
 #    EC2InstanceConnectEndpoint:
 #      Type: AWS::EC2::InstanceConnectEndpoint
 #      Properties:
@@ -89,7 +89,7 @@ resources:
 #        SubnetId: !Ref PrivateSubnetOne
 #        Tags:
 #          - Key: Name
-#            Value: VPCX EC2 ICE
+#            Value: VPC EC2 ICE
 
 #  Outputs:
 #    APIURL:
