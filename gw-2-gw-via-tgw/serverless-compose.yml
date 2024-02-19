@@ -36,3 +36,6 @@ services:
       privateSubnetThreeId: ${vpc-x.privateSubnetThreeId}
       managedSgTxToolingBaseSecurityGroup: ${vpc-x.managedSgTxToolingBaseSecurityGroup}
       infrastructureBaseSecurityGroupId: ${vpc-x.infrastructureBaseSecurityGroupId}
+
+  vpc-x-tgw:
+    path: account-X/transit-gateway
