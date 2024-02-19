@@ -2,6 +2,16 @@ services:
   vpc:
     path: account-A/vpc
 
+  vpc-ec2:
+    path: account-A/test-ec2
+    params:
+      vpcId: ${vpc.vpcId}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}
+      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
+
   vpc-x:
     path: account-X/vpc-x
 
