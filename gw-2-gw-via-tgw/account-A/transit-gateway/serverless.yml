@@ -53,6 +53,8 @@ resources:
     TGWVPCattachment:
       Type: AWS::EC2::TransitGatewayAttachment
       Properties:
+        Options:
+          DnsSupport: enable
         SubnetIds:
           - !Ref PrivateSubnetOne
           - !Ref PrivateSubnetTwo
