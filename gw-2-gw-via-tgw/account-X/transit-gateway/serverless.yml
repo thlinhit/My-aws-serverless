@@ -15,19 +15,19 @@ provider:
 # RESOURCES #
 #############
 resources:
-#  Parameters:
-#    Vpc:
-#      Type: String
-#      Default: ${param:vpcId}
-#    PrivateSubnetOne:
-#      Type: String
-#      Default: ${param:privateSubnetOneId}
-#    PrivateSubnetTwo:
-#      Type: String
-#      Default: ${param:privateSubnetTwoId}
-#    PrivateSubnetThree:
-#      Type: String
-#      Default: ${param:privateSubnetThreeId}
+  Parameters:
+    Vpc:
+      Type: String
+      Default: ${param:vpcId}
+    PrivateSubnetOne:
+      Type: String
+      Default: ${param:privateSubnetOneId}
+    PrivateSubnetTwo:
+      Type: String
+      Default: ${param:privateSubnetTwoId}
+    PrivateSubnetThree:
+      Type: String
+      Default: ${param:privateSubnetThreeId}
 #    InfrastructureBaseSecurityGroupId:
 #      Type: String
 #      Default: ${param:infrastructureBaseSecurityGroupId}
@@ -47,5 +47,16 @@ resources:
         Tags:
           - Key: Name
             Value: !Sub ${AWS::StackName}
-
+    TGWVPCattachment:
+      Type: AWS::EC2::TransitGatewayAttachment
+      Properties:
+        SubnetIds:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        TransitGatewayId: !Ref TGW
+        VpcId: !Ref Vpc
+        Tags:
+          - Key: Name
+            Value: !Sub ${AWS::StackName}-Attachment
 

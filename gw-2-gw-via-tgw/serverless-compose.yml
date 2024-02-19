@@ -39,3 +39,8 @@ services:
 
   vpc-x-tgw:
     path: account-X/transit-gateway
+    params:
+      vpcId: ${vpc-x.vpcId}
+      privateSubnetOneId: ${vpc-x.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc-x.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc-x.privateSubnetThreeId}
