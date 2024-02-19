@@ -33,7 +33,7 @@ AWS_PROFILE=acloudguru2 sls vpc-x-ingress-rest-gw:deploy
 AWS_PROFILE=acloudguru2 sls transit-gateway:deploy
 ```
 
-
+https://github.com/tomofuminijo/aws-transit-gateway-demo/blob/main/README.md
 
 ----
 https://serverlessland.com/patterns/alb-lambda-rust ✅
