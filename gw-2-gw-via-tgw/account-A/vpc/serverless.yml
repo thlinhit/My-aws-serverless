@@ -149,6 +149,34 @@ resources:
         SubnetId: !Ref PublicSubnetThree
         RouteTableId: !Ref PublicRouteTable
 
+    # Private Route table
+    PrivateRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref MyVpc
+        Tags:
+          - Key: Name
+            Value: VPC-PrivateRT
+
+    PrivateSubnetRouteTableAssociation1:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PrivateSubnetOne
+        RouteTableId: !Ref PrivateRouteTable
+
+    PrivateSubnetRouteTableAssociation2:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PrivateSubnetTwo
+        RouteTableId: !Ref PrivateRouteTable
+
+    PrivateSubnetRouteTableAssociation3:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PrivateSubnetThree
+        RouteTableId: !Ref PrivateRouteTable
+
+
     ManagedSgTxToolingBaseSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:

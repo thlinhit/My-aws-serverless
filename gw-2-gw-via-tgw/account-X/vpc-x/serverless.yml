@@ -23,12 +23,6 @@ resources:
     SubnetConfig:
       VPC:
         CIDR: '10.220.64.0/18'
-      PublicOne:
-        CIDR: '10.220.112.0/22'
-      PublicTwo:
-        CIDR: '10.220.116.0/22'
-      PublicThree:
-        CIDR: '10.220.120.0/22'
       PrivateOne:
         CIDR: '10.220.64.0/21'
       PrivateTwo:
@@ -45,42 +39,6 @@ resources:
         Tags:
           - Key: Name
             Value: !Ref VpcName
-    PublicSubnetOne:
-      Type: AWS::EC2::Subnet
-      Properties:
-        AvailabilityZone: !Select
-          - 0
-          - Fn::GetAZs: !Ref 'AWS::Region'
-        VpcId: !Ref MyVpc
-        CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicOne', 'CIDR' ]
-        MapPublicIpOnLaunch: true
-        Tags:
-          - Key: Name
-            Value: VPC-X-Public-1
-    PublicSubnetTwo:
-      Type: AWS::EC2::Subnet
-      Properties:
-        AvailabilityZone: !Select
-          - 1
-          - Fn::GetAZs: !Ref 'AWS::Region'
-        VpcId: !Ref MyVpc
-        CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicTwo', 'CIDR' ]
-        MapPublicIpOnLaunch: true
-        Tags:
-          - Key: Name
-            Value: VPC-X-Public-2
-    PublicSubnetThree:
-      Type: AWS::EC2::Subnet
-      Properties:
-        AvailabilityZone: !Select
-          - 2
-          - Fn::GetAZs: !Ref 'AWS::Region'
-        VpcId: !Ref MyVpc
-        CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicThree', 'CIDR' ]
-        MapPublicIpOnLaunch: true
-        Tags:
-          - Key: Name
-            Value: VPC-X-Public-3
 
     # Three private subnets where containers will only have private
     # IP addresses, and will only be reachable by other members of the
@@ -119,42 +77,32 @@ resources:
           - Key: Name
             Value: VPC-X-Private-3
 
-    # Setup networking resources for the public subnets.
-    InternetGateway:
-      Type: AWS::EC2::InternetGateway
-      DependsOn: MyVpc
-
-    GatewayAttachment:
-      Type: AWS::EC2::VPCGatewayAttachment
-      Properties:
-        VpcId: !Ref MyVpc
-        InternetGatewayId: !Ref InternetGateway
-    PublicRouteTable:
+    # Private Route table
+    PrivateRouteTable:
       Type: AWS::EC2::RouteTable
       Properties:
         VpcId: !Ref MyVpc
-    PublicRoute:
-      Type: AWS::EC2::Route
-      DependsOn: GatewayAttachment
-      Properties:
-        RouteTableId: !Ref 'PublicRouteTable'
-        DestinationCidrBlock: '0.0.0.0/0'
-        GatewayId: !Ref InternetGateway
-    PublicSubnetOneRouteTableAssociation:
+        Tags:
+          - Key: Name
+            Value: VPC-X-PrivateRT
+
+    PrivateSubnetRouteTableAssociation1:
       Type: AWS::EC2::SubnetRouteTableAssociation
       Properties:
-        SubnetId: !Ref PublicSubnetOne
-        RouteTableId: !Ref PublicRouteTable
-    PublicSubnetTwoRouteTableAssociation:
+        SubnetId: !Ref PrivateSubnetOne
+        RouteTableId: !Ref PrivateRouteTable
+
+    PrivateSubnetRouteTableAssociation2:
       Type: AWS::EC2::SubnetRouteTableAssociation
       Properties:
-        SubnetId: !Ref PublicSubnetTwo
-        RouteTableId: !Ref PublicRouteTable
-    PublicSubnetThreeRouteTableAssociation:
+        SubnetId: !Ref PrivateSubnetTwo
+        RouteTableId: !Ref PrivateRouteTable
+
+    PrivateSubnetRouteTableAssociation3:
       Type: AWS::EC2::SubnetRouteTableAssociation
       Properties:
-        SubnetId: !Ref PublicSubnetThree
-        RouteTableId: !Ref PublicRouteTable
+        SubnetId: !Ref PrivateSubnetThree
+        RouteTableId: !Ref PrivateRouteTable
 
     # Security Groups
     ManagedSgTxToolingBaseSecurityGroup:
@@ -252,12 +200,6 @@ resources:
       Value: !Ref PrivateSubnetTwo
     privateSubnetThreeId:
       Value: !Ref PrivateSubnetThree
-    publicSubnetOneId:
-      Value: !Ref PublicSubnetOne
-    publicSubnetTwoId:
-      Value: !Ref PublicSubnetTwo
-    publicSubnetThreeId:
-      Value: !Ref PublicSubnetThree
     managedSgTxToolingBaseSecurityGroup:
       Value: !Ref ManagedSgTxToolingBaseSecurityGroup
     infrastructureBaseSecurityGroupId:
