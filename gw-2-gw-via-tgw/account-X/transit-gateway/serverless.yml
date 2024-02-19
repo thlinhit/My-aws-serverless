@@ -59,4 +59,7 @@ resources:
         Tags:
           - Key: Name
             Value: !Sub ${AWS::StackName}-Attachment
-
+  Outputs:
+    tgwId:
+      Description: Transit gateway id
+      Value: !Ref TGW
