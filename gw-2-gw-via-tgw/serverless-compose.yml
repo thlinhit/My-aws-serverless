@@ -12,6 +12,15 @@ services:
       managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}
       infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
 
+  vpc-tgw:
+    path: account-A/transit-gateway
+    params:
+      vpcId: ${vpc.vpcId}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      tgwId: ${vpc-x-tgw.tgwId}
+
   vpc-x:
     path: account-X/vpc-x
 

@@ -18,6 +18,10 @@ AWS_PROFILE=acloudguru2 sls deploy
 AWS_PROFILE=acloudguru2 sls vpc:deploy
 ```
 
+```bash
+AWS_PROFILE=acloudguru2 sls vpc-tgw:deploy
+```
+
 #### Account X
 ```bash
 AWS_PROFILE=acloudguru2 sls vpc-x:deploy
