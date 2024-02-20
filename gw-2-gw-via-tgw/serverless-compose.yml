@@ -70,4 +70,4 @@ services:
       privateSubnetTwoId: ${vpc-x.privateSubnetTwoId}
       privateSubnetThreeId: ${vpc-x.privateSubnetThreeId}
       privateRouteTableId: ${vpc-x.privateRouteTableId}
-      targetVpcCidr: '10.90.64.0/19'
+      targetTgwVpcCidr: '10.90.64.0/19'
