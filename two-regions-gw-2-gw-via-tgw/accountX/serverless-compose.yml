@@ -1,0 +1,41 @@
+services:
+  vpc-x:
+    path: resources/vpc-x
+    params:
+      vpcCidr: '10.220.64.0/18'
+      privateSubnetOneCidr: '10.220.64.0/21'
+      privateSubnetTwoCidr: '10.220.72.0/21'
+      privateSubnetThreeCidr: '10.220.80.0/21'
+      inboundVpcCidr: '10.90.64.0/19'
+
+  vpc-x-ingress-rest-gw:
+    path: resources/x-private-gw
+    params:
+      vpcName: ${vpc-x.vpcName}
+      vpcEndpointId: ${vpc-x.vpcEndpointId}
+      vpcId: ${vpc-x.vpcId}
+      privateSubnetOneId: ${vpc-x.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc-x.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc-x.privateSubnetThreeId}
+      managedSgTxToolingBaseSecurityGroup: ${vpc-x.managedSgTxToolingBaseSecurityGroup}
+      infrastructureBaseSecurityGroupId: ${vpc-x.infrastructureBaseSecurityGroupId}
+
+  vpc-x-ec2:
+    path: resources/test-ec2
+    params:
+      vpcId: ${vpc-x.vpcId}
+      privateSubnetOneId: ${vpc-x.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc-x.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc-x.privateSubnetThreeId}
+      managedSgTxToolingBaseSecurityGroup: ${vpc-x.managedSgTxToolingBaseSecurityGroup}
+      infrastructureBaseSecurityGroupId: ${vpc-x.infrastructureBaseSecurityGroupId}
+
+  vpc-x-tgw:
+    path: resources/transit-gateway
+    params:
+      vpcId: ${vpc-x.vpcId}
+      privateSubnetOneId: ${vpc-x.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc-x.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc-x.privateSubnetThreeId}
+      privateRouteTableId: ${vpc-x.privateRouteTableId}
+      targetTgwVpcCidr: '10.90.64.0/19'
