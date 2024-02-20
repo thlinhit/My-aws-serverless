@@ -1,0 +1,53 @@
+service: ${self:custom.servicePrefix}-regional-gw
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: us-east-1
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+#  Parameters:
+#    Vpc:
+#      Type: String
+#      Default: ${param:vpcId}
+#    PrivateSubnetOne:
+#      Type: String
+#      Default: ${param:privateSubnetOneId}
+#    PrivateSubnetTwo:
+#      Type: String
+#      Default: ${param:privateSubnetTwoId}
+#    PrivateSubnetThree:
+#      Type: String
+#      Default: ${param:privateSubnetThreeId}
+#    TargetVPCEndpointSubnetOneAddress:
+#      Type: String
+#      Default: ${param:targetVPCEndpointSubnetOneAddress}
+#    TargetVPCEndpointSubnetTwoAddress:
+#      Type: String
+#      Default: ${param:targetVPCEndpointSubnetTwoAddress}
+#    TargetVPCEndpointSubnetThreeAddress:
+#      Type: String
+#      Default: ${param:targetVPCEndpointSubnetThreeAddress}
+  Resources:
+    RestApiGateway:
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        Name: ${self:custom.servicePrefix}-ingress-vpc-a
+        Description: Ingress - Rest Api Gateway - VPC A
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+
+  Outputs:
+    APIURL:
+      Description: Invoke URL
+      Value: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/

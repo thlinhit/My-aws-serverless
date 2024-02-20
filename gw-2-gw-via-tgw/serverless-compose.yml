@@ -42,6 +42,8 @@ services:
       targetVPCEndpointSubnetTwoAddress: '10.220.66.31'
       targetVPCEndpointSubnetThreeAddress: '10.220.74.210'
 
+  regional-rest-gw:
+    path: account-A/regional-rest-gw
 
   # VPC-X
 
