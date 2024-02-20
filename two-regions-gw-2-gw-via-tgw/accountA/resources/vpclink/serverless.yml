@@ -1,0 +1,101 @@
+service: ${self:custom.servicePrefix}-vpclink
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: us-west-2
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    Vpc:
+      Type: String
+      Default: ${param:vpcId}
+    PrivateSubnetOne:
+      Type: String
+      Default: ${param:privateSubnetOneId}
+    PrivateSubnetTwo:
+      Type: String
+      Default: ${param:privateSubnetTwoId}
+    PrivateSubnetThree:
+      Type: String
+      Default: ${param:privateSubnetThreeId}
+    TargetVPCEndpointSubnetOneAddress:
+      Type: String
+      Default: ${param:targetVPCEndpointSubnetOneAddress}
+    TargetVPCEndpointSubnetTwoAddress:
+      Type: String
+      Default: ${param:targetVPCEndpointSubnetTwoAddress}
+    TargetVPCEndpointSubnetThreeAddress:
+      Type: String
+      Default: ${param:targetVPCEndpointSubnetThreeAddress}
+  Resources:
+    privateNlb:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        Name: ${self:custom.servicePrefix}-private-nlb
+        Type: network
+        Subnets:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+
+    # Create Target Group from Nlb To Alb
+    PrivateNlbToVpcEndpoints:
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        Name: vpc-a-nlb-to-vpcx-endpoint
+        Protocol: TCP
+        Port: 443
+        VpcId: !Ref Vpc
+        TargetType: ip
+        Targets:
+          - Id: !Ref TargetVPCEndpointSubnetOneAddress
+            AvailabilityZone: all
+            Port: 443
+          - Id: !Ref TargetVPCEndpointSubnetTwoAddress
+            AvailabilityZone: all
+            Port: 443
+          - Id: !Ref TargetVPCEndpointSubnetThreeAddress
+            AvailabilityZone: all
+            Port: 443
+        HealthCheckEnabled: true
+        HealthCheckProtocol: TCP
+        HealthCheckPort: traffic-port
+        HealthCheckIntervalSeconds: 30
+        HealthCheckTimeoutSeconds: 5
+        HealthyThresholdCount: 3
+        UnhealthyThresholdCount: 5
+        TargetGroupAttributes:
+          - Key: deregistration_delay.timeout_seconds
+            Value: 300
+
+    NetworkLoadBalancerListener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn: !Ref PrivateNlbToVpcEndpoints
+        LoadBalancerArn: !Ref privateNlb
+        Port: 443
+        Protocol: TCP
+
+    PrivateAPIGWVpcLink:
+      Type: AWS::ApiGateway::VpcLink
+      Properties:
+        Name: vpc-a-vpclink
+        Description: VPC A - VPC link for my RestAPI
+        TargetArns:
+          - !Ref privateNlb
+  Outputs:
+    privateLinkId:
+      Description: VPC A Private Link
+      Value: !Ref PrivateAPIGWVpcLink

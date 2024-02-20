@@ -1,0 +1,64 @@
+service: ${self:custom.servicePrefix}-regional-gw
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: us-west-2
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    VpcLink:
+      Type: String
+      Default: ${param:vpcLink}
+    TargetGWUrl:
+      Type: String
+      Default: ${param:targetGwUrl}
+  Resources:
+    RestApiGateway:
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        Name: ${self:custom.servicePrefix}-ingress-vpc-a
+        Description: Ingress - Rest Api Gateway - VPC A
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+    ProxyResource:
+      Type: AWS::ApiGateway::Resource
+      Properties:
+        ParentId: !GetAtt RestApiGateway.RootResourceId
+        PathPart: '{proxy+}'
+        RestApiId: !Ref RestApiGateway
+
+    ProxyMethod:
+      Type: AWS::ApiGateway::Method
+      Properties:
+        ResourceId: !Ref ProxyResource
+        RestApiId: !Ref RestApiGateway
+        HttpMethod: ANY
+        OperationName: "ProxyAllRequests"
+        ApiKeyRequired: false
+        AuthorizationType: NONE
+        RequestParameters:
+          method.request.path.proxy: true
+        Integration:
+          RequestParameters:
+            integration.request.path.proxy: method.request.path.proxy
+          Type: HTTP_PROXY
+          IntegrationHttpMethod: ANY
+          Uri: !Sub ${TargetGWUrl}/{proxy}
+          ConnectionType: VPC_LINK
+          ConnectionId: !Ref VpcLink
+
+  Outputs:
+    APIURL:
+      Description: Invoke URL
+      Value: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com

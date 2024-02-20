@@ -1,0 +1,97 @@
+service: ${self:custom.servicePrefix}-test-ec2
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: us-west-2
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    Vpc:
+      Type: String
+      Default: ${param:vpcId}
+    PrivateSubnetOne:
+      Type: String
+      Default: ${param:privateSubnetOneId}
+    PrivateSubnetTwo:
+      Type: String
+      Default: ${param:privateSubnetTwoId}
+    PrivateSubnetThree:
+      Type: String
+      Default: ${param:privateSubnetThreeId}
+    InfrastructureBaseSecurityGroupId:
+      Type: String
+      Default: ${param:infrastructureBaseSecurityGroupId}
+    ManagedSgTxToolingBaseSecurityGroup:
+      Type: String
+      Default: ${param:managedSgTxToolingBaseSecurityGroup}
+    AmazonLinuxAMIID: # retreived from the SSM Parameter Store in the current region
+      Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+      Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
+  Resources:
+    NewKeyPair:
+      Type: 'AWS::EC2::KeyPair'
+      Properties:
+        KeyName:
+          VpcEc2KeyPair
+    PingTargetSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: VPC-PingAccess
+        VpcId: !Ref Vpc
+        Tags:
+          - Key: Name
+            Value: VPC-Ping-Access
+        SecurityGroupIngress:
+          - IpProtocol: icmp
+            FromPort: 8
+            ToPort: -1
+            CidrIp: 0.0.0.0/0
+            Description: Allow ping from anywhere
+          - IpProtocol: tcp
+            FromPort: 22
+            ToPort: 22
+            CidrIp: 0.0.0.0/0
+            Description: Allow ssh from anywhere
+    PingTargetInstance2:
+      DependsOn: NewKeyPair
+      Type: AWS::EC2::Instance
+      Properties:
+        InstanceType: t2.micro
+        ImageId: !Ref AmazonLinuxAMIID
+        KeyName: VpcEc2KeyPair
+        NetworkInterfaces:
+          - AssociatePublicIpAddress: false
+            DeviceIndex: 0
+            DeleteOnTermination: true
+            SubnetId: !Ref PrivateSubnetOne
+            GroupSet:
+              - !Ref PingTargetSecurityGroup
+        SourceDestCheck: false
+        Tags:
+          - Key: Name
+            Value: VPC Ping Target
+    EC2InstanceConnectEndpoint:
+      Type: AWS::EC2::InstanceConnectEndpoint
+      Properties:
+        SecurityGroupIds:
+          - !Ref InfrastructureBaseSecurityGroupId
+          - !Ref ManagedSgTxToolingBaseSecurityGroup
+        SubnetId: !Ref PrivateSubnetOne
+        Tags:
+          - Key: Name
+            Value: VPC EC2 ICE
+
+#  Outputs:
+#    APIURL:
+#      Description: Invoke URL
+#      Value: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/

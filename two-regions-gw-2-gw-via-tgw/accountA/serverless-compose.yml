@@ -1,0 +1,48 @@
+services:
+  vpc:
+    path: resources/vpc
+    params:
+      vpcCidr: '10.90.64.0/19'
+      privateSubnetOneCidr: '10.90.72.0/22'
+      privateSubnetTwoCidr: '10.90.76.0/22'
+      privateSubnetThreeCidr: '10.90.80.0/22'
+      publicSubnetOneCidr: '10.90.64.0/24'
+      publicSubnetTwoCidr: '10.90.65.0/24'
+      publicSubnetThreeCidr: '10.90.66.0/24'
+
+#  vpc-ec2:
+#    path: resources/test-ec2
+#    params:
+#      vpcId: ${vpc.vpcId}
+#      privateSubnetOneId: ${vpc.privateSubnetOneId}
+#      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+#      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+#      managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}
+#      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
+#
+#  vpc-tgw:
+#    path: resources/transit-gateway
+#    params:
+#      vpcId: ${vpc.vpcId}
+#      privateSubnetOneId: ${vpc.privateSubnetOneId}
+#      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+#      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+#      privateRouteTableId: ${vpc.privateRouteTableId}
+#      targetTgwVpcCidr: '10.220.64.0/18'
+#
+#  vpc-link:
+#    path: resources/vpclink
+#    params:
+#      vpcId: ${vpc.vpcId}
+#      privateSubnetOneId: ${vpc.privateSubnetOneId}
+#      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+#      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+#      targetVPCEndpointSubnetOneAddress: '10.220.82.73'
+#      targetVPCEndpointSubnetTwoAddress: '10.220.66.31'
+#      targetVPCEndpointSubnetThreeAddress: '10.220.74.210'
+#
+#  regional-rest-gw:
+#    path: resources/regional-rest-gw
+#    params:
+#      vpcLink: ${vpc-link.privateLinkId}
+#      targetGwUrl: 'https://oycakdyuv6.execute-api.us-east-1.amazonaws.com'

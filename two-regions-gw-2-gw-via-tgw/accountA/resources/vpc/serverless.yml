@@ -1,0 +1,280 @@
+service: ${self:custom.servicePrefix}-vpc
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: us-west-2
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    VpcName:
+      Type: String
+      Default: VPC-A
+    VPCCIDR:
+      Type: String
+      Default: ${param:vpcCidr}
+    PrivateSubnetOneCIDR:
+      Type: String
+      Default: ${param:privateSubnetOneCidr}
+    PrivateSubnetTwoCIDR:
+      Type: String
+      Default: ${param:privateSubnetTwoCidr}
+    PrivateSubnetThreeCIDR:
+      Type: String
+      Default: ${param:privateSubnetThreeCidr}
+    PublicSubnetOneCIDR:
+      Type: String
+      Default: ${param:publicSubnetOneCidr}
+    PublicSubnetTwoCIDR:
+      Type: String
+      Default: ${param:publicSubnetTwoCidr}
+    PublicSubnetThreeCIDR:
+      Type: String
+      Default: ${param:publicSubnetThreeCidr}
+  Resources:
+    MyVpc:
+      Type: AWS::EC2::VPC
+      Properties:
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
+        CidrBlock: !Ref VPCCIDR
+        Tags:
+          - Key: Name
+            Value: !Ref VpcName
+    PublicSubnetOne:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 0
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !Ref PublicSubnetOneCIDR
+        MapPublicIpOnLaunch: true
+    PublicSubnetTwo:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 1
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !Ref PublicSubnetTwoCIDR
+        MapPublicIpOnLaunch: true
+    PublicSubnetThree:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 2
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !Ref PublicSubnetThreeCIDR
+        MapPublicIpOnLaunch: true
+
+    # Three private subnets where containers will only have private
+    # IP addresses, and will only be reachable by other members of the
+    # VPC and API Gateway
+    PrivateSubnetOne:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 0
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !Ref PrivateSubnetOneCIDR
+        Tags:
+          - Key: Name
+            Value: VPC-Private-1
+    PrivateSubnetTwo:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 1
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !Ref PrivateSubnetTwoCIDR
+        Tags:
+          - Key: Name
+            Value: VPC-Private-2
+    PrivateSubnetThree:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 2
+          - Fn::GetAZs: !Ref 'AWS::Region'
+        VpcId: !Ref MyVpc
+        CidrBlock: !Ref PrivateSubnetThreeCIDR
+        Tags:
+          - Key: Name
+            Value: VPC-Private-3
+
+    # Setup networking resources for the public subnets.
+    InternetGateway:
+      Type: AWS::EC2::InternetGateway
+      DependsOn: MyVpc
+
+    GatewayAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        VpcId: !Ref MyVpc
+        InternetGatewayId: !Ref InternetGateway
+
+    PublicRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref MyVpc
+
+    PublicRoute:
+      Type: AWS::EC2::Route
+      DependsOn: GatewayAttachment
+      Properties:
+        RouteTableId: !Ref 'PublicRouteTable'
+        DestinationCidrBlock: '0.0.0.0/0'
+        GatewayId: !Ref InternetGateway
+    PublicSubnetOneRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PublicSubnetOne
+        RouteTableId: !Ref PublicRouteTable
+    PublicSubnetTwoRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PublicSubnetTwo
+        RouteTableId: !Ref PublicRouteTable
+    PublicSubnetThreeRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PublicSubnetThree
+        RouteTableId: !Ref PublicRouteTable
+
+    # Private Route table
+    PrivateRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref MyVpc
+        Tags:
+          - Key: Name
+            Value: VPC-PrivateRT
+
+    PrivateSubnetRouteTableAssociation1:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PrivateSubnetOne
+        RouteTableId: !Ref PrivateRouteTable
+
+    PrivateSubnetRouteTableAssociation2:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PrivateSubnetTwo
+        RouteTableId: !Ref PrivateRouteTable
+
+    PrivateSubnetRouteTableAssociation3:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PrivateSubnetThree
+        RouteTableId: !Ref PrivateRouteTable
+
+
+    ManagedSgTxToolingBaseSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Security group for Infrastructure base
+        GroupName: managed-sg-tx-tooling-base
+        VpcId: !Ref MyVpc
+        SecurityGroupEgress:
+          - IpProtocol: tcp
+            FromPort: 443
+            ToPort: 443
+            CidrIp: 0.0.0.0/0
+            Description: Allow HTTPS outbound
+
+    ManagedSgTxInfrastructureBaseSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Security group for Infrastructure base
+        GroupName: managed-sg-tx-infrastructure-base
+        VpcId: !Ref MyVpc
+        SecurityGroupIngress:
+          - CidrIp: !Ref VPCCIDR
+            IpProtocol: -1 # Allow all protocols
+            FromPort: -1  # Allow all ports
+            ToPort: -1
+            Description: Allow Self VPC inbound
+#          - CidrIp: 10.92.0.0/16 # TODO: How to get this ip
+#            IpProtocol: -1 # Allow all protocols
+#            FromPort: -1  # Allow all ports
+#            ToPort: -1
+#            Description: Allow VPC-X inbound
+        SecurityGroupEgress:
+          - IpProtocol: tcp
+            FromPort: 443
+            ToPort: 443
+            CidrIp: 0.0.0.0/0
+            Description: Allow HTTPS outbound
+          - CidrIp: !Ref VPCCIDR
+            IpProtocol: -1 # Allow all protocols
+            FromPort: -1  # Allow all ports
+            ToPort: -1
+            Description: Allow all traffic outbound internal
+          - IpProtocol: tcp
+            FromPort: 80
+            ToPort: 80
+            CidrIp: 0.0.0.0/0
+            Description: Allow HTTP outbound
+          - IpProtocol: tcp
+            FromPort: 53
+            ToPort: 53
+            CidrIp: 0.0.0.0/0
+            Description: Allow DNS traffic
+          - IpProtocol: udp
+            FromPort: 53
+            ToPort: 53
+            CidrIp: 0.0.0.0/0
+            Description: Allow DNS traffic
+          - IpProtocol: udp
+            FromPort: 123
+            ToPort: 123
+            CidrIp: 0.0.0.0/0
+            Description: Allow NTP traffic
+
+    ManagedSgTxInfrastructureBaseSelfIngress:
+      Type: AWS::EC2::SecurityGroupIngress
+      DependsOn: ManagedSgTxInfrastructureBaseSecurityGroup
+      Properties:
+        GroupId: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SourceSecurityGroupId: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        IpProtocol: -1 # Allow all protocols
+        FromPort: -1  # Allow all ports
+        ToPort: -1
+        Description: Allow self traffic
+
+  Outputs:
+    vpcName:
+      Value: !Ref VpcName
+    vpcId:
+      Value: !Ref MyVpc
+    privateSubnetOneId:
+      Value: !Ref PrivateSubnetOne
+    privateSubnetTwoId:
+      Value: !Ref PrivateSubnetTwo
+    privateSubnetThreeId:
+      Value: !Ref PrivateSubnetThree
+    publicSubnetOneId:
+      Value: !Ref PublicSubnetOne
+    publicSubnetTwoId:
+      Value: !Ref PublicSubnetTwo
+    publicSubnetThreeId:
+      Value: !Ref PublicSubnetThree
+    managedSgTxToolingBaseSecurityGroup:
+      Value: !Ref ManagedSgTxToolingBaseSecurityGroup
+    infrastructureBaseSecurityGroupId:
+      Value: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+    privateRouteTableId:
+      Value: !Ref PrivateRouteTable
