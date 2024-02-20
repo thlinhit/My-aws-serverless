@@ -1,0 +1,41 @@
+service: ${self:custom.servicePrefix}-vpclink
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: us-east-1
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    PrivateSubnetOne:
+      Type: String
+      Default: ${param:privateSubnetOneId}
+    PrivateSubnetTwo:
+      Type: String
+      Default: ${param:privateSubnetTwoId}
+    PrivateSubnetThree:
+      Type: String
+      Default: ${param:privateSubnetThreeId}
+  Resources:
+    privateNlb:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        Name: ${self:custom.servicePrefix}-private-nlb
+        Type: network
+        Subnets:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+#  Outputs:
+#    tgwId:
+#      Description: Transit gateway id
+#      Value: !Ref TGW

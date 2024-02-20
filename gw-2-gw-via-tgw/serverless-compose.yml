@@ -31,6 +31,16 @@ services:
       privateRouteTableId: ${vpc.privateRouteTableId}
       targetTgwVpcCidr: '10.220.64.0/18'
 
+  vpc-link:
+    path: account-A/vpclink
+    params:
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+
+
+  # VPC-X
+
   vpc-x:
     path: account-X/vpc-x
     params:
