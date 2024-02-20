@@ -16,6 +16,9 @@ provider:
 #############
 resources:
   Parameters:
+    Vpc:
+      Type: String
+      Default: ${param:vpcId}
     PrivateSubnetOne:
       Type: String
       Default: ${param:privateSubnetOneId}
@@ -25,6 +28,15 @@ resources:
     PrivateSubnetThree:
       Type: String
       Default: ${param:privateSubnetThreeId}
+    TargetVPCEndpointSubnetOneAddress:
+      Type: String
+      Default: ${param:targetVPCEndpointSubnetOneAddress}
+    TargetVPCEndpointSubnetTwoAddress:
+      Type: String
+      Default: ${param:targetVPCEndpointSubnetTwoAddress}
+    TargetVPCEndpointSubnetThreeAddress:
+      Type: String
+      Default: ${param:targetVPCEndpointSubnetThreeAddress}
   Resources:
     privateNlb:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -35,6 +47,34 @@ resources:
           - !Ref PrivateSubnetOne
           - !Ref PrivateSubnetTwo
           - !Ref PrivateSubnetThree
+
+    # Create Target Group from Nlb To Alb
+    PrivateNlbToVpcEndpoints:
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        Name: vpc-a-nlb-to-vpcx-endpoint
+        Protocol: TCP
+        Port: 443
+        VpcId: !Ref Vpc
+        TargetType: ip
+        Targets:
+          - Id: !Ref TargetVPCEndpointSubnetOneAddress
+            Port: 443
+          - Id: !Ref TargetVPCEndpointSubnetTwoAddress
+            Port: 443
+          - Id: !Ref TargetVPCEndpointSubnetThreeAddress
+            Port: 443
+        HealthCheckEnabled: true
+        HealthCheckProtocol: TCP
+        HealthCheckPort: traffic-port
+#        HealthCheckPath: "/health"
+        HealthCheckIntervalSeconds: 30
+        HealthCheckTimeoutSeconds: 5
+        HealthyThresholdCount: 3
+        UnhealthyThresholdCount: 5
+        TargetGroupAttributes:
+          - Key: deregistration_delay.timeout_seconds
+            Value: 300
 #  Outputs:
 #    tgwId:
 #      Description: Transit gateway id

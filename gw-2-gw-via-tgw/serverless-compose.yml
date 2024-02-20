@@ -34,9 +34,13 @@ services:
   vpc-link:
     path: account-A/vpclink
     params:
+      vpcId: ${vpc-x.vpcId}
       privateSubnetOneId: ${vpc.privateSubnetOneId}
       privateSubnetTwoId: ${vpc.privateSubnetTwoId}
       privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      targetVPCEndpointSubnetOneAddress: '10.220.82.73'
+      targetVPCEndpointSubnetTwoAddress: '10.220.66.31'
+      targetVPCEndpointSubnetThreeAddress: '10.220.74.210'
 
 
   # VPC-X
