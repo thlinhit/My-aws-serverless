@@ -59,10 +59,13 @@ resources:
         TargetType: ip
         Targets:
           - Id: !Ref TargetVPCEndpointSubnetOneAddress
+            AvailabilityZone: all
             Port: 443
           - Id: !Ref TargetVPCEndpointSubnetTwoAddress
+            AvailabilityZone: all
             Port: 443
           - Id: !Ref TargetVPCEndpointSubnetThreeAddress
+            AvailabilityZone: all
             Port: 443
         HealthCheckEnabled: true
         HealthCheckProtocol: TCP
@@ -74,6 +77,16 @@ resources:
         TargetGroupAttributes:
           - Key: deregistration_delay.timeout_seconds
             Value: 300
+
+    NetworkLoadBalancerListener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn: !Ref PrivateNlbToVpcEndpoints
+        LoadBalancerArn: !Ref privateNlb
+        Port: 443
+        Protocol: TCP
 #  Outputs:
 #    tgwId:
 #      Description: Transit gateway id

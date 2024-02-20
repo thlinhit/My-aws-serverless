@@ -34,7 +34,7 @@ services:
   vpc-link:
     path: account-A/vpclink
     params:
-      vpcId: ${vpc-x.vpcId}
+      vpcId: ${vpc.vpcId}
       privateSubnetOneId: ${vpc.privateSubnetOneId}
       privateSubnetTwoId: ${vpc.privateSubnetTwoId}
       privateSubnetThreeId: ${vpc.privateSubnetThreeId}
