@@ -12,9 +12,13 @@ AWS_PROFILE=ACCGURUA sls deploy
 
 #### Account A
 ```bash
-AWS_PROFILE=acloudguru2 sls vpc:deploy --region eu-west-1
+AWS_PROFILE=ACCGURUA sls vpc:deploy
 ```
 
 ```bash
-AWS_PROFILE=acloudguru2 sls vpc-tgw:deploy --region eu-west-1
+AWS_PROFILE=ACCGURUA sls vpc-ec2:deploy
+```
+
+```bash
+AWS_PROFILE=ACCGURUA sls vpc-tgw:deploy
 ```

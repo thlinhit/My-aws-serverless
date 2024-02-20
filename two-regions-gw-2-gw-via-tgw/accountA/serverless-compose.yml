@@ -10,16 +10,16 @@ services:
       publicSubnetTwoCidr: '10.90.65.0/24'
       publicSubnetThreeCidr: '10.90.66.0/24'
 
-#  vpc-ec2:
-#    path: resources/test-ec2
-#    params:
-#      vpcId: ${vpc.vpcId}
-#      privateSubnetOneId: ${vpc.privateSubnetOneId}
-#      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
-#      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
-#      managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}
-#      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
-#
+  vpc-ec2:
+    path: resources/test-ec2
+    params:
+      vpcId: ${vpc.vpcId}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      managedSgTxToolingBaseSecurityGroup: ${vpc.managedSgTxToolingBaseSecurityGroup}
+      infrastructureBaseSecurityGroupId: ${vpc.infrastructureBaseSecurityGroupId}
+
 #  vpc-tgw:
 #    path: resources/transit-gateway
 #    params:
