@@ -67,7 +67,6 @@ resources:
         HealthCheckEnabled: true
         HealthCheckProtocol: TCP
         HealthCheckPort: traffic-port
-#        HealthCheckPath: "/health"
         HealthCheckIntervalSeconds: 30
         HealthCheckTimeoutSeconds: 5
         HealthyThresholdCount: 3
