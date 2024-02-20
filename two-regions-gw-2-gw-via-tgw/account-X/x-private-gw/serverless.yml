@@ -1,0 +1,208 @@
+service: ${self:custom.servicePrefix}-ingress-rest-api-gateway-x
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: us-east-1
+  name: aws
+  runtime: python3.9
+  lambdaHashingVersion: 20201221
+  versionFunctions: false
+  memorySize: 512
+  endpointType: PRIVATE
+  vpcEndpointIds:
+    - ${param:vpcEndpointId}
+  vpc:
+    securityGroupIds:
+      - ${param:managedSgTxToolingBaseSecurityGroup}
+      - ${param:infrastructureBaseSecurityGroupId}
+    subnetIds:
+      - ${param:privateSubnetOneId}
+      - ${param:privateSubnetTwoId}
+      - ${param:privateSubnetThreeId}
+  logs:
+    restApi: true
+  tracing:
+    apiGateway: true
+  apiGateway:
+    metrics: true
+    resourcePolicy:
+      - Effect: Allow
+        Principal: '*'
+        Action: execute-api:Invoke
+        Resource:
+          - 'arn:aws:execute-api:*:*:*'
+      - Effect: Deny
+        Principal: '*'
+        Action: execute-api:Invoke
+        Resource:
+          - 'arn:aws:execute-api:*:*:*'
+        Condition:
+          StringNotEquals:
+            aws:SourceVpce:
+              - ${param:vpcEndpointId}
+    apiKeys:
+      - value: key-6uov2ynha5cl3bwo3nxhekmkau
+        description: My Custom Key
+        customerId: MyKeyCustomerId
+    usagePlan:
+      quota:
+        limit: 5000
+        offset: 2
+        period: MONTH
+      throttle:
+        burstLimit: 200
+        rateLimit: 100
+
+functions:
+  gateway:
+    tracing: true
+    handler: empty.handle
+    events:
+      - http:
+          path: health
+          cors: true
+          method: get
+          private: true
+          integration: mock
+          request:
+            template:
+              application/json: '{"statusCode": 200}'
+          response:
+            template: $input.path('$')
+            statusCodes:
+              201:
+                pattern: ''
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules'
+    - '!.serverless/requirements'
+    - "!${opt:package, '.serverless'}"
+    - '!tests'
+    - '!venv'
+    - '!configs'
+    - '!*.yml*'
+    - '!*.json'
+    - 'lib'
+  excludeDevDependencies: false
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    Vpc:
+      Type: String
+      Default: ${param:vpcId}
+    PrivateSubnetOne:
+      Type: String
+      Default: ${param:privateSubnetOneId}
+    PrivateSubnetTwo:
+      Type: String
+      Default: ${param:privateSubnetTwoId}
+    PrivateSubnetThree:
+      Type: String
+      Default: ${param:privateSubnetThreeId}
+#    PrivateLoadBalancerListener:
+#      Type: String
+#      Default: ${param:albListenerArn}
+#    PrivateLoadBalancer:
+#      Type: String
+#      Default: ${param:albArn}
+#  Resources:
+#    RestApiGateway:
+#      Type: AWS::ApiGateway::RestApi
+#      Properties:
+#        Name: ${self:custom.servicePrefix}-ingress-rest-api-gateway-${param:vpcName}
+#        Description: Ingress - Rest Api Gateway - ${param:vpcName}
+#        EndpointConfiguration:
+#          Types:
+#            - PRIVATE
+
+#    ProxyResource:
+#      Type: AWS::ApiGateway::Resource
+#      Properties:
+#        ParentId: !GetAtt RestApiGateway.RootResourceId
+#        PathPart: '{proxy+}'
+#        RestApiId: !Ref RestApiGateway
+#
+#    ProxyMethod:
+#      Type: AWS::ApiGateway::Method
+#      Properties:
+#        ResourceId: !Ref ProxyResource
+#        RestApiId: !Ref RestApiGateway
+#        HttpMethod: ANY
+#        OperationName: "ProxyAllRequests"
+#        ApiKeyRequired: false
+#        AuthorizationType: NONE
+#        RequestParameters:
+#          method.request.path.proxy: true
+#        Integration:
+#          RequestParameters:
+#            integration.request.path.proxy: method.request.path.proxy
+#          Type: HTTP_PROXY
+#          IntegrationHttpMethod: ANY
+#          Uri: !Sub "http://${privateNlb.DNSName}/{proxy}"
+#          ConnectionType: VPC_LINK
+#          ConnectionId: !Ref PrivateAPIGWvpcLink
+#
+#    privateNlb:
+#      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+#      Properties:
+#        Name: ${self:custom.servicePrefix}-private-nlb
+#        Type: network
+#        Subnets:
+#          - !Ref PrivateSubnetOne
+#          - !Ref PrivateSubnetTwo
+#          - !Ref PrivateSubnetThree
+#
+#    # Create Target Group from Nlb To Alb
+#    PrivateNlbToAlbTargetGroup:
+#      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+#      Properties:
+#        Name: private-nlb-to-alb-target-group
+#        Protocol: TCP
+#        Port: 80
+#        VpcId: !Ref Vpc
+#        TargetType: alb
+#        Targets:
+#          - Id: !Ref PrivateLoadBalancer
+#            Port: 80
+#        HealthCheckEnabled: true
+#        HealthCheckProtocol: HTTP
+#        HealthCheckPort: traffic-port
+#        HealthCheckPath: "/health"
+#        HealthCheckIntervalSeconds: 30
+#        HealthCheckTimeoutSeconds: 5
+#        HealthyThresholdCount: 3
+#        UnhealthyThresholdCount: 5
+#
+#    NetworkLoadBalancerListener:
+#      Type: AWS::ElasticLoadBalancingV2::Listener
+#      Properties:
+#        DefaultActions:
+#          - Type: forward
+#            TargetGroupArn: !Ref PrivateNlbToAlbTargetGroup
+#        LoadBalancerArn: !Ref privateNlb
+#        Port: 80
+#        Protocol: TCP
+#
+#    PrivateAPIGWvpcLink:
+#      Type: AWS::ApiGateway::VpcLink
+#      Properties:
+#        Name: private-rest-apigw-vpclink
+#        Description: VPC link for my RestAPI
+#        TargetArns:
+#          - !Ref privateNlb
+
+  Outputs:
+    APIURL:
+      Description: Invoke URL
+      Value: !Sub https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com
