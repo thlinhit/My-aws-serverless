@@ -15,28 +15,10 @@ provider:
 # RESOURCES #
 #############
 resources:
-#  Parameters:
-#    Vpc:
-#      Type: String
-#      Default: ${param:vpcId}
-#    PrivateSubnetOne:
-#      Type: String
-#      Default: ${param:privateSubnetOneId}
-#    PrivateSubnetTwo:
-#      Type: String
-#      Default: ${param:privateSubnetTwoId}
-#    PrivateSubnetThree:
-#      Type: String
-#      Default: ${param:privateSubnetThreeId}
-#    TargetVPCEndpointSubnetOneAddress:
-#      Type: String
-#      Default: ${param:targetVPCEndpointSubnetOneAddress}
-#    TargetVPCEndpointSubnetTwoAddress:
-#      Type: String
-#      Default: ${param:targetVPCEndpointSubnetTwoAddress}
-#    TargetVPCEndpointSubnetThreeAddress:
-#      Type: String
-#      Default: ${param:targetVPCEndpointSubnetThreeAddress}
+  Parameters:
+    VpcLink:
+      Type: String
+      Default: ${param:vpcLink}
   Resources:
     RestApiGateway:
       Type: AWS::ApiGateway::RestApi
@@ -46,6 +28,32 @@ resources:
         EndpointConfiguration:
           Types:
             - REGIONAL
+    ProxyResource:
+      Type: AWS::ApiGateway::Resource
+      Properties:
+        ParentId: !GetAtt RestApiGateway.RootResourceId
+        PathPart: '{proxy+}'
+        RestApiId: !Ref RestApiGateway
+
+    ProxyMethod:
+      Type: AWS::ApiGateway::Method
+      Properties:
+        ResourceId: !Ref ProxyResource
+        RestApiId: !Ref RestApiGateway
+        HttpMethod: ANY
+        OperationName: "ProxyAllRequests"
+        ApiKeyRequired: false
+        AuthorizationType: NONE
+        RequestParameters:
+          method.request.path.proxy: true
+        Integration:
+          RequestParameters:
+            integration.request.path.proxy: method.request.path.proxy
+          Type: HTTP_PROXY
+          IntegrationHttpMethod: ANY
+          Uri: "https://roo9rlfz4l.execute-api.us-east-1.amazonaws.com/{proxy}"
+          ConnectionType: VPC_LINK
+          ConnectionId: !Ref VpcLink
 
   Outputs:
     APIURL:
