@@ -1,6 +1,9 @@
 
 ## How to deploy to aws profile
 
+
+- [ ] Remember to add Inbound rule to accept traffic from VPC A → X
+
 ### ACloudGuru
 ```bash
 aws configure --profile acloudguru2

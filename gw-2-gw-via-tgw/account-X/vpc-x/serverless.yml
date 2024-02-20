@@ -130,6 +130,11 @@ resources:
             FromPort: -1  # Allow all ports
             ToPort: -1
             Description: Allow Self VPC inbound
+          - CidrIp: 10.90.64.0/19
+            IpProtocol: -1 # Allow all protocols
+            FromPort: -1  # Allow all ports
+            ToPort: -1
+            Description: Allow VPC A inbound
         SecurityGroupEgress:
           - IpProtocol: tcp
             FromPort: 443
