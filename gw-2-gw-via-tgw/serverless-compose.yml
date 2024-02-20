@@ -28,6 +28,8 @@ services:
       privateSubnetTwoId: ${vpc.privateSubnetTwoId}
       privateSubnetThreeId: ${vpc.privateSubnetThreeId}
       tgwId: ${vpc-x-tgw.tgwId}
+      privateRouteTableId: ${vpc.privateRouteTableId}
+      targetTgwVpcCidr: '10.220.64.0/18'
 
   vpc-x:
     path: account-X/vpc-x
@@ -67,3 +69,5 @@ services:
       privateSubnetOneId: ${vpc-x.privateSubnetOneId}
       privateSubnetTwoId: ${vpc-x.privateSubnetTwoId}
       privateSubnetThreeId: ${vpc-x.privateSubnetThreeId}
+      privateRouteTableId: ${vpc-x.privateRouteTableId}
+      targetVpcCidr: '10.90.64.0/19'

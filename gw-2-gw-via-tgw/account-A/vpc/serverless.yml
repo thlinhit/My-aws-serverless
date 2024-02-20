@@ -276,3 +276,5 @@ resources:
       Value: !Ref ManagedSgTxToolingBaseSecurityGroup
     infrastructureBaseSecurityGroupId:
       Value: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+    privateRouteTableId:
+      Value: !Ref PrivateRouteTable

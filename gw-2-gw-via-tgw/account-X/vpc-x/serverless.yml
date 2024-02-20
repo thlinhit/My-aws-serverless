@@ -216,3 +216,5 @@ resources:
       Value: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
     vpcEndpointId:
       Value: !Ref GWVPCEndpoint
+    privateRouteTableId:
+      Value: !Ref PrivateRouteTable

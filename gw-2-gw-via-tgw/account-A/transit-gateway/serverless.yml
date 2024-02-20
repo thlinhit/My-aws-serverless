@@ -31,6 +31,13 @@ resources:
     TGW:
       Type: String
       Default: ${param:tgwId}
+    PrivateRouteTableId:
+      Type: String
+      Default: ${param:privateRouteTableId}
+    TargetTGWVPCCidr:
+      Type: String
+      Default: ${param:targetTgwVpcCidr}
+
 #    InfrastructureBaseSecurityGroupId:
 #      Type: String
 #      Default: ${param:infrastructureBaseSecurityGroupId}
@@ -64,6 +71,15 @@ resources:
         Tags:
           - Key: Name
             Value: !Sub ${AWS::StackName}-Attachment
+    PrivateRouteTGW:
+      Type: 'AWS::EC2::Route'
+      DependsOn: TGWVPCattachment
+      Properties:
+        RouteTableId: !Ref PrivateRouteTableId
+        DestinationCidrBlock: !Ref TargetTGWVPCCidr
+        # Unsupported PrefixList in AWS::EC2::Route at this time
+        # DestinationPrefixListId: !Ref VPCPrefixList
+        TransitGatewayId: !Ref TGW
 #  Outputs:
 #    tgwId:
 #      Description: Transit gateway id
