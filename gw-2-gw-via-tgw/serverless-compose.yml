@@ -23,6 +23,12 @@ services:
 
   vpc-x:
     path: account-X/vpc-x
+    params:
+      vpcCidr: '10.220.64.0/18'
+      privateSubnetOneCidr: '10.220.64.0/21'
+      privateSubnetTwoCidr: '10.220.72.0/21'
+      privateSubnetThreeCidr: '10.220.80.0/21'
+      inboundVpcCidr: '10.90.64.0/19'
 
   vpc-x-ingress-rest-gw:
     path: account-X/x-private-gw

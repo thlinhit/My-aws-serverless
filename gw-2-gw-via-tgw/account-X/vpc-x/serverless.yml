@@ -19,23 +19,28 @@ resources:
     VpcName:
       Type: String
       Default: VPC-X
-  Mappings:
-    SubnetConfig:
-      VPC:
-        CIDR: '10.220.64.0/18'
-      PrivateOne:
-        CIDR: '10.220.64.0/21'
-      PrivateTwo:
-        CIDR: '10.220.72.0/21'
-      PrivateThree:
-        CIDR: '10.220.80.0/21'
+    VPCCIDR:
+      Type: String
+      Default: ${param:vpcCidr}
+    PrivateSubnetOneCIDR:
+      Type: String
+      Default: ${param:privateSubnetOneCidr}
+    PrivateSubnetTwoCIDR:
+      Type: String
+      Default: ${param:privateSubnetTwoCidr}
+    PrivateSubnetThreeCIDR:
+      Type: String
+      Default: ${param:privateSubnetThreeCidr}
+    InboundVPCCIDR:
+      Type: String
+      Default: ${param:inboundVpcCidr}
   Resources:
     MyVpc:
       Type: AWS::EC2::VPC
       Properties:
         EnableDnsSupport: true
         EnableDnsHostnames: true
-        CidrBlock: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR' ]
+        CidrBlock: !Ref VPCCIDR
         Tags:
           - Key: Name
             Value: !Ref VpcName
@@ -50,7 +55,7 @@ resources:
           - 0
           - Fn::GetAZs: !Ref 'AWS::Region'
         VpcId: !Ref MyVpc
-        CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateOne', 'CIDR' ]
+        CidrBlock: !Ref PrivateSubnetOneCIDR
         Tags:
           - Key: Name
             Value: VPC-X-Private-1
@@ -61,7 +66,7 @@ resources:
           - 1
           - Fn::GetAZs: !Ref 'AWS::Region'
         VpcId: !Ref MyVpc
-        CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateTwo', 'CIDR' ]
+        CidrBlock: !Ref PrivateSubnetTwoCIDR
         Tags:
           - Key: Name
             Value: VPC-X-Private-2
@@ -72,7 +77,7 @@ resources:
           - 2
           - Fn::GetAZs: !Ref 'AWS::Region'
         VpcId: !Ref MyVpc
-        CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateThree', 'CIDR' ]
+        CidrBlock: !Ref PrivateSubnetThreeCIDR
         Tags:
           - Key: Name
             Value: VPC-X-Private-3
@@ -125,12 +130,12 @@ resources:
         GroupName: managed-sg-tx-infrastructure-base-x
         VpcId: !Ref MyVpc
         SecurityGroupIngress:
-          - CidrIp: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR' ]
+          - CidrIp: !Ref VPCCIDR
             IpProtocol: -1 # Allow all protocols
             FromPort: -1  # Allow all ports
             ToPort: -1
             Description: Allow Self VPC inbound
-          - CidrIp: 10.90.64.0/19
+          - CidrIp: !Ref InboundVPCCIDR
             IpProtocol: -1 # Allow all protocols
             FromPort: -1  # Allow all ports
             ToPort: -1
@@ -141,7 +146,7 @@ resources:
             ToPort: 443
             CidrIp: 0.0.0.0/0
             Description: Allow HTTPS outbound
-          - CidrIp: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR' ]
+          - CidrIp: !Ref VPCCIDR
             IpProtocol: -1 # Allow all protocols
             FromPort: -1  # Allow all ports
             ToPort: -1
