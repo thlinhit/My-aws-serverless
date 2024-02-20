@@ -95,7 +95,7 @@ resources:
         Description: VPC A - VPC link for my RestAPI
         TargetArns:
           - !Ref privateNlb
-#  Outputs:
-#    tgwId:
-#      Description: Transit gateway id
-#      Value: !Ref TGW
+  Outputs:
+    privateLinkId:
+      Description: VPC A Private Link
+      Value: !Ref PrivateAPIGWVpcLink
