@@ -202,7 +202,7 @@ resources:
 #        TargetArns:
 #          - !Ref privateNlb
 
-#  Outputs:
-#    APIURL:
-#      Description: Invoke URL
-#      Value: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/
+  Outputs:
+    APIURL:
+      Description: Invoke URL
+      Value: !Sub https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com

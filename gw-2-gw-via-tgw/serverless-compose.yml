@@ -46,7 +46,7 @@ services:
     path: account-A/regional-rest-gw
     params:
       vpcLink: ${vpc-link.privateLinkId}
-      targetGwUrl: 'https://roo9rlfz4l.execute-api.us-east-1.amazonaws.com'
+      targetGwUrl: ${vpc-x-ingress-rest-gw.APIURL}
 
 
   # VPC-X
