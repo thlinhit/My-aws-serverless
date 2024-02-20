@@ -22,3 +22,11 @@ AWS_PROFILE=ACCGURUA sls vpc-ec2:deploy
 ```bash
 AWS_PROFILE=ACCGURUA sls vpc-tgw:deploy
 ```
+
+```bash
+AWS_PROFILE=ACCGURUA sls vpc-link:deploy
+```
+
+```bash
+AWS_PROFILE=ACCGURUA sls regional-rest-gw:deploy
+```
