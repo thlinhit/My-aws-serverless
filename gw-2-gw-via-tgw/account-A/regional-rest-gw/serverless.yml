@@ -19,6 +19,9 @@ resources:
     VpcLink:
       Type: String
       Default: ${param:vpcLink}
+    TargetGWUrl:
+      Type: String
+      Default: ${param:targetGwUrl}
   Resources:
     RestApiGateway:
       Type: AWS::ApiGateway::RestApi
@@ -51,11 +54,11 @@ resources:
             integration.request.path.proxy: method.request.path.proxy
           Type: HTTP_PROXY
           IntegrationHttpMethod: ANY
-          Uri: "https://roo9rlfz4l.execute-api.us-east-1.amazonaws.com/{proxy}"
+          Uri: !Sub ${TargetGWUrl}/{proxy}
           ConnectionType: VPC_LINK
           ConnectionId: !Ref VpcLink
 
   Outputs:
     APIURL:
       Description: Invoke URL
-      Value: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/
+      Value: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com
