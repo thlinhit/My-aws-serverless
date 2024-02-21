@@ -30,19 +30,19 @@ services:
       privateRouteTableId: ${vpc.privateRouteTableId}
       targetTgwVpcCidr: '10.220.64.0/18'
 
-#  vpc-link:
-#    path: resources/vpclink
-#    params:
-#      vpcId: ${vpc.vpcId}
-#      privateSubnetOneId: ${vpc.privateSubnetOneId}
-#      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
-#      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
-#      targetVPCEndpointSubnetOneAddress: '10.220.82.73'
-#      targetVPCEndpointSubnetTwoAddress: '10.220.66.31'
-#      targetVPCEndpointSubnetThreeAddress: '10.220.74.210'
-#
-#  regional-rest-gw:
-#    path: resources/regional-rest-gw
-#    params:
-#      vpcLink: ${vpc-link.privateLinkId}
-#      targetGwUrl: 'https://oycakdyuv6.execute-api.us-east-1.amazonaws.com'
+  vpc-link:
+    path: resources/vpclink
+    params:
+      vpcId: ${vpc.vpcId}
+      privateSubnetOneId: ${vpc.privateSubnetOneId}
+      privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      targetVPCEndpointSubnetOneAddress: '10.220.84.200'
+      targetVPCEndpointSubnetTwoAddress: '10.220.75.115'
+      targetVPCEndpointSubnetThreeAddress: '10.220.71.233'
+
+  regional-rest-gw:
+    path: resources/regional-rest-gw
+    params:
+      vpcLink: ${vpc-link.privateLinkId}
+      targetGwUrl: 'https://5dyu5z7ln1.execute-api.us-east-1.amazonaws.com'
