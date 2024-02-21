@@ -25,4 +25,6 @@ AWS_PROFILE=ACCGURU2 sls transit-gateway:deploy
 ```
 
 
+- [ ] Create Peering TGW Attachments between two account
+- [ ] Create static route in TGW Route table
 
