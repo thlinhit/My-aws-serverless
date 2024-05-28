@@ -1,0 +1,91 @@
+service: ${self:custom.servicePrefix}-lambda-functions
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: 'thlinh-sf-incremental'
+
+  # plugin: serverless-python-requirements
+  pythonRequirements:
+    slim: true
+    layer: true
+    noDeploy:
+      - pytest
+    package:
+      individually: true
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+
+provider:
+  name: aws
+  stage: local
+  runtime: python3.9
+  memorySize: 128
+  architecture: arm64
+  region: us-east-1
+  environment:
+    RUNNING_STAGE: ${self:custom.stage}
+    EXTENSION_DEBUG: "false"
+    DEFAULT_REGION: ${self:provider.region}
+    TZ: "Asia/Ho_Chi_Minh"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - states:StartExecution
+        - states:SendTaskSuccess
+        - states:SendTaskFailure
+      Resource:
+        - arn:aws:states:#{AWS::Region}:#{AWS::AccountId}:stateMachine:IncrementCounterWorkflow
+
+#############
+# FUNCTIONS #
+#############
+functions:
+  functionA:
+    name: do-something-fn
+    handler: src/doSthFn/main.handle
+    events:
+      - sqs:
+          arn: arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:${param:queue1}
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+    package:
+      patterns:
+        - '!src/**'
+        - 'src/doSthFn/**'
+      individually: true
+
+
+###########
+# PLUGINS #
+###########
+plugins:
+  - serverless-python-requirements
+  - serverless-cloudformation-sub-variables
+  - serverless-iam-roles-per-function
+
+
+#############
+# RESOURCES #
+#############
+#resources:
+
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules'
+    - '!.serverless/requirements'
+    - "!${opt:package, '.serverless'}"
+    - '!configs'
+    - '!*.yml*'
+    - '!*.yaml*'
+    - '!*.json'
+    - '!*.sh'
+    - 'lib'
+    - '*.py'
+    - '!venv'
+    - '!*.md'
+    - '!*.txt'
+  excludeDevDependencies: true
