@@ -1,0 +1,8 @@
+services:
+  sqs:
+    path: resources/sqs
+  sf:
+    path: resources/sf
+    params:
+      queue1: linh-queue-1
+      queue2: linh-queue-2

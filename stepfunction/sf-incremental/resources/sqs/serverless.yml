@@ -1,0 +1,32 @@
+service: sf-incremental-sqs-resources
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  queue01Name: linh-queue-1
+  queue02Name: linh-queue-2
+
+provider:
+  name: aws
+  stage: dev
+
+resources:
+  Resources:
+    Test01SQSQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: ${self:custom.queue01Name}
+    Test02SQSQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: 
+          Fn::Sub: ${self:custom.queue02Name}
+  Outputs:
+    test01SQSQueue:
+      Value: ${self:custom.queue01Name}
+    test01SQSQueueArn:
+      Value: !GetAtt Test01SQSQueue.Arn
+    Test02SQSQueue:
+      Value: ${self:custom.queue02Name}
+    Test02SQSQueueArn:
+      Value: !GetAtt Test02SQSQueue.Arn

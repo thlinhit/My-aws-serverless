@@ -1,0 +1,72 @@
+service: ${self:custom.servicePrefix}-resources-sf
+frameworkVersion: '3'
+
+plugins:
+  localPath: .serverless_plugins
+  modules:
+    - serverless-cloudformation-sub-variables
+    - serverless-step-functions
+
+provider:
+  name: aws
+  region: us-east-1
+
+custom:
+  servicePrefix: 'thlinh-sf-incremental'
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+
+stepFunctions:
+  stateMachines:
+    IncrementCounterWorkflow:
+      name: IncrementCounterWorkflow
+      role: !GetAtt IncrementCounterWorkflowRole.Arn
+      definition:
+        Comment: Updating repayment information from tyme-payment in EKS
+        StartAt: Enrich Input Loan Creation
+        States:
+          Enrich Input Loan Creation:
+            Type: Task
+            Resource: arn:aws:states:::sqs:sendMessage.waitForTaskToken
+            Parameters:
+              QueueUrl: !Sub https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${param:queue1}
+              MessageBody:
+                TaskToken.$: $$.Task.Token
+                Input.$: $
+              MessageAttributes:
+                contentType:
+                  DataType: "String"
+                  StringValue: "application/json"
+            Next: End Step
+          End Step:
+            Type: Pass
+            End: true
+
+resources:
+  Resources:
+     IncrementCounterWorkflowRole:
+       Type: 'AWS::IAM::Role'
+       Properties:
+         RoleName: increment-counter-workflow-role
+         AssumeRolePolicyDocument:
+           Statement:
+             - Effect: Allow
+               Principal:
+                 Service:
+                   - states.amazonaws.com
+               Action:
+                 - sts:AssumeRole
+         Policies:
+           - PolicyName: AllowSendSqs
+             PolicyDocument:
+               Version: "2012-10-17"
+               Statement:
+                 - Effect: Allow
+                   Action:
+                     - sqs:SendMessage
+                     - sqs:GetQueueUrl
+                     - sqs:ListQueues
+                     - sqs:GetQueueAttributes
+                   Resource:
+                     - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${param:queue1}
+                     - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${param:queue2}
