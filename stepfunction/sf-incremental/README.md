@@ -20,3 +20,6 @@ AWS_PROFILE=acloudguru2 sls sqs:deploy
 AWS_PROFILE=acloudguru2 sls sf:deploy
 ```
 
+```shell
+AWS_PROFILE=acloudguru2 sls lambda-fns:deploy
+```

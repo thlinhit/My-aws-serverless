@@ -6,3 +6,8 @@ services:
     params:
       queue1: linh-queue-1
       queue2: linh-queue-2
+  lambda-fns:
+    path: lambda-multiple-funcs
+    params:
+      queue1: linh-queue-1
+      queue2: linh-queue-2
