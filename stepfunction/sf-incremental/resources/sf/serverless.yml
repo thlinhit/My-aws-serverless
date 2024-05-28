@@ -37,6 +37,7 @@ stepFunctions:
                 contentType:
                   DataType: "String"
                   StringValue: "application/json"
+            ResultPath: $.response
             Next: End Step
           End Step:
             Type: Pass
