@@ -1,8 +1,4 @@
-import json
-
 from src.exception.domain_code import DomainCode
-
-PREFIX_CAP_LOAN_ACCOUNT_ERROR = "124"
 
 
 class DomainException(Exception):
@@ -11,19 +7,11 @@ class DomainException(Exception):
 
     def __init__(self, domain_code: DomainCode, *values):
         self.domain_code = domain_code
-        self.message = "[{}] - {}".format(domain_code.external_code, domain_code.internal_msg.format(*values))
+        self.internal_message = domain_code.internal_msg.format(*values)
+        self.message = "[{}] - {}".format(
+            domain_code.external_code, self.internal_message
+        )
         super().__init__(self.message)
-
-    def __str__(self):
-        error = {
-            "errors": [
-                {
-                    "errorCode": f"{self.domain_code.external_code}",
-                    "errorMessage": f"{self.message}",
-                }
-            ]
-        }
-        return json.dumps(error)
 
     def get_extra_values(self, index):
         return self.values[index]

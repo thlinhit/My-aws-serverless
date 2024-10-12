@@ -2,3 +2,8 @@ black
 isort
 flake8
 aws-lambda-powertools>=3.1.0,<=4.0.0
+pydantic>=2.0.3,<=3.0.0
+boto3
+pytest
+pytest-mock
+pytest-env

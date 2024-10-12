@@ -12,6 +12,10 @@ custom:
 provider:
   name: aws
   runtime: python3.12
+  region: ${opt:region, 'eu-central-1'}
+  environment:
+    REGION: ${opt:region, 'eu-central-1'}
+    DYNAMODB_TABLE: template_table
 
 functions:
   entityMgmt:
@@ -22,11 +26,16 @@ functions:
           listenerArn: arn:aws:elasticloadbalancing:region:account-id:listener/app/load-balancer-name/listener-id
           priority: 20
           conditions:
-            path: /template/*
+            path: /template/profiles/*
             method:
-              - GET
-              - PATCH
-              - POST
+              - ANY # Due to the bug of serverless offline, use ANY as workaround https://github.com/dherault/serverless-offline/issues/1771
+#      - alb:
+#          listenerArn: arn:aws:elasticloadbalancing:region:account-id:listener/app/load-balancer-name/listener-id
+#          priority: 20
+#          conditions:
+#            path: /template/accounts/*
+#            method:
+#              - ANY # Due to the bug of serverless offline, use ANY as workaround https://github.com/dherault/serverless-offline/issues/1771
     layers:
       - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV2-Arm64:61
       - Ref: PythonRequirementsLambdaLayer

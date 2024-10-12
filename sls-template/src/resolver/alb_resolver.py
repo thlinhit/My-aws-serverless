@@ -1,8 +1,8 @@
 import http
 
-from aws_lambda_powertools.event_handler import ALBResolver, Response, content_types
+from aws_lambda_powertools.event_handler import (ALBResolver, Response,
+                                                 content_types)
 
-from src.exception.domain_code import DomainCode
 from src.exception.domain_exception import DomainException
 from src.log.logger import logger
 
@@ -15,7 +15,7 @@ def handle_value_error(error: ValueError) -> Response:
     return Response(
         http.HTTPStatus.BAD_REQUEST,
         content_type=content_types.TEXT_PLAIN,
-        body="Invalid parameters"
+        body="Invalid parameters",
     )
 
 
@@ -23,4 +23,15 @@ def handle_value_error(error: ValueError) -> Response:
 def handle_domain_exception(ex: DomainException):
     logger.exception(ex)
     http_status = http.HTTPStatus.INTERNAL_SERVER_ERROR
-    return Response(status_code=http_status.value, body=str(ex), content_type=content_types.TEXT_PLAIN)
+    return Response(
+        status_code=http_status.value,
+        body={
+            "errors": [
+                {
+                    "errorCode": f"{ex.domain_code.external_code}",
+                    "errorMessage": f"{ex.internal_message}",
+                }
+            ]
+        },
+        content_type=content_types.APPLICATION_JSON,
+    )

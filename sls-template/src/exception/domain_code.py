@@ -21,12 +21,12 @@ class DomainCode(Enum):
 
     DYNAMODB_ERROR = (
         "004",
-        "Failed integrate with DynamoDB, tableName:{}, message:{}, error:{}",
+        "Failed integrate with DynamoDB, tableName:{}, error:{}",
     )
 
     EXCEEDED_MAX_ATTEMPTS = ("005", "Exceeded max attempts")
 
-    ITEM_NOT_FOUND = ("006", "Item not found")
+    ITEM_NOT_FOUND = ("006", "Item not found, table:{}, pk:{}, sk:{}")
 
     SQS_CHANGE_VISIBILITY_ERROR = (
         "007",
@@ -41,6 +41,11 @@ class DomainCode(Enum):
     DYNAMODB_PUT_BATCH_ERROR = (
         "009",
         "The items can't put into DynamoDB, error:{}",
+    )
+
+    DYNAMODB_CONDITIONAL_CHECK_FAILED_ERROR = (
+        "010",
+        "Dynamodb conditional check failed table:{}, pk:{}, sk:{}",
     )
 
     def __new__(cls, *values):
