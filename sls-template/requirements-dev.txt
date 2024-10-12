@@ -1,0 +1,4 @@
+black
+isort
+flake8
+aws-lambda-powertools>=3.1.0,<=4.0.0
