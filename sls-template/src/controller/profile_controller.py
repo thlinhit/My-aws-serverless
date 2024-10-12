@@ -1,7 +1,12 @@
 import json
 
+from aws_lambda_powertools.event_handler.router import ALBRouter
 
-def hello(event, context):
+router = ALBRouter()
+
+
+@router.get("/create")
+def test():
     body = {
         "message": "Go Serverless v4.0! Your function executed successfully!",
     }

@@ -5,6 +5,10 @@ app: my-app
 # "service" is the name of this project. This will also be added to your AWS resource names.
 service: sls-template
 
+custom:
+  serverless-offline:
+    printOutput: true
+
 provider:
   name: aws
   runtime: python3.12
@@ -12,11 +16,17 @@ provider:
 functions:
   entityMgmt:
     name: entity-mgmt
-    handler: handler.hello
+    handler: src.index.handle
     events:
-      - httpApi:
-          path: /*
-          method: get
+      - alb:
+          listenerArn: arn:aws:elasticloadbalancing:region:account-id:listener/app/load-balancer-name/listener-id
+          priority: 20
+          conditions:
+            path: /template/*
+            method:
+              - GET
+              - PATCH
+              - POST
     layers:
       - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV2-Arm64:61
       - Ref: PythonRequirementsLambdaLayer
