@@ -67,14 +67,15 @@ def find_item(table_name, key: Key) -> tuple[bool, dict | None]:
 
 
 def update_item(
-    table_name: str,
-    item: Item,
-    condition_expression: AttributeBase = None,
+        table_name: str,
+        item: Item,
+        condition_expression: AttributeBase = None,
+        ignore_none_fields: bool = False
 ) -> Optional[dict]:
     item_key: Key = item.get_key()
     try:
 
-        update_data = item.model_dump(by_alias=True, exclude=["pk", "sk"])
+        update_data = item.model_dump(by_alias=True, exclude=["pk", "sk"], exclude_none=ignore_none_fields)
 
         if not update_data:
             logger.info(f"Nothing to update, table={table_name}, key={item_key}")
@@ -86,12 +87,12 @@ def update_item(
         expression_attribute_values = {}
 
         for field_name, field in item.model_fields.items():
-            metadata = (field.json_schema_extra or {}).get('metadata', {})
+            field_metadata = (field.json_schema_extra or {}).get('metadata', {})
             alias = field.alias or field_name
             if alias not in update_data:
                 continue
 
-            if metadata.get(UpdateBehavior.KEY, None) == UpdateBehavior.WRITE_IF_NOT_EXIST.value :
+            if field_metadata.get(UpdateBehavior.KEY, None) == UpdateBehavior.WRITE_IF_NOT_EXIST.value:
                 update_expressions.append(f"{alias} = if_not_exists({alias}, :{alias})")
             else:
                 update_expressions.append(f"{alias} = :{alias}")
