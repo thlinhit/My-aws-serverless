@@ -31,7 +31,15 @@ class ProfileItem(Item):
             profile,
             ProfileItem,
             extra_fields={
-                "pk": f"PROF#{profile.profile_id}",
-                "sk": f"PROF#{profile.profile_id}",
+                "pk": ProfileItem.build_pk(profile.profile_id),
+                "sk": ProfileItem.build_sk(profile.profile_id),
             }
         )
+
+    @staticmethod
+    def build_pk(profile_id: str):
+        return f"PROF#{profile_id}"
+
+    @staticmethod
+    def build_sk(profile_id: str):
+        return f"PROF#{profile_id}"

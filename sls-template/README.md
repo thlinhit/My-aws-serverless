@@ -46,5 +46,5 @@ curl -X POST http://localhost:3003/dev/template/profiles/create \
 
 
 ```shell
-curl -X GET http://localhost:3003/dev/template/profiles/1234
+curl -X GET http://localhost:3003/dev/template/profiles/9999
 ```

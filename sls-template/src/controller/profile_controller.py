@@ -1,13 +1,12 @@
 import http
-import json
 
 from aws_lambda_powertools.event_handler import Response, content_types
 from aws_lambda_powertools.event_handler.router import ALBRouter
+from aws_lambda_powertools.utilities.parser import parse
 
 from src.dto.profile import Profile
 from src.log.logger import logger
 from src.repository import profile_repository
-from src.resolver.alb_resolver import app
 
 router = ALBRouter()
 
@@ -27,10 +26,9 @@ def get_profile(profile_id: str):
 
 @router.post("/create")
 def create_profile():
-    body = router.current_event.body
     logger.debug(f"Create profile info, body={router.current_event.json_body}")
 
-    profile: Profile = Profile(**router.current_event.json_body)
+    profile: Profile = parse(model=Profile, event=router.current_event.json_body)
 
     return Response(
         status_code=http.HTTPStatus.OK,
