@@ -28,6 +28,8 @@ def test_get_table():
     item = dynamodb_repository.get_item("template_table", Key(pk="PROFILE#1243", sk="PROFILE#1243"))
     print(item)
 
+
+# pytest ./test/repository/dynamodb_repository_test.py::test_dto_to_model
 def test_dto_to_model():
     profile: Profile = Profile(**{
         "username": "johndoe",

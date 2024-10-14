@@ -1,5 +1,3 @@
-from src.dto.profile import Profile
-from src.repository.model.Item import Item
 from src.repository.model.profile_item import ProfileItem
 from src.util import datetime_util
 
