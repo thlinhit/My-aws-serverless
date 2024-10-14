@@ -38,5 +38,6 @@ def test_dto_to_model():
         "profileId": "9999"
     })
     profile_item: ProfileItem = ProfileItem.from_dto(profile)
+
     dynamodb_repository.update_item(table_name="template_table", item=profile_item)
     print(profile_item.model_dump_json())

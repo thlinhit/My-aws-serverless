@@ -4,6 +4,7 @@ from aws_lambda_powertools.utilities.parser import Field
 
 from src.dto.profile import Profile
 from src.repository.model.Item import Item
+from src.repository.model.update_behavior import UpdateBehavior
 from src.util import mapper, datetime_util
 
 
@@ -11,7 +12,11 @@ class ProfileItem(Item):
     username: str = Field(alias="username")
     address: str = Field(alias="address")
     email: str = Field(alias="email")
-    signup_timestamp: Optional[str] = Field(default_factory=lambda: datetime_util.utc_iso_now(), alias="signupAt")
+    signup_timestamp: Optional[str] = Field(
+        default_factory=lambda: datetime_util.utc_iso_now(),
+        alias="signupAt",
+        metadata={**UpdateBehavior.WRITE_IF_NOT_EXIST.to_dict()}
+    )
 
     def to_dto(self) -> Profile:
         return mapper.map(
@@ -30,4 +35,3 @@ class ProfileItem(Item):
                 "sk": f"PROF#{profile.profile_id}",
             }
         )
-

@@ -1,5 +1,5 @@
 import os
-from typing import Any, Optional, Tuple
+from typing import Optional
 
 import boto3
 from boto3.dynamodb.conditions import AttributeBase
@@ -11,7 +11,8 @@ from src.exception.domain_exception import DomainException
 from src.log.logger import logger
 from src.repository.model import Item
 from src.repository.model.key import Key
-from src.util import datetime_util, dict_util
+from src.repository.model.update_behavior import UpdateBehavior
+from src.util import datetime_util
 
 DYNAMO_DB_SERVICE = "dynamodb"
 REGION = os.environ["REGION"]
@@ -73,7 +74,7 @@ def update_item(
     item_key: Key = item.get_key()
     try:
 
-        update_data = item.model_dump(by_alias=True, exclude=["pk", "sk", "created_at"])
+        update_data = item.model_dump(by_alias=True, exclude=["pk", "sk"])
 
         if not update_data:
             logger.info(f"Nothing to update, table={table_name}, key={item_key}")
@@ -81,15 +82,23 @@ def update_item(
 
         update_data["updatedAt"] = datetime_util.utc_iso_now()
 
-        update_expression = "SET " + ", ".join(
-            [f"{key} = :{key}" for key in update_data.keys()]
-        )
-        expression_attribute_values = {
-            f":{key}": value for key, value in update_data.items()
-        }
+        update_expressions = []
+        expression_attribute_values = {}
 
-        update_expression += ", createdAt = if_not_exists(createdAt, :createdAt)"
-        expression_attribute_values[":createdAt"] = datetime_util.utc_iso_now()
+        for field_name, field in item.model_fields.items():
+            metadata = (field.json_schema_extra or {}).get('metadata', {})
+            alias = field.alias or field_name
+            if alias not in update_data:
+                continue
+
+            if metadata.get(UpdateBehavior.KEY, None) == UpdateBehavior.WRITE_IF_NOT_EXIST.value :
+                update_expressions.append(f"{alias} = if_not_exists({alias}, :{alias})")
+            else:
+                update_expressions.append(f"{alias} = :{alias}")
+
+            expression_attribute_values[f":{alias}"] = update_data[alias]
+
+        update_expression = "SET " + ", ".join(update_expressions)
 
         update_kwargs = {
             "Key": item_key.model_dump(by_alias=True),

@@ -1,9 +1,10 @@
 from typing import Optional
 
-from pydantic import ConfigDict
 from aws_lambda_powertools.utilities.parser import Field
+from pydantic import ConfigDict
 
 from src.repository.model.key import Key
+from src.repository.model.update_behavior import UpdateBehavior
 from src.util import datetime_util
 
 
@@ -12,7 +13,11 @@ class Item(Key):
 
     pk: str = Field(frozen=True)
     sk: str = Field(frozen=True)
-    created_at: Optional[str] = Field(default_factory=lambda: datetime_util.utc_iso_now(), alias="createdAt")
+    created_at: Optional[str] = Field(
+        default_factory=lambda: datetime_util.utc_iso_now(),
+        alias="createdAt",
+        metadata={**UpdateBehavior.WRITE_IF_NOT_EXIST.to_dict()}
+    )
     updated_at: Optional[str] = Field(default_factory=lambda: datetime_util.utc_iso_now(), alias="updatedAt")
     updated_by: str = Field(alias="updatedBy", default="SYSTEM")
 
