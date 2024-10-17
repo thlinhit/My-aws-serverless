@@ -1,10 +1,10 @@
-service: dynamodb-resources
+service: lend-test-dynamodb-resources
 frameworkVersion: '3'
 
 custom:
   stage: ${opt:stage, self:provider.stage}
   tableSuffix: table-${self:custom.stage}
-  testTableName: lend-merchant-cash-advance
+  testTableName: lend-dynamodb-test
   tableThroughputs:
     prod: 5
     default: 5
@@ -13,6 +13,7 @@ custom:
 provider:
   name: aws
   stage: dev
+  region: eu-central-1
 
 resources:
   Resources:

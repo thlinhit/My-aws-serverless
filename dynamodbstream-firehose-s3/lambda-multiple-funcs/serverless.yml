@@ -4,7 +4,7 @@ frameworkVersion: '3'
 custom:
   stage: ${opt:stage, self:provider.stage}
   region: ${opt:region, self:provider.region}
-  servicePrefix: utility
+  servicePrefix: lend-test-utility
 
   # plugin: serverless-python-requirements
   pythonRequirements:
@@ -23,13 +23,36 @@ provider:
   runtime: python3.9
   memorySize: 128
   architecture: arm64
-  region: us-east-1
+  region: eu-central-1
   environment:
     RUNNING_STAGE: ${self:custom.stage}
     EXTENSION_DEBUG: "false"
     DEFAULT_REGION: ${self:provider.region}
     DYNAMO_DB_TABLE: ${param:dynamoDBTableName}
     TZ: "Asia/Ho_Chi_Minh"
+  iam:
+    role:
+      name: ${self:custom.servicePrefix}-functionA-${self:custom.stage}-${self:custom.region}-custom-lambdaRole
+      statements:
+        - Fn::If:
+            - UseExtraPermission
+            - Effect: Allow
+              Action:
+                - "s3:ListBucket"
+              Resource: "*"
+            - Ref: "AWS::NoValue"
+        - Effect: Allow
+          Sid: DynamoDBTableAccess
+          Action:
+            - dynamodb:Get*
+            - dynamodb:Query
+            - dynamodb:PutItem
+            - dynamodb:Update*
+            - dynamodb:BatchWriteItem
+            - dynamodb:BatchGet*
+          Resource:
+            - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamoDBTableName}
+            - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamoDBTableName}/index/*
 
 #############
 # FUNCTIONS #
@@ -44,20 +67,20 @@ functions:
         #          batchSize: 10
         #          maximumBatchingWindow: 60
         #          functionResponseType: ReportBatchItemFailures
-    iamRoleStatementsName: ${self:custom.servicePrefix}-functionA-${self:custom.stage}-${self:custom.region}-custom-lambdaRole
-    iamRoleStatements:
-      - Effect: Allow
-        Sid: DynamoDBTableAccess
-        Action:
-          - dynamodb:Get*
-          - dynamodb:Query
-          - dynamodb:PutItem
-          - dynamodb:Update*
-          - dynamodb:BatchWriteItem
-          - dynamodb:BatchGet*
-        Resource:
-          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamoDBTableName}
-          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamoDBTableName}/index/*
+#    iamRoleStatementsName: ${self:custom.servicePrefix}-functionA-${self:custom.stage}-${self:custom.region}-custom-lambdaRole
+#    iamRoleStatements:
+#      - Effect: Allow
+#        Sid: DynamoDBTableAccess
+#        Action:
+#          - dynamodb:Get*
+#          - dynamodb:Query
+#          - dynamodb:PutItem
+#          - dynamodb:Update*
+#          - dynamodb:BatchWriteItem
+#          - dynamodb:BatchGet*
+#        Resource:
+#          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamoDBTableName}
+#          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamoDBTableName}/index/*
 
     layers:
       - Ref: PythonRequirementsLambdaLayer
@@ -115,6 +138,15 @@ package:
     - '!*.md'
     - '!*.txt'
   excludeDevDependencies: true
+
+resources:
+  Parameters:
+    MyParameter:
+      Type: String
+      Description: "Yes"
+      Default: "No"
+  Conditions:
+    UseExtraPermission: !Equals [ !Ref MyParameter, "Yes" ]
 
 # resources:
 #   Resources:

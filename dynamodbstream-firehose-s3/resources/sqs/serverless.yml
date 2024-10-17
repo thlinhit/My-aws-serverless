@@ -1,14 +1,15 @@
-service: sqs-resources
+service: lend-test-sqs-resources
 frameworkVersion: '3'
 
 custom:
   stage: ${opt:stage, self:provider.stage}
   queue01Name: tp-lend-mca-trigger-merchant-txn-collection
-  dlQueueName: my-dlq-sqs
+  dlQueueName: lend-test-dlq-sqs
 
 provider:
   name: aws
   stage: dev
+  region: eu-central-1
 
 resources:
   Resources:

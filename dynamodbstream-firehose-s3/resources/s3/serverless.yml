@@ -1,4 +1,4 @@
-service: s3-resources
+service: lend-test-s3-resources
 frameworkVersion: '3'
 
 custom:
