@@ -1,0 +1,27 @@
+service: ${self:custom.servicePrefix}-service
+frameworkVersion: '4'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh-poc
+  pythonRequirements:
+    slim: true
+    layer: true
+    noDeploy:
+      - pytest
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: ${opt:region, 'eu-central-1'}
+  environment:
+    REGION: ${opt:region, 'eu-central-1'}
+
+functions:
+  poc-receiver:
+    handler: handler.hello
+    events:
+      - httpApi:
+          path: /
+          method: get
