@@ -1,10 +1,15 @@
 pipx install poetry
 ## Local Development
 
+
+Add new dependency for local development
 ```shell
 poetry add pytest-env --group dev
 ```
-
+Install dependencies
+```shell
+poetry install
+```
 
 ### Lint codes
 ```shell
