@@ -24,6 +24,18 @@ AWS_PROFILE=tx-sandbox sls package
 python3 -m black . && isort .
 ```
 
+```shell
+curl -X POST http://localhost:3000/ecommerce/orders/orders \
+     -H "Content-Type: application/json" \
+     -d '{
+          "username": "johndoe",
+          "email": "johndoe@example.com",
+          "address": "123 Moon Street",
+          "profileId": "9999",
+          "amount": 120.34
+         }'
+```
+
 ## Local Development Setup
 
 1. Install dependencies

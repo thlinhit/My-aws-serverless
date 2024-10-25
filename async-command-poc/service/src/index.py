@@ -2,16 +2,17 @@ from aws_lambda_powertools.event_handler import Response, content_types
 from aws_lambda_powertools.event_handler.exceptions import NotFoundError
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
+from src.controller import order_controller
 from src.log.logger import logger
-from src.resolver.alb_resolver import app
+from src.resolver.apigw_resolver import app
 
 
-# app.include_router(profile_controller.router, prefix="/template/profiles")
+app.include_router(order_controller.router, prefix="/ecommerce/orders")
 
 
 @logger.inject_lambda_context
 def handle(event: dict, context: LambdaContext) -> dict | Exception:
-    print(event)
+    # logger.info(event)
     return app.resolve(event, context)
 
 
