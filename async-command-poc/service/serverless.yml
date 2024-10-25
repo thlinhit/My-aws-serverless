@@ -25,7 +25,7 @@ functions:
     handler: src.index.handle
     events:
       - httpApi:
-          path: /ecommerce/orders/orders
+          path: /ecommerce/{proxy+}
           method: '*'
 
 plugins:

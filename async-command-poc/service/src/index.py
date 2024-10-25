@@ -12,7 +12,7 @@ app.include_router(order_controller.router, prefix="/ecommerce/orders")
 
 @logger.inject_lambda_context
 def handle(event: dict, context: LambdaContext) -> dict | Exception:
-    # logger.info(event)
+    logger.info(app.__dict__)
     return app.resolve(event, context)
 
 

@@ -9,7 +9,7 @@ from aws_lambda_powertools.event_handler.router import ALBRouter
 from src.log.logger import logger
 router = ALBRouter()
 
-@router.post("/orders")
+@router.post("")
 def place_order():
     logger.info(f"Request received to create an order")
     event = router.current_event.json_body
