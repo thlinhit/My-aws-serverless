@@ -11,6 +11,10 @@ Install dependencies
 npm i && poetry install
 ```
 
+```shell
+AWS_PROFILE=tx-sandbox sls package
+```
+
 ### Lint codes
 ```shell
 python3 -m black . && isort .

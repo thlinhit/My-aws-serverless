@@ -6,8 +6,9 @@ custom:
   region: ${opt:region, self:provider.region}
   servicePrefix: thlinh-poc
   pythonRequirements:
-    slim: true
-    layer: true
+    usePoetry: true
+#    slim: true
+#    layer: true
     noDeploy:
       - pytest
 
@@ -17,6 +18,7 @@ provider:
   region: ${opt:region, 'eu-central-1'}
   environment:
     REGION: ${opt:region, 'eu-central-1'}
+  stage: local
 
 functions:
   poc-receiver:
