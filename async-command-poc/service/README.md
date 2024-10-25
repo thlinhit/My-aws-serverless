@@ -12,6 +12,10 @@ npm i && poetry install
 ```
 
 ```shell
+poetry run pytest
+```
+
+```shell
 AWS_PROFILE=tx-sandbox sls package
 ```
 
