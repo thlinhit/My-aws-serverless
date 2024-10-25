@@ -8,7 +8,7 @@ poetry add pytest-env --group dev
 ```
 Install dependencies
 ```shell
-poetry install
+npm i && poetry install
 ```
 
 ### Lint codes
