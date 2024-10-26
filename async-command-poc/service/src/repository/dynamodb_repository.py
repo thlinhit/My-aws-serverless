@@ -7,7 +7,7 @@ from botocore.config import Config as BotoCfg
 from botocore.exceptions import ClientError
 
 from src.exception.domain_code import DomainCode
-from src.exception.domain_exception import DomainException
+from src.exception.domain_error import DomainError
 from src.log.logger import logger
 from src.repository.model.item import Item
 from src.repository.model.key import Key
@@ -46,7 +46,7 @@ def get_table(table_name: str):
 def get_item(table_name: str, key: Key) -> dict:
     is_present, item = find_item(table_name, key)
     if not is_present:
-        raise DomainException(DomainCode.ITEM_NOT_FOUND, table_name, key.pk, key.sk)
+        raise DomainError(DomainCode.ITEM_NOT_FOUND, table_name, key.pk, key.sk)
     return item
 
 
@@ -61,7 +61,7 @@ def find_item(table_name, key: Key) -> tuple[bool, dict | None]:
         item = response["Item"] if "Item" in response else None
         return is_present, item
     except Exception as ex:
-        raise DomainException(DomainCode.DYNAMODB_ERROR, table_name, repr(ex))
+        raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, repr(ex))
 
 
 def update_item(
@@ -116,14 +116,14 @@ def update_item(
         return get_table(table_name).update_item(**update_kwargs)["Attributes"]
     except ClientError as client_error:
         if client_error.response["Error"]["Code"] == "ConditionalCheckFailedException":
-            raise DomainException(
+            raise DomainError(
                 DomainCode.DYNAMODB_CONDITIONAL_CHECK_FAILED_ERROR,
                 table_name,
                 item_key.pk,
                 item_key.sk,
             )
         else:
-            raise DomainException(
+            raise DomainError(
                 DomainCode.DYNAMODB_ERROR,
                 table_name,
                 item_key.pk,
@@ -131,4 +131,4 @@ def update_item(
                 repr(client_error),
             )
     except Exception as ex:
-        raise DomainException(DomainCode.DYNAMODB_ERROR, table_name, repr(ex))
+        raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, repr(ex))
