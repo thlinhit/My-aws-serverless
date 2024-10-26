@@ -74,7 +74,7 @@ def update_item(
     try:
 
         update_data = item.model_dump(
-            by_alias=True, exclude=["pk", "sk"], exclude_none=ignore_none_fields
+            by_alias=True, exclude={"pk", "sk"}, exclude_none=ignore_none_fields
         )
 
         if not update_data:
