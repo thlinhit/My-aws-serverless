@@ -4,10 +4,12 @@ from decimal import Decimal
 from types import SimpleNamespace
 
 from aws_lambda_powertools.event_handler import Response, content_types
-from aws_lambda_powertools.event_handler.router import ALBRouter
+from aws_lambda_powertools.event_handler.router import APIGatewayHttpRouter
 
 from src.log.logger import logger
-router = ALBRouter()
+
+router = APIGatewayHttpRouter()
+
 
 @router.post("")
 def place_order():
