@@ -21,7 +21,7 @@ class Item(Key):
     updated_at: Optional[str] = Field(
         default_factory=lambda: datetime_util.utc_iso_now(), alias="updatedAt"
     )
-    updated_by: str = Field(alias="updatedBy", default="SYSTEM")
+    updated_by: Optional[str] = Field(alias="updatedBy", default="SYSTEM")
 
     def get_key(self) -> Key:
         return Key(**self.model_dump())
