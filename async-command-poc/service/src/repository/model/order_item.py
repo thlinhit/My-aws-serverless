@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from src.dto.order import Order
+from src.domain.order import Order
 from src.mapper import generic_mapper
 from src.repository.model.item import Item
 
