@@ -6,7 +6,6 @@ from src.controller import order_controller
 from src.log.logger import logger
 from src.resolver.apigw_resolver import app
 
-
 app.include_router(order_controller.router, prefix="/ecommerce/orders")
 
 

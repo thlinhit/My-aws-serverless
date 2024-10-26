@@ -16,9 +16,11 @@ class Item(Key):
     created_at: Optional[str] = Field(
         default_factory=lambda: datetime_util.utc_iso_now(),
         alias="createdAt",
-        metadata={**UpdateBehavior.WRITE_IF_NOT_EXIST.to_dict()}
+        json_schema_extra={**UpdateBehavior.WRITE_IF_NOT_EXIST.to_dict()},
     )
-    updated_at: Optional[str] = Field(default_factory=lambda: datetime_util.utc_iso_now(), alias="updatedAt")
+    updated_at: Optional[str] = Field(
+        default_factory=lambda: datetime_util.utc_iso_now(), alias="updatedAt"
+    )
     updated_by: str = Field(alias="updatedBy", default="SYSTEM")
 
     def get_key(self) -> Key:

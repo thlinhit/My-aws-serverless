@@ -36,6 +36,11 @@ curl -X POST http://localhost:3000/ecommerce/orders \
          }'
 ```
 
+### Lint codes
+```shell
+python3 -m black . && isort .
+```
+
 ## Local Development Setup
 
 1. Install dependencies

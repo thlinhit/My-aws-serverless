@@ -16,10 +16,14 @@ def place_order():
     logger.info(f"Request received to create an order")
     event = router.current_event.json_body
     logger.info(f"event {event}")
-    payload = json.loads(router.current_event.body, object_hook=lambda d: SimpleNamespace(**d), parse_float=Decimal)
+    payload = json.loads(
+        router.current_event.body,
+        object_hook=lambda d: SimpleNamespace(**d),
+        parse_float=Decimal,
+    )
 
     return Response(
         status_code=http.HTTPStatus.ACCEPTED,
         body=event,
-        content_type=content_types.APPLICATION_JSON
+        content_type=content_types.APPLICATION_JSON,
     )

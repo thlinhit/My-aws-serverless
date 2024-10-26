@@ -1,7 +1,7 @@
 import http
 
-from aws_lambda_powertools.event_handler import (APIGatewayHttpResolver, Response,
-                                                 content_types)
+from aws_lambda_powertools.event_handler import (APIGatewayHttpResolver,
+                                                 Response, content_types)
 
 from src.exception.domain_exception import DomainException
 from src.log.logger import logger

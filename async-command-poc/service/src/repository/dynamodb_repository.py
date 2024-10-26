@@ -9,7 +9,7 @@ from botocore.exceptions import ClientError
 from src.exception.domain_code import DomainCode
 from src.exception.domain_exception import DomainException
 from src.log.logger import logger
-from src.repository.model import Item
+from src.repository.model.item import Item
 from src.repository.model.key import Key
 from src.repository.model.update_behavior import UpdateBehavior
 from src.util import datetime_util
@@ -24,8 +24,8 @@ if IS_LOCAL:
         DYNAMO_DB_SERVICE,
         endpoint_url="http://localhost:8000",
         region_name="localhost",
-        aws_access_key_id='dummy',
-        aws_secret_access_key='dummy',
+        aws_access_key_id="dummy",
+        aws_secret_access_key="dummy",
     )
 else:
     dynamodb_client = boto3.resource(
@@ -61,21 +61,21 @@ def find_item(table_name, key: Key) -> tuple[bool, dict | None]:
         item = response["Item"] if "Item" in response else None
         return is_present, item
     except Exception as ex:
-        raise DomainException(
-            DomainCode.DYNAMODB_ERROR, table_name, repr(ex)
-        )
+        raise DomainException(DomainCode.DYNAMODB_ERROR, table_name, repr(ex))
 
 
 def update_item(
-        table_name: str,
-        item: Item,
-        condition_expression: AttributeBase = None,
-        ignore_none_fields: bool = False
+    table_name: str,
+    item: Item,
+    condition_expression: AttributeBase = None,
+    ignore_none_fields: bool = False,
 ) -> Optional[dict]:
     item_key: Key = item.get_key()
     try:
 
-        update_data = item.model_dump(by_alias=True, exclude=["pk", "sk"], exclude_none=ignore_none_fields)
+        update_data = item.model_dump(
+            by_alias=True, exclude=["pk", "sk"], exclude_none=ignore_none_fields
+        )
 
         if not update_data:
             logger.info(f"Nothing to update, table={table_name}, key={item_key}")
@@ -87,12 +87,15 @@ def update_item(
         expression_attribute_values = {}
 
         for field_name, field in item.model_fields.items():
-            field_metadata = (field.json_schema_extra or {}).get('metadata', {})
+            field_metadata = (field.json_schema_extra or {}).get("metadata", {})
             alias = field.alias or field_name
             if alias not in update_data:
                 continue
 
-            if field_metadata.get(UpdateBehavior.KEY, None) == UpdateBehavior.WRITE_IF_NOT_EXIST.value:
+            if (
+                field_metadata.get(UpdateBehavior.KEY, None)
+                == UpdateBehavior.WRITE_IF_NOT_EXIST.value
+            ):
                 update_expressions.append(f"{alias} = if_not_exists({alias}, :{alias})")
             else:
                 update_expressions.append(f"{alias} = :{alias}")
@@ -128,6 +131,4 @@ def update_item(
                 repr(client_error),
             )
     except Exception as ex:
-        raise DomainException(
-            DomainCode.DYNAMODB_ERROR, table_name, repr(ex)
-        )
+        raise DomainException(DomainCode.DYNAMODB_ERROR, table_name, repr(ex))
