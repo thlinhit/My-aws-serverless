@@ -46,6 +46,11 @@ class DomainCode(Enum):
         "Dynamodb conditional check failed table:{}, pk:{}, sk:{}",
     )
 
+    INVALID_ORDER_STATUS = (
+        "010",
+        "Order status is invalid, orderId:{}, userId:{}, expected:{}, actual:{}"
+    )
+
     def __new__(cls, *values):
         instance = object.__new__(cls)
         instance._value_ = values[0]
