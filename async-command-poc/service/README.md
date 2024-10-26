@@ -28,12 +28,30 @@ python3 -m black . && isort .
 curl -X POST http://localhost:3000/ecommerce/orders \
      -H "Content-Type: application/json" \
      -d '{
-          "username": "johndoe",
-          "email": "johndoe@example.com",
-          "address": "123 Moon Street",
-          "profileId": "9999",
-          "amount": 120.34
-         }'
+            "userId": "user456",
+            "status": "Pending",
+            "products": [
+                {
+                    "id": "product1",
+                    "name": "Product 1",
+                    "price": "19.99",
+                    "quantity": 2
+                },
+                {
+                    "id": "product2",
+                    "name": "Product 2",
+                    "price": "5.99"
+                }
+            ],
+            "deliveryPrice": 5,
+            "address": {
+                "name": "John Doe",
+                "streetAddress": "123 Main St",
+                "city": "Anytown",
+                "country": "USA",
+                "phoneNumber": "123-456-7890"
+            }
+        }'
 ```
 
 ### Lint codes
@@ -71,11 +89,31 @@ serverless offline
 curl -X POST http://localhost:3003/dev/template/profiles/create \
      -H "Content-Type: application/json" \
      -d '{
-          "username": "johndoe",
-          "email": "johndoe@example.com",
-          "address": "123 Moon Street",
-          "profileId": "9999"
-         }'
+    "id": "order123",
+    "userId": "user456",
+    "status": "PENDING",
+    "products": [
+        {
+            "id": "product1",
+            "name": "Product 1",
+            "price": "19.99",
+            "quantity": 2
+        },
+        {
+            "id": "product2",
+            "name": "Product 2",
+            "price": "5.99"
+        }
+    ],
+    "deliveryPrice": 5,
+    "address": {
+        "name": "John Doe",
+        "streetAddress": "123 Main St",
+        "city": "Anytown",
+        "country": "USA",
+        "phoneNumber": "123-456-7890"
+    }
+}'
 ```
 
 
