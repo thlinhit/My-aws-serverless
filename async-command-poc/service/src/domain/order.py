@@ -3,6 +3,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+from src.domain.order_status import OrderStatus
+
 
 class Product(BaseModel):
     id: str
@@ -22,6 +24,7 @@ class Address(BaseModel):
 class Order(BaseModel):
     id: str
     userId: str
+    status: Optional[OrderStatus] = Field(default=OrderStatus.PENDING)
     products: List[Product]
     deliveryPrice: int
     address: Address
