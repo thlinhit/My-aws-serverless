@@ -25,7 +25,7 @@ python3 -m black . && isort .
 ```
 
 ```shell
-curl -X POST http://localhost:3000/ecommerce/orders/orders \
+curl -X POST http://localhost:3000/ecommerce/orders \
      -H "Content-Type: application/json" \
      -d '{
           "username": "johndoe",
