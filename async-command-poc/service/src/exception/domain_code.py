@@ -43,12 +43,17 @@ class DomainCode(Enum):
 
     DYNAMODB_CONDITIONAL_CHECK_FAILED_ERROR = (
         "009",
-        "Dynamodb conditional check failed table:{}, pk:{}, sk:{}",
+        "Failed conditional check in the dynamodb, tableName:{}",
     )
 
     INVALID_ORDER_STATUS = (
         "010",
         "Order status is invalid, orderId:{}, userId:{}, expected:{}, actual:{}"
+    )
+
+    ITEM_ALREADY_EXISTS = (
+        "010",
+        "Item already exists, pk:{}, sk:{}"
     )
 
     def __new__(cls, *values):
