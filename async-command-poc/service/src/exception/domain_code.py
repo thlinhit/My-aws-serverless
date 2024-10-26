@@ -6,45 +6,43 @@ class DomainCode(Enum):
         "000",
         "Generic Error. errorMessage:{}",
     )
+
     VALIDATION_ERROR = (
         "001",
         "Validation Error. errorMessage:{}",
     )
-    FIREHOSE_PUT_ERROR = (
-        "002",
-        "Encountered Error While Putting Records to FireHose",
-    )
+
+    EXCEEDED_MAX_ATTEMPTS = ("002", "Exceeded max attempts")
+
     SQS_SEND_ERROR = (
         "003",
         "Failed at sending message to sqs, sqsName:{}, message:{}, error:{}",
     )
 
-    DYNAMODB_ERROR = (
-        "004",
-        "Failed integrate with DynamoDB, tableName:{}, error:{}",
-    )
-
-    EXCEEDED_MAX_ATTEMPTS = ("005", "Exceeded max attempts")
-
-    ITEM_NOT_FOUND = ("006", "Item not found, table:{}, pk:{}, sk:{}")
-
     SQS_CHANGE_VISIBILITY_ERROR = (
-        "007",
+        "004",
         "Couldn't change visibility, transactionKey:{}, queueUrl:{}, error:{}",
     )
 
     SQS_RETRY_NEXT_TIME = (
-        "008",
+        "005",
         "The message will be retried in {} seconds, transactionKey:{}",
     )
 
+    DYNAMODB_ERROR = (
+        "006",
+        "Failed integrate with DynamoDB, tableName:{}, error:{}",
+    )
+
+    ITEM_NOT_FOUND = ("007", "Item not found, table:{}, pk:{}, sk:{}")
+
     DYNAMODB_PUT_BATCH_ERROR = (
-        "009",
+        "008",
         "The items can't put into DynamoDB, error:{}",
     )
 
     DYNAMODB_CONDITIONAL_CHECK_FAILED_ERROR = (
-        "010",
+        "009",
         "Dynamodb conditional check failed table:{}, pk:{}, sk:{}",
     )
 
