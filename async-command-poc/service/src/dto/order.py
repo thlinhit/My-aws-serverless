@@ -1,15 +1,27 @@
 from decimal import Decimal
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
 
-class OrderProduct(BaseModel):
-    id: str = Field(alias="productId")
-    price: Decimal = Field(alias="productPrice")
-    quantity: int = Field(alias="productQuantity")
+class Product(BaseModel):
+    id: str
+    name: str
+    price: Decimal
+    quantity: Optional[int] = Field(default=1)
+
+
+class Address(BaseModel):
+    name: str
+    streetAddress: str
+    city: str
+    country: str
+    phoneNumber: str
 
 
 class Order(BaseModel):
-    id: str = Field(alias="orderId")
-    name: str = Field(alias="orderName")
-    order_products: list[OrderProduct] = Field(alias="orderProducts")
+    id: str
+    userId: str
+    products: List[Product]
+    deliveryPrice: int
+    address: Address
