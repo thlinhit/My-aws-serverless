@@ -1,12 +1,11 @@
 import http
-import json
-from decimal import Decimal
-from types import SimpleNamespace
 
 from aws_lambda_powertools.event_handler import Response, content_types
 from aws_lambda_powertools.event_handler.router import APIGatewayHttpRouter
 
+from src.controller.dto.place_order_dto import PlaceOrderDto
 from src.log.logger import logger
+from src.service import order_service
 
 router = APIGatewayHttpRouter()
 
@@ -14,16 +13,14 @@ router = APIGatewayHttpRouter()
 @router.post("")
 def place_order():
     logger.info(f"Request received to create an order")
-    event = router.current_event.json_body
-    logger.info(f"event {event}")
-    payload = json.loads(
-        router.current_event.body,
-        object_hook=lambda d: SimpleNamespace(**d),
-        parse_float=Decimal,
-    )
+    payload = router.current_event.json_body
+
+    place_order_dto = PlaceOrderDto.model_validate(payload)
+
+    order_service.create_order(order=place_order_dto.to_domain())
 
     return Response(
         status_code=http.HTTPStatus.ACCEPTED,
-        body=event,
+        body=place_order_dto.to_domain(),
         content_type=content_types.APPLICATION_JSON,
     )
