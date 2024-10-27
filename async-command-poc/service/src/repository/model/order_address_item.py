@@ -1,4 +1,4 @@
-from src.domain.order import Order, Address
+from src.domain.order import Address, Order
 from src.mapper import generic_mapper
 from src.repository.model.item import Item
 from src.repository.model.order_item import OrderItem

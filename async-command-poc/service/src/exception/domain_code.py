@@ -48,13 +48,10 @@ class DomainCode(Enum):
 
     INVALID_ORDER_STATUS = (
         "010",
-        "Order status is invalid, orderId:{}, userId:{}, expected:{}, actual:{}"
+        "Order status is invalid, orderId:{}, userId:{}, expected:{}, actual:{}",
     )
 
-    ITEM_ALREADY_EXISTS = (
-        "011",
-        "Item already exists, pk:{}, sk:{}"
-    )
+    ITEM_ALREADY_EXISTS = ("011", "Item already exists, pk:{}, sk:{}")
 
     def __new__(cls, *values):
         instance = object.__new__(cls)

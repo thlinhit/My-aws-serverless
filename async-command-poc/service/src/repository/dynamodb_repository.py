@@ -36,6 +36,7 @@ else:
 
 _DYNAMODB_CONFIG = {}
 
+
 def get_table(table_name: str):
     if table_name not in _DYNAMODB_CONFIG:
         _DYNAMODB_CONFIG[table_name] = dynamodb_resource.Table(table_name)
@@ -64,10 +65,10 @@ def find_item(table_name, key: Key) -> tuple[bool, dict | None]:
 
 
 def update_item(
-        table_name: str,
-        item: Item,
-        condition_expression: AttributeBase = None,
-        ignore_none_fields: bool = False,
+    table_name: str,
+    item: Item,
+    condition_expression: AttributeBase = None,
+    ignore_none_fields: bool = False,
 ) -> Optional[dict]:
     item_key: Key = item.get_key()
     try:
@@ -92,8 +93,8 @@ def update_item(
                 continue
 
             if (
-                    field_metadata.get(UpdateBehavior.KEY, None)
-                    == UpdateBehavior.WRITE_IF_NOT_EXIST.value
+                field_metadata.get(UpdateBehavior.KEY, None)
+                == UpdateBehavior.WRITE_IF_NOT_EXIST.value
             ):
                 update_expressions.append(f"{alias} = if_not_exists({alias}, :{alias})")
             else:
@@ -152,7 +153,9 @@ class DynamoDBTransactionHelper:
 
     def execute_transaction(self):
         try:
-            response = dynamodb_resource.meta.client.transact_write_items(TransactItems=self.transact_items)
+            response = dynamodb_resource.meta.client.transact_write_items(
+                TransactItems=self.transact_items
+            )
             logger.info("Transaction successful: ", response)
         except ClientError as client_error:
             if client_error.response["Error"]["Code"] == "TransactionCanceledException":

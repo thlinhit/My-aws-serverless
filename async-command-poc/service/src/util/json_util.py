@@ -10,11 +10,7 @@ def dumps(json_body: dict, **kwargs) -> str:
             return float(obj)
         raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
-    return json.dumps(
-        json_body,
-        default=default_serializer,
-        **kwargs
-    )
+    return json.dumps(json_body, default=default_serializer, **kwargs)
 
 
 def loads(json_str: str, **kwargs) -> dict:
@@ -22,5 +18,5 @@ def loads(json_str: str, **kwargs) -> dict:
         json_str,
         object_hook=lambda d: SimpleNamespace(**d),
         parse_float=Decimal,
-        **kwargs
+        **kwargs,
     )
