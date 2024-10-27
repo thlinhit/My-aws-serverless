@@ -4,7 +4,7 @@ frameworkVersion: '4'
 custom:
   stage: ${opt:stage, self:provider.stage}
   region: ${opt:region, self:provider.region}
-  servicePrefix: thlinh-poc
+  servicePrefix: arb-poc
   pythonRequirements:
     usePoetry: true
 #    slim: true
