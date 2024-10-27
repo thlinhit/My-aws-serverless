@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from pydantic import Field
 
 from src.domain.order import Order
@@ -6,7 +8,9 @@ from src.repository.model.item import Item
 
 
 class OrderItem(Item):
-    name: str = Field(alias="name")
+    user_id: str = Field(alias="userId")
+    status: str = Field(alias="status")
+    delivery_price: Decimal = Field(alias="deliveryPrice")
     total_quantity: int = Field(default=0, alias="totalQuantity")
 
     def to_dto(self) -> Order:
@@ -24,7 +28,7 @@ class OrderItem(Item):
         )
 
         result.total_quantity = sum(
-            product.quantity for product in order.order_products or []
+            product.quantity for product in order.products or []
         )
 
         return result

@@ -1,0 +1,30 @@
+from decimal import Decimal
+
+from src.domain.order import Order, Product
+from src.mapper import generic_mapper
+from src.repository.model.item import Item
+from src.repository.model.order_item import OrderItem
+
+
+class OrderProductItem(Item):
+    name: str
+    price: Decimal
+    quantity: int
+
+    def to_dto(self) -> Product:
+        return generic_mapper.map(self, Product)
+
+    @staticmethod
+    def from_dto(order: Order, product: Product):
+        return generic_mapper.map(
+            product,
+            OrderProductItem,
+            extra_fields={
+                "pk": OrderItem.build_pk(order.id),
+                "sk": OrderProductItem.build_sk(product.id),
+            },
+        )
+
+    @staticmethod
+    def build_sk(product_id: str):
+        return f"PRD#{product_id}"
