@@ -52,7 +52,7 @@ class DomainCode(Enum):
     )
 
     ITEM_ALREADY_EXISTS = (
-        "010",
+        "011",
         "Item already exists, pk:{}, sk:{}"
     )
 
