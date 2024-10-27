@@ -36,4 +36,3 @@ def test_okay():
     place_order_dto = PlaceOrderDto.model_validate(payload)
     order = place_order_dto.to_domain()
     order_repository.insert_if_not_exists(order)
-    print(place_order_dto.to_domain().model_dump_json())

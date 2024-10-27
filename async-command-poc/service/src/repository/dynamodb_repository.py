@@ -133,47 +133,45 @@ def update_item(
         raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, repr(ex))
 
 
-def transaction_put_items(
-        table_name: str, put_items: list[Item] = None, put_condition: str = None
-):
-    try:
-        logger.info(f"Start transaction put items in table: {table_name}")
-        transact_items = [
-            create_put_object(
-                table_name=table_name, item=item, put_condition=put_condition
+class DynamoDBTransactionHelper:
+    def __init__(self, table_name):
+        self.table_name = table_name
+        self.transact_items = []
+
+    def add_put_item(self, item: Item, condition_expression: str = None):
+        put_kwargs = {
+            "TableName": self.table_name,
+            "Item": item.model_dump(by_alias=True),
+        }
+        if condition_expression:
+            put_kwargs["ConditionExpression"] = condition_expression
+        self.transact_items.append({"Put": put_kwargs})
+
+    def add_update_item(self, key, update_expr, expr_attr_values):
+        pass
+
+    def execute_transaction(self):
+        try:
+            response = dynamodb_resource.meta.client.transact_write_items(TransactItems=self.transact_items)
+            logger.info("Transaction successful: ", response)
+        except ClientError as client_error:
+            if client_error.response["Error"]["Code"] == "TransactionCanceledException":
+                reasons = client_error.response.get("CancellationReasons", [])
+                for reason in reasons:
+                    if reason["Code"] == "ConditionalCheckFailed":
+                        raise DomainError(
+                            DomainCode.DYNAMODB_CONDITIONAL_CHECK_FAILED_ERROR,
+                            self.table_name,
+                        )
+
+            raise DomainError(
+                DomainCode.DYNAMODB_ERROR,
+                self.table_name,
+                repr(client_error),
             )
-            for item in put_items
-        ]
-        dynamodb_resource.meta.client.transact_write_items(TransactItems=transact_items)
-    except ClientError as client_error:
-        if client_error.response["Error"]["Code"] == "TransactionCanceledException":
-            reasons = client_error.response.get("CancellationReasons", [])
-            for reason in reasons:
-                if reason["Code"] == "ConditionalCheckFailed":
-                    raise DomainError(
-                        DomainCode.DYNAMODB_CONDITIONAL_CHECK_FAILED_ERROR,
-                        table_name,
-                    )
-
-        raise DomainError(
-            DomainCode.DYNAMODB_ERROR,
-            table_name,
-            repr(client_error),
-        )
-    except Exception as ex:
-        raise DomainError(
-            DomainCode.DYNAMODB_ERROR,
-            table_name,
-            repr(ex),
-        )
-
-
-def create_put_object(table_name: str, item: Item, put_condition: str = None):
-    put_kwargs = {
-        "TableName": table_name,
-        "Item": item.model_dump(by_alias=True),
-    }
-    if put_condition:
-        put_kwargs["ConditionExpression"] = put_condition
-    return {"Put": put_kwargs}
-
+        except Exception as ex:
+            raise DomainError(
+                DomainCode.DYNAMODB_ERROR,
+                self.table_name,
+                repr(ex),
+            )
