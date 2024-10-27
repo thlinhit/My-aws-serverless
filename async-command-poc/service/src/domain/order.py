@@ -26,5 +26,5 @@ class Order(BaseModel):
     userId: str
     status: Optional[OrderStatus] = Field(default=OrderStatus.PENDING)
     products: List[Product]
-    deliveryPrice: int
+    deliveryPrice: Decimal
     address: Address
