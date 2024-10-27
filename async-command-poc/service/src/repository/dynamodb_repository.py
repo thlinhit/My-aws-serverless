@@ -20,7 +20,7 @@ TABLE_REGION = os.getenv("TABLE_REGION", REGION)
 
 IS_LOCAL = os.environ.get("RUNNING_STAGE", "local") == "local"
 if IS_LOCAL:
-    dynamodb_client = boto3.resource(
+    dynamodb_resource = boto3.resource(
         DYNAMO_DB_SERVICE,
         endpoint_url="http://localhost:8000",
         region_name="localhost",
@@ -28,7 +28,7 @@ if IS_LOCAL:
         aws_secret_access_key="dummy",
     )
 else:
-    dynamodb_client = boto3.resource(
+    dynamodb_resource = boto3.resource(
         DYNAMO_DB_SERVICE,
         region_name=TABLE_REGION,
         config=BotoCfg(retries={"mode": "standard"}),
@@ -36,10 +36,9 @@ else:
 
 _DYNAMODB_CONFIG = {}
 
-
 def get_table(table_name: str):
     if table_name not in _DYNAMODB_CONFIG:
-        _DYNAMODB_CONFIG[table_name] = dynamodb_client.Table(table_name)
+        _DYNAMODB_CONFIG[table_name] = dynamodb_resource.Table(table_name)
     return _DYNAMODB_CONFIG[table_name]
 
 
@@ -65,10 +64,10 @@ def find_item(table_name, key: Key) -> tuple[bool, dict | None]:
 
 
 def update_item(
-    table_name: str,
-    item: Item,
-    condition_expression: AttributeBase = None,
-    ignore_none_fields: bool = False,
+        table_name: str,
+        item: Item,
+        condition_expression: AttributeBase = None,
+        ignore_none_fields: bool = False,
 ) -> Optional[dict]:
     item_key: Key = item.get_key()
     try:
@@ -93,8 +92,8 @@ def update_item(
                 continue
 
             if (
-                field_metadata.get(UpdateBehavior.KEY, None)
-                == UpdateBehavior.WRITE_IF_NOT_EXIST.value
+                    field_metadata.get(UpdateBehavior.KEY, None)
+                    == UpdateBehavior.WRITE_IF_NOT_EXIST.value
             ):
                 update_expressions.append(f"{alias} = if_not_exists({alias}, :{alias})")
             else:
@@ -132,3 +131,49 @@ def update_item(
             )
     except Exception as ex:
         raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, repr(ex))
+
+
+def transaction_put_items(
+        table_name: str, put_items: list[Item] = None, put_condition: str = None
+):
+    try:
+        logger.info(f"Start transaction put items in table: {table_name}")
+        transact_items = [
+            create_put_object(
+                table_name=table_name, item=item, put_condition=put_condition
+            )
+            for item in put_items
+        ]
+        dynamodb_resource.meta.client.transact_write_items(TransactItems=transact_items)
+    except ClientError as client_error:
+        if client_error.response["Error"]["Code"] == "TransactionCanceledException":
+            reasons = client_error.response.get("CancellationReasons", [])
+            for reason in reasons:
+                if reason["Code"] == "ConditionalCheckFailed":
+                    raise DomainError(
+                        DomainCode.DYNAMODB_CONDITIONAL_CHECK_FAILED_ERROR,
+                        table_name,
+                    )
+
+        raise DomainError(
+            DomainCode.DYNAMODB_ERROR,
+            table_name,
+            repr(client_error),
+        )
+    except Exception as ex:
+        raise DomainError(
+            DomainCode.DYNAMODB_ERROR,
+            table_name,
+            repr(ex),
+        )
+
+
+def create_put_object(table_name: str, item: Item, put_condition: str = None):
+    put_kwargs = {
+        "TableName": table_name,
+        "Item": item.model_dump(by_alias=True),
+    }
+    if put_condition:
+        put_kwargs["ConditionExpression"] = put_condition
+    return {"Put": put_kwargs}
+

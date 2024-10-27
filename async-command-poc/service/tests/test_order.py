@@ -1,10 +1,12 @@
+import os
+os.environ["REGION"] = "us-east-1"
+os.environ["ORDER_TABLE"] = "order_table"
 from src.controller.dto.place_order_dto import PlaceOrderDto
-from src.domain.order import Order
-from src.domain.order_status import OrderStatus
-from src.service import order_service
+from src.repository import order_repository
 
 
-def test_okey():
+
+def test_okay():
     payload = {
         "userId": "user456",
         "status": "Pending",
@@ -33,6 +35,5 @@ def test_okey():
 
     place_order_dto = PlaceOrderDto.model_validate(payload)
     order = place_order_dto.to_domain()
-    order.status = OrderStatus.FAILED
-    order_service.create_order(order)
+    order_repository.insert_if_not_exists(order)
     print(place_order_dto.to_domain().model_dump_json())

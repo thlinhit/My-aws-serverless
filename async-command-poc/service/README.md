@@ -24,6 +24,20 @@ AWS_PROFILE=tx-sandbox sls package
 python3 -m black . && isort .
 ```
 
+2. Start Docker Desktop & Spin up containers for local development
+```shell
+docker compose -p poc-infra up -d 
+```
+3. Create dynamodb table
+```shell
+AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy  aws dynamodb create-table \
+   --table-name order_table \
+   --attribute-definitions AttributeName=pk,AttributeType=S AttributeName=sk,AttributeType=S \
+   --key-schema AttributeName=pk,KeyType=HASH AttributeName=sk,KeyType=RANGE \
+   --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
+   --endpoint-url http://localhost:8000
+```
+
 ```shell
 curl -X POST http://localhost:3000/ecommerce/orders \
      -H "Content-Type: application/json" \
