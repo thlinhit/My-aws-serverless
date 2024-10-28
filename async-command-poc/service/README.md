@@ -43,7 +43,6 @@ curl -X POST http://localhost:3000/ecommerce/orders \
      -H "Content-Type: application/json" \
      -d '{
             "userId": "user456",
-            "status": "Pending",
             "products": [
                 {
                     "id": "product1",
