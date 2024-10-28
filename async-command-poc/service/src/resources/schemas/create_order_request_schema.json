@@ -1,0 +1,62 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "userId": {
+            "type": "string"
+        },
+        "products": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "type": "string",
+                        "pattern": "^\\d+\\.\\d{2}$"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "required": ["id", "name", "price"],
+                "additionalProperties": false
+            }
+        },
+        "deliveryPrice": {
+            "type": "number",
+            "minimum": 0
+        },
+        "address": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "streetAddress": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string",
+                    "pattern": "^\\d{3}-\\d{3}-\\d{4}$"
+                }
+            },
+            "required": ["name", "streetAddress", "city", "country", "phoneNumber"],
+            "additionalProperties": false
+        }
+    },
+    "required": ["userId", "products", "deliveryPrice", "address"],
+    "additionalProperties": false
+}

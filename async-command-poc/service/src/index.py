@@ -1,6 +1,7 @@
 from aws_lambda_powertools.event_handler import Response, content_types
 from aws_lambda_powertools.event_handler.exceptions import NotFoundError
 from aws_lambda_powertools.utilities.typing import LambdaContext
+from aws_lambda_powertools.utilities.validation import SchemaValidationError
 
 from src.controller import order_controller
 from src.log.logger import logger
@@ -11,7 +12,6 @@ app.include_router(order_controller.router, prefix="/ecommerce/orders")
 
 @logger.inject_lambda_context
 def handle(event: dict, context: LambdaContext) -> dict | Exception:
-    logger.info(app.__dict__)
     return app.resolve(event, context)
 
 
@@ -22,4 +22,14 @@ def handle_not_found_errors(_exc: NotFoundError) -> Response:
         status_code=418,
         content_type=content_types.TEXT_PLAIN,
         body=f"Not found route: {app.current_event.path}",
+    )
+
+
+@app.exception_handler(SchemaValidationError)
+def handle_schema_validation_error(ex: SchemaValidationError):
+    logger.exception(ex)
+    return Response(
+        status_code=400,
+        content_type=content_types.TEXT_PLAIN,
+        body=str(ex),
     )
