@@ -18,6 +18,7 @@ provider:
   region: ${opt:region, 'eu-central-1'}
   environment:
     REGION: ${opt:region, 'eu-central-1'}
+    ORDER_TABLE: 'order_table'
   stage: local
 
 functions:
