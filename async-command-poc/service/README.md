@@ -73,6 +73,10 @@ curl -X POST http://localhost:3000/ecommerce/orders \
 python3 -m black . && isort .
 ```
 
+```bash
+AWS_PROFILE=tx-sandbox sls package
+```
+
 ## Local Development Setup
 
 1. Install dependencies
