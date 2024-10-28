@@ -269,6 +269,20 @@ files = [
 ]
 
 [[package]]
+name = "fastjsonschema"
+version = "2.20.0"
+description = "Fastest Python implementation of JSON schema"
+optional = false
+python-versions = "*"
+files = [
+    {file = "fastjsonschema-2.20.0-py3-none-any.whl", hash = "sha256:5875f0b0fa7a0043a91e93a9b8f793bcbbba9691e7fd83dca95c28ba26d21f0a"},
+    {file = "fastjsonschema-2.20.0.tar.gz", hash = "sha256:3d48fc5300ee96f5d116f10fe6f28d938e6008f59a6a025c2649475b87f76a23"},
+]
+
+[package.extras]
+devel = ["colorama", "json-spec", "jsonschema", "pylint", "pytest", "pytest-benchmark", "pytest-cache", "validictory"]
+
+[[package]]
 name = "flake8"
 version = "7.1.1"
 description = "the modular source code checker: pep8 pyflakes and co"
@@ -793,4 +807,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "3c5f2c09c55cf6e900af13c525ccb9e0365545bc7fd0091cbb828262d1d6c12f"
+content-hash = "dd5f5645846f2723d2bb1d78ad4ca826517cfe43a93bfb9481d263648c7c17c0"
