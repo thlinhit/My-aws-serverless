@@ -8,7 +8,7 @@ custom:
   pythonRequirements:
     usePoetry: true
 #    slim: true
-#    layer: true
+    layer: true
     noDeploy:
       - pytest
 
@@ -27,6 +27,29 @@ functions:
       - httpApi:
           path: /ecommerce/{proxy+}
           method: '*'
+    layers:
+      - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-python39-x86_64:2
+      - Ref: PythonRequirementsLambdaLayer
+    package:
+      include:
+        - src/**
 
 plugins:
   - serverless-offline
+  - serverless-python-requirements
+
+package:
+  individually: true
+  patterns:
+    - '!htmlcov'
+    - '!venv'
+    - '!node_modules'
+    - '!.serverless/requirements'
+    - "!${opt:package, '.serverless'}"
+    - '!configs'
+    - '!*.yml*'
+    - '!*.json'
+    - '!*.sh'
+    - 'lib'
+    - '*.py'
+  excludeDevDependencies: false
