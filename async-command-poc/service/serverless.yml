@@ -7,7 +7,7 @@ custom:
   servicePrefix: arb-poc
   pythonRequirements:
     usePoetry: true
-#    slim: true
+    slim: true
     layer: true
     noDeploy:
       - pytest
@@ -29,7 +29,7 @@ functions:
           path: /ecommerce/{proxy+}
           method: '*'
     layers:
-      - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-python39-x86_64:2
+      - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:2
       - Ref: PythonRequirementsLambdaLayer
     package:
       include:
