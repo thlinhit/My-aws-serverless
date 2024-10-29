@@ -47,6 +47,8 @@ package:
     - '!node_modules'
     - '!.serverless/requirements'
     - "!${opt:package, '.serverless'}"
+    - '!.idea'
+    - '!.pytest_cache'
     - '!configs'
     - '!*.yml*'
     - '!*.json'
