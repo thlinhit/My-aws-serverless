@@ -1,0 +1,67 @@
+service: ${self:custom.servicePrefix}-dynamodb-resources
+frameworkVersion: '4'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  servicePrefix: arb-poc
+  orderTable: ${self:custom.servicePrefix}-order-table
+
+provider:
+  name: aws
+  stage: local
+  region: ${opt:region, 'eu-central-1'}
+
+resources:
+  Resources:
+    orderTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${self:custom.orderTable}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+
+    orderTableNameSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /arb/poc/${self:custom.stage}/order/table/name
+        Type: String
+        Value: ${self:custom.orderTable}
+        Tags:
+          Environment: ${self:custom.stage}
+
+    orderTableArnSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /arb/poc/${self:custom.stage}/order/table/arn
+        Type: String
+        Value: !GetAtt orderTable.Arn
+        Tags:
+          Environment: ${self:custom.stage}
+
+    orderTableStreamArnSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /arb/poc/${self:custom.stage}/order/table/stream/arn
+        Type: String
+        Value: !GetAtt orderTable.StreamArn
+        Tags:
+          Environment: ${self:custom.stage}
+
+  Outputs:
+    orderTableName:
+      Value: ${self:custom.orderTable}
+    orderTableArn:
+      Value: !GetAtt orderTable.Arn
+    orderTableStreamArn:
+      Value: !GetAtt orderTable.StreamArn
