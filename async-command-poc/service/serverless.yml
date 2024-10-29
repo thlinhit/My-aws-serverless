@@ -11,6 +11,7 @@ custom:
     layer: true
     noDeploy:
       - pytest
+  orderTable: ${self:custom.servicePrefix}-order-table
 
 provider:
   name: aws
@@ -18,16 +19,33 @@ provider:
   region: ${opt:region, 'eu-central-1'}
   environment:
     REGION: ${opt:region, 'eu-central-1'}
-    ORDER_TABLE: 'order_table'
+    ORDER_TABLE: ${self:custom.orderTable}
+    RUNNING_STAGE: ${self:custom.stage}
   stage: local
 
 functions:
-  poc-receiver:
+  order-svc:
+    name: ${self:custom.servicePrefix}-order-svc
     handler: src.index.handle
+    timeout: 30
     events:
       - httpApi:
           path: /ecommerce/{proxy+}
           method: '*'
+    iamRoleStatementsName: ${self:custom.servicePrefix}-order-svc-${self:custom.stage}-${self:custom.region}-custom-lambdaRole
+    iamRoleStatements:
+      - Effect: Allow
+        Sid: DynamoDBTableAccess
+        Action:
+          - dynamodb:Get*
+          - dynamodb:Query
+          - dynamodb:PutItem
+          - dynamodb:Update*
+          - dynamodb:BatchWriteItem
+          - dynamodb:BatchGet*
+        Resource:
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${self:custom.orderTable}
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${self:custom.orderTable}/index/*
     layers:
       - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:2
       - Ref: PythonRequirementsLambdaLayer
@@ -38,6 +56,7 @@ functions:
 plugins:
   - serverless-offline
   - serverless-python-requirements
+  - serverless-iam-roles-per-function
 
 package:
   individually: true
