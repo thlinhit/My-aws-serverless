@@ -74,4 +74,4 @@ class DomainCode(Enum):
 
     @property
     def external_code(self):
-        return f"EXTERNAL_CODE {self.value}"
+        return f"<EXTERNAL_CODE>{self.value}"
