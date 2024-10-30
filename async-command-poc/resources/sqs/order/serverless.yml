@@ -1,0 +1,84 @@
+service: ${self:custom.servicePrefix}-sqs-resources
+frameworkVersion: '4'
+
+custom:
+  stage: ${opt:stage, 'dev'}
+  servicePrefix: arb-poc
+  region: ${opt:region, 'eu-central-1'}
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: ${self:custom.region}
+  stage: ${self:custom.stage}
+
+resources:
+  Resources:
+    OrderPlacedQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:custom.servicePrefix}-order-placed-queue
+        VisibilityTimeout: 30
+        MessageRetentionPeriod: 86400
+        Tags:
+          - Key: Team
+            Value: 9999
+
+    OrderPlacedEventRule:
+      Type: AWS::Events::Rule
+      Properties:
+        Name: order-placed-event-rule
+        EventBusName: ${ssm:/arb/poc/${self:custom.stage}/eventbus/arn}
+        EventPattern:
+          detail:
+            source:
+              - "com.poc.arb.ecommerce.order"
+            type:
+              - "OrderCreated"
+            detail:
+              status:
+                - "Pending"
+        Targets:
+          - Arn: !GetAtt OrderPlacedQueue.Arn
+            Id: "OrderPlacedQueueTarget"
+            InputTransformer:
+              InputPathsMap:
+                version: "$.detail.version"
+                id: "$.detail.id"
+                type: "$.detail.type"
+                time: "$.detail.time"
+                source: "$.detail.source"
+                detailObject: "$.detail.detail"
+              InputTemplate: '{
+                "version": <version>,
+                "id": <id>,
+                "type": <type>,
+                "time": <time>,
+                "source": <source>,
+                "detail": <detailObject>
+              }'
+
+    OrderPlacedQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - Ref: OrderPlacedQueue
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: events.amazonaws.com
+              Action: "sqs:SendMessage"
+              Resource: !GetAtt OrderPlacedQueue.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !GetAtt OrderPlacedEventRule.Arn
+
+  Outputs:
+    OrderPlacedQueueUrl:
+      Value: !Ref OrderPlacedQueue
+    OrderPlacedQueueArn:
+      Value: !GetAtt OrderPlacedQueue.Arn
+    OrderPlacedEventRuleName:
+      Value: !Ref OrderPlacedEventRule
