@@ -5,6 +5,7 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   servicePrefix: arb-poc
   orderTable: ${self:custom.servicePrefix}-order-table
+  eventBusArn: ${ssm:/arb/poc/${self:custom.stage}/eventbus/arn, "NOT FOUND"}
 
 provider:
   name: aws
@@ -50,7 +51,7 @@ resources:
         Name: order-table-order-created-event-pipe
         RoleArn: !GetAtt PipeExecutionRole.Arn
         Source: !GetAtt orderTable.StreamArn
-        Target: ${ssm:/arb/poc/${self:custom.stage}/eventbus/arn}
+        Target: ${self:custom.eventBusArn}
         TargetParameters:
           EventBridgeEventBusParameters:
             DetailType: "OrderCreated"
@@ -107,7 +108,7 @@ resources:
                 - Effect: Allow
                   Action:
                     - events:PutEvents
-                  Resource: ${ssm:/arb/poc/${self:custom.stage}/eventbus/arn}
+                  Resource: ${self:custom.eventBusArn}
         Tags:
           - Key: Team
             Value: 9999
