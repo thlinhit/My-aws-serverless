@@ -31,15 +31,6 @@ resources:
         StreamSpecification:
           StreamViewType: NEW_AND_OLD_IMAGES
 
-    orderTableNameSSMParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /arb/poc/${self:custom.stage}/order/table/name
-        Type: String
-        Value: ${self:custom.orderTable}
-        Tags:
-          Environment: ${self:custom.stage}
-
     orderTableArnSSMParameter:
       Type: AWS::SSM::Parameter
       Properties:
