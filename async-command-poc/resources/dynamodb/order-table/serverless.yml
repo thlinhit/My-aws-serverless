@@ -55,12 +55,29 @@ resources:
           EventBridgeEventBusParameters:
             DetailType: "OrderPlaced"
             Source: "com.poc.arb.ecommerce.order"
+          InputTemplate: |
+            {
+              "version": 1,
+              "id": "<$.eventID>",
+              "type": "OrderPlaced",
+              "time": "<$.dynamodb.NewImage.createdAt.S>",
+              "source": "com.poc.arb.ecommerce.order",
+              "detail": {
+                "orderId": "<$.dynamodb.NewImage.sk.S>",
+                "userId": "<$.dynamodb.NewImage.userId.S>",
+                "status": "<$.dynamodb.NewImage.status.S>",
+                "deliveryPrice": "<$.dynamodb.NewImage.deliveryPrice.N>",
+                "createdAt": "<$.dynamodb.NewImage.createdAt.S>",
+                "updatedAt": "<$.dynamodb.NewImage.updatedAt.S>",
+                "updatedBy": "<$.dynamodb.NewImage.updatedBy.S>"
+              }
+            }
         SourceParameters:
           DynamoDBStreamParameters:
             StartingPosition: LATEST
           FilterCriteria:
             Filters:
-              - Pattern: '{"eventName": ["INSERT"]}'
+              - Pattern: '{"eventName": ["INSERT"], "dynamodb": { "NewImage": { "pk": { "S": [{ "prefix": "ORDER#" }] }, "sk": { "S": [{ "prefix": "ORDER#" }] } } }}'
         Tags:
           Environment: ${self:custom.stage}
           Team: "9999"
