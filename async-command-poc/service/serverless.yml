@@ -27,7 +27,7 @@ functions:
   order-svc:
     name: ${self:custom.servicePrefix}-order-svc
     handler: src.index.handle
-    timeout: 30
+    timeout: 29
     events:
       - httpApi:
           path: /ecommerce/{proxy+}
