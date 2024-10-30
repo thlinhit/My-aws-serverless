@@ -21,6 +21,17 @@ resources:
         QueueName: ${self:custom.servicePrefix}-order-placed-queue
         VisibilityTimeout: 30
         MessageRetentionPeriod: 86400
+        RedrivePolicy:
+          deadLetterTargetArn: !GetAtt OrderPlacedDLQ.Arn
+          maxReceiveCount: 5  # Number of times a message can be received before moving to DLQ
+        Tags:
+          - Key: Team
+            Value: 9999
+    OrderPlacedDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:custom.servicePrefix}-order-placed-dlq
+        MessageRetentionPeriod: 1209600  # Retain messages in DLQ for up to 14 days
         Tags:
           - Key: Team
             Value: 9999

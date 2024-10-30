@@ -12,6 +12,7 @@ class OrderItem(Item):
     status: str = Field(alias="status")
     delivery_price: Decimal = Field(alias="deliveryPrice")
     total_quantity: int = Field(default=0, alias="totalQuantity")
+    order_id: str = Field(alias="orderId")
 
     def to_dto(self) -> Order:
         return generic_mapper.map(self, Order)
@@ -21,6 +22,7 @@ class OrderItem(Item):
         result = generic_mapper.map(
             order,
             OrderItem,
+            field_mapping={"id": "orderId"},
             extra_fields={
                 "pk": OrderItem.build_pk(order.id),
                 "sk": OrderItem.build_sk(order.id),

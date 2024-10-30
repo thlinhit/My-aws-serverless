@@ -64,7 +64,7 @@ resources:
               "time": "<$.dynamodb.NewImage.createdAt.S>",
               "source": "com.poc.arb.ecommerce.order",
               "detail": {
-                "orderId": "<$.dynamodb.NewImage.sk.S>",
+                "orderId": "<$.dynamodb.NewImage.orderId.S>",
                 "userId": "<$.dynamodb.NewImage.userId.S>",
                 "status": "<$.dynamodb.NewImage.status.S>",
                 "deliveryPrice": "<$.dynamodb.NewImage.deliveryPrice.N>",
