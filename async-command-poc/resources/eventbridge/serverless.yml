@@ -1,0 +1,26 @@
+service: ${self:custom.servicePrefix}-eventbridge-service
+frameworkVersion: '4'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  servicePrefix: arb-poc
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: ${opt:region, 'eu-central-1'}
+  stage: local
+
+resources:
+  Resources:
+    CustomEventBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: ${self:custom.servicePrefix}-event-bus
+        Tags:
+          - Key: Team
+            Value: 9999
+
+  Outputs:
+    EventBusName:
+      Value: !Ref CustomEventBus
