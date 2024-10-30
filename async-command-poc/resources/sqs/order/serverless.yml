@@ -5,6 +5,7 @@ custom:
   stage: ${opt:stage, 'dev'}
   servicePrefix: arb-poc
   region: ${opt:region, 'eu-central-1'}
+  eventBusArn: ${ssm:/arb/poc/${self:custom.stage}/eventbus/arn, "NOT FOUND"}
 
 provider:
   name: aws
@@ -28,7 +29,7 @@ resources:
       Type: AWS::Events::Rule
       Properties:
         Name: order-placed-event-rule
-        EventBusName: ${ssm:/arb/poc/${self:custom.stage}/eventbus/arn}
+        EventBusName: ${self:custom.eventBusArn}
         EventPattern:
           detail:
             source:

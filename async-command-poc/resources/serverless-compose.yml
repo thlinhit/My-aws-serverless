@@ -1,0 +1,13 @@
+services:
+  eventbridge:
+    path: eventbridge
+
+  order-dynamodb-table:
+    path: dynamodb/order
+    dependsOn:
+      - eventbridge
+  order-sqs:
+    path: sqs/order
+    dependsOn:
+      - eventbridge
+
