@@ -1,0 +1,73 @@
+service: ${self:custom.servicePrefix}-product-service
+frameworkVersion: '4'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: arb-poc
+  pythonRequirements:
+    usePoetry: true
+    slim: true
+    layer: true
+    noDeploy:
+      - pytest
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: ${opt:region, 'eu-central-1'}
+  environment:
+    REGION: ${opt:region, 'eu-central-1'}
+    RUNNING_STAGE: ${self:custom.stage}
+  stage: local
+
+functions:
+  products-apis:
+    name: ${self:custom.servicePrefix}-product-svc
+    handler: src.index.handle
+    timeout: 29
+    events:
+      - httpApi:
+          path: /ecommerce/products/{proxy+}
+          method: '*'
+    layers:
+      - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:2
+      - Ref: PythonRequirementsLambdaLayer
+
+resources:
+  Resources:
+    HttpUrlSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /${self:service}/${self:custom.stage}/api-gateway-url
+        Type: String
+        Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/
+        Tags:
+          Environment: ${self:custom.stage}
+          Team: "9999"
+
+plugins:
+  - serverless-offline
+  - serverless-python-requirements
+  - serverless-iam-roles-per-function
+  - serverless-cloudformation-sub-variables
+
+package:
+  individually: true
+  patterns:
+    - '!htmlcov'
+    - '!venv'
+    - '!node_modules'
+    - '!.serverless/requirements'
+    - "!${opt:package, '.serverless'}"
+    - '!.idea'
+    - '!.pytest_cache'
+    - '!configs'
+    - '!*.yml*'
+    - '!*.json'
+    - '!*.sh'
+    - 'lib'
+    - '*.py'
+  include:
+    - src/**
+  excludeDevDependencies: false
