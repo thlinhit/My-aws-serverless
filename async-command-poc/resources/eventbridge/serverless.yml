@@ -20,7 +20,18 @@ resources:
         Tags:
           - Key: Team
             Value: 9999
+    CustomEventBusArnSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /arb/poc/${self:custom.stage}/eventbus/arn
+        Type: String
+        Value: !GetAtt CustomEventBus.Arn
+        Tags:
+          Environment: ${self:custom.stage}
+          Team: "9999"
 
   Outputs:
     EventBusName:
       Value: !Ref CustomEventBus
+    EventBusNameArn:
+      Value: !GetAtt CustomEventBus.Arn
