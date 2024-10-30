@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer",
+      "enum": [1]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}$"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["OrderCreated"]
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["com.poc.arb.ecommerce.order"]
+    },
+    "detail": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Pending"]
+        },
+        "deliveryPrice": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["orderId", "userId", "status", "deliveryPrice", "createdAt"]
+    }
+  },
+  "required": ["version", "id", "type", "time", "source", "detail"],
+  "additionalProperties": false
+}
