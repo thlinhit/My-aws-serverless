@@ -24,7 +24,7 @@ provider:
   stage: local
 
 functions:
-  order-svc:
+  order-apis:
     name: ${self:custom.servicePrefix}-order-svc
     handler: src.index.handle
     timeout: 29
@@ -49,9 +49,16 @@ functions:
     layers:
       - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:2
       - Ref: PythonRequirementsLambdaLayer
-    package:
-      include:
-        - src/**
+
+  validate-orders:
+    name: ${self:custom.servicePrefix}-validate-order-processor
+    handler: src.processor.validate_order_processor.handle
+    events:
+      - sqs:
+          arn: arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:${self:custom.servicePrefix}-order-placed-queue
+    layers:
+      - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:2
+      - Ref: PythonRequirementsLambdaLayer
 
 resources:
   Resources:
@@ -69,6 +76,7 @@ plugins:
   - serverless-offline
   - serverless-python-requirements
   - serverless-iam-roles-per-function
+  - serverless-cloudformation-sub-variables
 
 package:
   individually: true
@@ -86,4 +94,6 @@ package:
     - '!*.sh'
     - 'lib'
     - '*.py'
+  include:
+    - src/**
   excludeDevDependencies: false
