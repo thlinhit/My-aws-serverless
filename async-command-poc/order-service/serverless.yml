@@ -1,4 +1,4 @@
-service: ${self:custom.servicePrefix}-service
+service: ${self:custom.servicePrefix}-order-service
 frameworkVersion: '4'
 
 custom:
