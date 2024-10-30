@@ -43,17 +43,57 @@ resources:
         Tags:
           Environment: ${self:custom.stage}
           Team: "9999"
-          
-
-    orderTableStreamArnSSMParameter:
-      Type: AWS::SSM::Parameter
+    
+    DynamoDBToEventBridgePipe:
+      Type: AWS::Pipes::Pipe
       Properties:
-        Name: /arb/poc/${self:custom.stage}/order/table/stream/arn
-        Type: String
-        Value: !GetAtt orderTable.StreamArn
+        Name: order-table-new-order-received-event-pipe
+        RoleArn: !GetAtt PipeExecutionRole.Arn
+        Source: !GetAtt orderTable.StreamArn
+        Target: ${ssm:/arb/poc/${self:custom.stage}/eventbus/arn}
+        TargetParameters:
+          EventBridgeEventBusParameters:
+            DetailType: "NewOrderReceived"
+            Source: "com.poc.arb.ecommerce.order"
+        SourceParameters:
+          DynamoDBStreamParameters:
+            StartingPosition: LATEST
+          FilterCriteria:
+            Filters:
+              - Pattern: '{"eventName": ["INSERT"]}'
         Tags:
           Environment: ${self:custom.stage}
           Team: "9999"
+
+    PipeExecutionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: pipes.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: AllowDynamoDBStreamToEventBridge
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:DescribeStream
+                    - dynamodb:GetRecords
+                    - dynamodb:GetShardIterator
+                    - dynamodb:ListStreams
+                  Resource: !GetAtt orderTable.StreamArn
+                - Effect: Allow
+                  Action:
+                    - events:PutEvents
+                  Resource: ${ssm:/arb/poc/${self:custom.stage}/eventbus/arn}
+        Tags:
+          - Key: Team
+            Value: 9999
 
   Outputs:
     orderTableName:
