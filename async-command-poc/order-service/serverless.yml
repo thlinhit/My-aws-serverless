@@ -53,6 +53,18 @@ functions:
       include:
         - src/**
 
+resources:
+  Resources:
+    HttpUrlSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /${self:service}/${self:custom.stage}/api-gateway-url
+        Type: String
+        Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/
+        Tags:
+          Environment: ${self:custom.stage}
+          Team: "9999"
+
 plugins:
   - serverless-offline
   - serverless-python-requirements
