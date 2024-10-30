@@ -44,22 +44,22 @@ resources:
           Environment: ${self:custom.stage}
           Team: "9999"
     
-    OrderPlacedPipe:
+    OrderCreatedPipe:
       Type: AWS::Pipes::Pipe
       Properties:
-        Name: order-table-order-placed-event-pipe
+        Name: order-table-order-created-event-pipe
         RoleArn: !GetAtt PipeExecutionRole.Arn
         Source: !GetAtt orderTable.StreamArn
         Target: ${ssm:/arb/poc/${self:custom.stage}/eventbus/arn}
         TargetParameters:
           EventBridgeEventBusParameters:
-            DetailType: "OrderPlaced"
+            DetailType: "OrderCreated"
             Source: "com.poc.arb.ecommerce.order"
           InputTemplate: |
             {
               "version": 1,
               "id": "<$.eventID>",
-              "type": "OrderPlaced",
+              "type": "OrderCreated",
               "time": "<$.dynamodb.NewImage.createdAt.S>",
               "source": "com.poc.arb.ecommerce.order",
               "detail": {
