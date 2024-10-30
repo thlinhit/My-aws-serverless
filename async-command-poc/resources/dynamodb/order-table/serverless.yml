@@ -44,16 +44,16 @@ resources:
           Environment: ${self:custom.stage}
           Team: "9999"
     
-    DynamoDBToEventBridgePipe:
+    OrderPlacedPipe:
       Type: AWS::Pipes::Pipe
       Properties:
-        Name: order-table-new-order-received-event-pipe
+        Name: order-table-order-placed-event-pipe
         RoleArn: !GetAtt PipeExecutionRole.Arn
         Source: !GetAtt orderTable.StreamArn
         Target: ${ssm:/arb/poc/${self:custom.stage}/eventbus/arn}
         TargetParameters:
           EventBridgeEventBusParameters:
-            DetailType: "NewOrderReceived"
+            DetailType: "OrderPlaced"
             Source: "com.poc.arb.ecommerce.order"
         SourceParameters:
           DynamoDBStreamParameters:
