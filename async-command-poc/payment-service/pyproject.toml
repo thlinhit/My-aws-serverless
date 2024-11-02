@@ -2,7 +2,6 @@
 name = "payment-service"
 version = "0.1.0"
 description = ""
-authors = ["Linh Truong <linh.truong@tyme.com>"]
 readme = "README.md"
 package-mode = false
 
