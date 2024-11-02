@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "orderId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "userId": {
+      "type": "string",
+      "pattern": "^99\\d{10}$"
+    },
+    "total": {
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "required": ["orderId", "userId", "total"]
+}
