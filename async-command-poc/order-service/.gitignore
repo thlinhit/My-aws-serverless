@@ -24,3 +24,4 @@ node_modules/
 .idea/
 requirements.txt
 .pytest_cache
+/poetry.lock
