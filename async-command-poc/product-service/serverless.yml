@@ -19,7 +19,7 @@ provider:
   environment:
     REGION: ${opt:region, 'eu-central-1'}
     RUNNING_STAGE: ${self:custom.stage}
-  stage: local
+  stage: dev
 
 functions:
   products-apis:
@@ -36,7 +36,7 @@ functions:
 
 resources:
   Resources:
-    HttpUrlSSMParameter:
+    ProductHttpUrlSSMParameter:
       Type: AWS::SSM::Parameter
       Properties:
         Name: /${self:service}/${self:custom.stage}/api-gateway-url
