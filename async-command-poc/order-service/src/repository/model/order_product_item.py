@@ -11,8 +11,14 @@ class OrderProductItem(Item):
     price: Decimal
     quantity: int
 
-    def to_dto(self) -> Product:
-        return generic_mapper.map(self, Product)
+    def to_domain(self) -> Product:
+        return generic_mapper.map(
+            self,
+            Product,
+            extra_fields={
+                "id": self.pk.replace("PRD#", "")
+            }
+        )
 
     @staticmethod
     def from_dto(order: Order, product: Product):
