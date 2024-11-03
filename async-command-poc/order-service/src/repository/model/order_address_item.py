@@ -11,7 +11,7 @@ class OrderAddressItem(Item):
     country: str
     phoneNumber: str
 
-    def to_dto(self) -> Address:
+    def to_domain(self) -> Address:
         return generic_mapper.map(self, Address)
 
     @staticmethod
