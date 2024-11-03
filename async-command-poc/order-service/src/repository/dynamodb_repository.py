@@ -1,22 +1,22 @@
 import os
-from typing import Optional
+from typing import Optional, List
 
 import boto3
-from boto3.dynamodb.conditions import AttributeBase
+from boto3.dynamodb.conditions import AttributeBase, Key
 from botocore.config import Config as BotoCfg
 from botocore.exceptions import ClientError
+from tenacity import retry, stop_after_attempt, retry_if_exception_type, wait_exponential_jitter
 
+from src.config.env import REGION
 from src.exception.domain_code import DomainCode
 from src.exception.domain_error import DomainError
 from src.log.logger import logger
 from src.repository.model.item import Item
-from src.repository.model.key import Key
+from src.repository.model.key import ItemKey
 from src.repository.model.update_behavior import UpdateBehavior
 from src.util import datetime_util
 
 DYNAMO_DB_SERVICE = "dynamodb"
-REGION = os.environ["REGION"]
-TABLE_REGION = os.getenv("TABLE_REGION", REGION)
 
 IS_LOCAL = os.environ.get("RUNNING_STAGE", "local") == "local"
 if IS_LOCAL:
@@ -30,11 +30,15 @@ if IS_LOCAL:
 else:
     dynamodb_resource = boto3.resource(
         DYNAMO_DB_SERVICE,
-        region_name=TABLE_REGION,
+        region_name=REGION,
         config=BotoCfg(retries={"mode": "standard"}),
     )
 
 _DYNAMODB_CONFIG = {}
+
+
+def _get_dynamodb_client():
+    return dynamodb_resource.meta.client
 
 
 def get_table(table_name: str):
@@ -43,14 +47,14 @@ def get_table(table_name: str):
     return _DYNAMODB_CONFIG[table_name]
 
 
-def get_item(table_name: str, key: Key) -> dict:
+def get_item(table_name: str, key: ItemKey) -> dict:
     is_present, item = find_item(table_name, key)
     if not is_present:
         raise DomainError(DomainCode.ITEM_NOT_FOUND, table_name, key.pk, key.sk)
     return item
 
 
-def find_item(table_name, key: Key) -> tuple[bool, dict | None]:
+def find_item(table_name, key: ItemKey) -> tuple[bool, dict | None]:
     logger.info(
         "Find item in table: {}, pk: {}, sk: {}".format(table_name, key.pk, key.sk)
     )
@@ -64,13 +68,24 @@ def find_item(table_name, key: Key) -> tuple[bool, dict | None]:
         raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, repr(ex))
 
 
+def get_items_by_pk(table_name: str, pk: str) -> list:
+    try:
+        response = _get_dynamodb_client().query(
+            TableName=table_name,
+            KeyConditionExpression=Key('pk').eq(pk)
+        )
+        return response.get('Items', [])
+    except Exception as ex:
+        raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, repr(ex))
+
+
 def update_item(
-    table_name: str,
-    item: Item,
-    condition_expression: AttributeBase = None,
-    ignore_none_fields: bool = False,
+        table_name: str,
+        item: Item,
+        condition_expression: AttributeBase = None,
+        ignore_none_fields: bool = False,
 ) -> Optional[dict]:
-    item_key: Key = item.get_key()
+    item_key: ItemKey = item.get_key()
     try:
 
         update_data = item.model_dump(
@@ -93,8 +108,8 @@ def update_item(
                 continue
 
             if (
-                field_metadata.get(UpdateBehavior.KEY, None)
-                == UpdateBehavior.WRITE_IF_NOT_EXIST.value
+                    field_metadata.get(UpdateBehavior.KEY, None)
+                    == UpdateBehavior.WRITE_IF_NOT_EXIST.value
             ):
                 update_expressions.append(f"{alias} = if_not_exists({alias}, :{alias})")
             else:
@@ -132,6 +147,48 @@ def update_item(
             )
     except Exception as ex:
         raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, repr(ex))
+
+
+def batch_get_items(table_name: str, keys: list[ItemKey]) -> list[dict]:
+    logger.info(f"Batch get items from table: {table_name}")
+    all_items = []
+    keys_list = [key.model_dump() for key in keys]
+
+    for i in range(0, len(keys_list), 20):
+        batch_keys = keys_list[i:i + 20]
+        request_items = {table_name: {"Keys": batch_keys}}
+
+        while request_items:
+            try:
+                response = _get_items(request_items)
+                items = response.get("Responses", {}).get(table_name, [])
+                all_items.extend(items)
+                unprocessed_keys = response.get("UnprocessedKeys", {})
+                if not unprocessed_keys:
+                    break
+                request_items = unprocessed_keys
+                logger.warning("Retrying unprocessed keys...")
+            except ClientError as client_error:
+                logger.error(f"Client error while fetching items: {client_error}")
+                raise DomainError(
+                    DomainCode.DYNAMODB_ERROR,
+                    table_name,
+                    repr(client_error)
+                )
+            except Exception as ex:
+                logger.error(f"Unexpected error: {ex}")
+                raise DomainError(DomainCode.DYNAMODB_ERROR, table_name, repr(ex))
+
+    return all_items
+
+
+@retry(
+    retry=retry_if_exception_type(ClientError),
+    wait=wait_exponential_jitter(max=5),
+    stop=stop_after_attempt(3)
+)
+def _get_items(request_items: List[dict]):
+    return _get_dynamodb_client().batch_get_item(RequestItems=request_items)
 
 
 class DynamoDBTransactionHelper:
