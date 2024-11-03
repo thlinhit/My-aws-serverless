@@ -1,5 +1,9 @@
 import os
 
+from src.domain.order import Order
+from src.domain.order_status import OrderStatus
+from src.service import order_service
+
 os.environ["REGION"] = "us-east-1"
 os.environ["ORDER_TABLE"] = "order_table"
 from src.controller.dto.place_order_dto import PlaceOrderDto
@@ -27,3 +31,8 @@ def test_okay():
     place_order_dto = PlaceOrderDto.model_validate(payload)
     order = place_order_dto.to_domain()
     order_repository.insert_if_not_exists(order)
+
+
+def test_get_order():
+    order: Order = order_service.get_order("65e64530-693d-bded-4b63-f817265aa38a")
+    assert order.status == OrderStatus.PENDING

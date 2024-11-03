@@ -1,8 +1,9 @@
 from decimal import Decimal
+from typing import List
 
 from pydantic import Field
 
-from src.domain.order import Order
+from src.domain.order import Order, Address, Product
 from src.mapper import generic_mapper
 from src.repository.model.item import Item
 
@@ -14,8 +15,16 @@ class OrderItem(Item):
     total_quantity: int = Field(default=0, alias="totalQuantity")
     order_id: str = Field(alias="orderId")
 
-    def to_domain(self) -> Order:
-        return generic_mapper.map(self, Order)
+    def to_domain(self, address: Address, products: List[Product]) -> Order:
+        return generic_mapper.map(
+            self,
+            Order,
+            extra_fields={
+                "id": self.pk.replace("ORDER#", ""),
+                "address": address,
+                "products": products,
+            }
+        )
 
     @staticmethod
     def from_dto(order: Order):

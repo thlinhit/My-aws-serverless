@@ -55,6 +55,8 @@ class DomainCode(Enum):
 
     ORDER_NOT_FOUND = ("012", "Order not found, orderId:{}")
 
+    INVALID_ORDER_DATA = ("013", "Invalid order data, orderId:{}, reason:{}")
+
     def __new__(cls, *values):
         instance = object.__new__(cls)
         instance._value_ = values[0]

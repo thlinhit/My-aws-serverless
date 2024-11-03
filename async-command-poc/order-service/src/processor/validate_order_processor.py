@@ -26,7 +26,7 @@ def handle(event: SQSEvent, _: LambdaContext):
             logger.info(f"Received triggering record: {record}")
             body = json.loads(record.body)
             validate(event=body, schema=file_util.load_json_schema('validate_order_request_schema.v1.json'))
-            order: Order = order_service.get_order(body["orderId"])
+            order: Order = order_service.get_order(body["detail"]["orderId"])
 
             if order.status != OrderStatus.PENDING:
                 logger.info(f"Ignore validation as Order status is not eligible, "
@@ -41,4 +41,5 @@ def handle(event: SQSEvent, _: LambdaContext):
         except SchemaValidationError as e:
             raise DomainError(DomainCode.VALIDATION_ERROR, str(e))
         except Exception as e:
+            logger.exception(e)
             raise DomainError(DomainCode.UNKNOWN, str(e))
