@@ -14,7 +14,7 @@ class OrderItem(Item):
     total_quantity: int = Field(default=0, alias="totalQuantity")
     order_id: str = Field(alias="orderId")
 
-    def to_dto(self) -> Order:
+    def to_domain(self) -> Order:
         return generic_mapper.map(self, Order)
 
     @staticmethod

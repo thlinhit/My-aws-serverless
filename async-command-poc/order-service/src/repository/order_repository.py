@@ -1,5 +1,7 @@
 import os
 
+from aws_lambda_powertools.utilities.parser import parse
+
 from src.domain.order import Order
 from src.exception.domain_code import DomainCode
 from src.exception.domain_error import DomainError
@@ -40,10 +42,11 @@ def insert_if_not_exists(order: Order) -> Order:
 
 
 def get_order(order_id: str) -> Order:
-    dynamodb_repository.get_item(
+    item = dynamodb_repository.get_item(
         table_name=table_name,
         key=Key(
             pk=OrderItem.build_pk(order_id),
             sk=OrderItem.build_sk(order_id)
         )
     )
+    return parse(model=OrderItem, event=item).to_domain()
