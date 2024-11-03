@@ -53,6 +53,8 @@ class DomainCode(Enum):
 
     ITEM_ALREADY_EXISTS = ("011", "Item already exists, pk:{}, sk:{}")
 
+    ORDER_NOT_FOUND = ("012", "Order not found, orderId:{}")
+
     def __new__(cls, *values):
         instance = object.__new__(cls)
         instance._value_ = values[0]
