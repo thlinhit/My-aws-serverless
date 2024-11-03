@@ -10,6 +10,8 @@ python = "^3.12"
 requests = "^2.32.3"
 numpy-financial = "^1.0.0"
 pydantic = "^2.9.2"
+aws-requests-auth = "^0.4.3"
+tenacity = "^9.0.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"

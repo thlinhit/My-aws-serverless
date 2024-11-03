@@ -67,6 +67,9 @@ curl -X POST http://localhost:3000/ecommerce/orders \
         }'
 ```
 
+
+NOTE: retry using tenacity
+
 ### Lint codes
 ```shell
 python3 -m black . && isort .

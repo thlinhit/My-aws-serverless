@@ -1,0 +1,2 @@
+class RetryableHTTPError(Exception):
+    pass

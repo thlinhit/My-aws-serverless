@@ -12,6 +12,9 @@ class Product(BaseModel):
     price: Decimal
     quantity: Optional[int] = Field(default=1)
 
+    def get_total_amount(self) -> Decimal:
+        return self.price * self.quantity
+
 
 class Address(BaseModel):
     name: str
@@ -28,3 +31,8 @@ class Order(BaseModel):
     products: List[Product]
     deliveryPrice: Decimal
     address: Address
+
+    def get_total_amount(self) -> Decimal:
+        total_amount = sum(product.get_total_amount() for product in self.products)
+        return total_amount + self.deliveryPrice
+

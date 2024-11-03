@@ -21,6 +21,8 @@ provider:
     REGION: ${opt:region, 'eu-central-1'}
     ORDER_TABLE: ${self:custom.orderTable}
     RUNNING_STAGE: ${self:custom.stage}
+    PAYMENT_URL_SSM: /${self:custom.servicePrefix}-payments-service/${self:custom.stage}/api-gateway-url
+    PRODUCT_URL_SSM: /${self:custom.servicePrefix}-product-service/${self:custom.stage}/api-gateway-url
   stage: local
 
 functions:
