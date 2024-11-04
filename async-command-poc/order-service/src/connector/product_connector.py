@@ -26,16 +26,11 @@ PRODUCT_URL_SSM = os.getenv("PRODUCT_URL_SSM")
 )
 def validate(order: Order) -> bool:
     try:
-        product_url = fetch_product_url()
+        product_url = aws_ssm_config.get(PRODUCT_URL_SSM, max_age=900)
         response = call_product_service(order, product_url)
         return handle_response(response, order.id, product_url)
     except Exception as error:
         log_and_raise_error(error)
-
-
-def fetch_product_url() -> str:
-    logger.debug(f"Fetching SSM value for key: {PRODUCT_URL_SSM}")
-    return aws_ssm_config.get_ssm_provider().get(PRODUCT_URL_SSM, max_age=900)
 
 
 def call_product_service(order: Order, product_url: str) -> requests.Response:
