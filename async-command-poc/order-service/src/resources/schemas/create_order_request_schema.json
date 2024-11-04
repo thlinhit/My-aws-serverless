@@ -17,8 +17,8 @@
                         "type": "string"
                     },
                     "price": {
-                        "type": "string",
-                        "pattern": "^\\d+\\.\\d{2}$"
+                        "type": "number",
+                        "multipleOf": 0.01
                     },
                     "quantity": {
                         "type": "integer",
