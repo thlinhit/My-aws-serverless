@@ -57,6 +57,8 @@ class DomainCode(Enum):
 
     INVALID_ORDER_DATA = ("013", "Invalid order data, orderId:{}, reason:{}")
 
+    HTTP_ERROR = ("014", "Http Error, url:{}, statusCode:{}, resp:{}")
+
     def __new__(cls, *values):
         instance = object.__new__(cls)
         instance._value_ = values[0]
