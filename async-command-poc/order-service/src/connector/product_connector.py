@@ -44,7 +44,7 @@ def call_product_service(order: Order, product_url: str) -> requests.Response:
 
     response = requests.post(
         f"{product_url}/ecommerce/products/validate",
-        json={"products": [product.model_dump(by_alias=True) for product in order.products]},
+        json={"products": [product.model_dump(by_alias=True, mode='json') for product in order.products]},
         auth=iam_auth
     )
 
