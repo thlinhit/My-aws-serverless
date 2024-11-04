@@ -11,7 +11,7 @@ def map(
     field_mapping: dict = None,
     extra_fields: dict = None,
 ) -> T:
-    source_dict = source_model.model_dump()
+    source_dict = source_model.model_dump(by_alias=True)
     source_dict = {k: v for k, v in source_dict.items() if v is not None}
 
     if field_mapping:
