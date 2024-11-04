@@ -1,7 +1,10 @@
+import json
 import os
+import random
 
 from src.domain.order import Order
 from src.domain.order_status import OrderStatus
+from src.log.logger import logger
 from src.service import order_service
 
 os.environ["REGION"] = "us-east-1"
@@ -12,11 +15,11 @@ from src.repository import order_repository
 
 def test_okay():
     payload = {
-        "userId": "user456",
+        "userId": "user" + str(random.randint(1000, 9999)),
         "status": "Pending",
         "products": [
-            {"id": "product1", "name": "Product 1", "price": "19.99", "quantity": 2},
-            {"id": "product2", "name": "Product 2", "price": "5.99"},
+            {"id": "product1", "name": "Product 1", "price": 19.99, "quantity": 2},
+            {"id": "product2", "name": "Product 2", "price": 5.99},
         ],
         "deliveryPrice": 5,
         "address": {
@@ -30,7 +33,8 @@ def test_okay():
 
     place_order_dto = PlaceOrderDto.model_validate(payload)
     order = place_order_dto.to_domain()
-    order_repository.insert_if_not_exists(order)
+    new_order: Order = order_repository.insert_if_not_exists(order)
+    logger.info(new_order.model_dump_json(by_alias=True))
 
 
 def test_get_order():

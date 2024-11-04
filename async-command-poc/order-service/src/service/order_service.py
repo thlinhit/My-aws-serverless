@@ -7,12 +7,12 @@ from src.repository import order_repository
 
 
 def create_order(order: Order) -> Order:
-    logger.info(f"Create the order, userId={order.userId}, " f"orderId={order.id}")
+    logger.info(f"Create the order, userId={order.user_id}, " f"orderId={order.id}")
     if order.status is not OrderStatus.PENDING:
         raise DomainError(
             DomainCode.INVALID_ORDER_STATUS,
             order.id,
-            order.userId,
+            order.user_id,
             OrderStatus.PENDING,
             order.status,
         )

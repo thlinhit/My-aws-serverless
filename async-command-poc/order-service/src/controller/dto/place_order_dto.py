@@ -1,6 +1,7 @@
+from decimal import Decimal
 from typing import List
 
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, Field
 
 from src.domain.order import Address, Order, Product
 from src.mapper import generic_mapper
@@ -10,7 +11,7 @@ from src.util import uuid_util
 class PlaceOrderDto(BaseModel):
     userId: str
     products: List[Product]
-    deliveryPrice: int
+    delivery_price: Decimal = Field(alias="deliveryPrice")
     address: Address
 
     def to_domain(self) -> Order:

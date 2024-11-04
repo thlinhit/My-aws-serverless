@@ -1,3 +1,5 @@
+from pydantic import Field
+
 from src.domain.order import Address, Order
 from src.mapper import generic_mapper
 from src.repository.model.item import Item
@@ -6,10 +8,10 @@ from src.repository.model.order_item import OrderItem
 
 class OrderAddressItem(Item):
     name: str
-    streetAddress: str
+    street_address: str = Field(alias="streetAddress")
     city: str
     country: str
-    phoneNumber: str
+    phone_number: str = Field(alias="phoneNumber")
 
     def to_domain(self) -> Address:
         return generic_mapper.map(self, Address)

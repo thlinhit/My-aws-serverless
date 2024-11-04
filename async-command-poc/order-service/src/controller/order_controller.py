@@ -5,11 +5,12 @@ from aws_lambda_powertools.event_handler.router import APIGatewayHttpRouter
 from aws_lambda_powertools.utilities.validation import validate, SchemaValidationError
 
 from src.controller.dto.place_order_dto import PlaceOrderDto
+from src.domain.order import Order
 from src.exception.domain_code import DomainCode
 from src.exception.domain_error import DomainError
 from src.log.logger import logger
 from src.service import order_service
-from src.util import file_util
+from src.util import file_util, json_util
 
 router = APIGatewayHttpRouter()
 
@@ -24,11 +25,11 @@ def place_order():
 
         place_order_dto = PlaceOrderDto.model_validate(payload)
 
-        order_service.create_order(order=place_order_dto.to_domain())
+        order: Order = order_service.create_order(order=place_order_dto.to_domain())
 
         return Response(
             status_code=http.HTTPStatus.ACCEPTED,
-            body=place_order_dto.to_domain(),
+            body=order.model_dump_json(by_alias=True),
             content_type=content_types.APPLICATION_JSON,
         )
     except SchemaValidationError as e:

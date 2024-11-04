@@ -1,12 +1,13 @@
 from decimal import Decimal
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
+from src.domain.base import Base
 from src.domain.order_status import OrderStatus
 
 
-class Product(BaseModel):
+class Product(Base):
     id: str
     name: str
     price: Decimal
@@ -16,23 +17,23 @@ class Product(BaseModel):
         return self.price * self.quantity
 
 
-class Address(BaseModel):
+class Address(Base):
     name: str
-    streetAddress: str
+    street_address: str = Field(alias="streetAddress")
     city: str
     country: str
-    phoneNumber: str
+    phone_number: str = Field(alias="phoneNumber")
 
 
-class Order(BaseModel):
+class Order(Base):
     id: str
-    userId: str
+    user_id: str = Field(alias="userId")
     status: Optional[OrderStatus] = Field(default=OrderStatus.PENDING)
     products: List[Product]
-    deliveryPrice: Decimal
+    delivery_price: Decimal = Field(alias="deliveryPrice")
     address: Address
 
     def get_total_amount(self) -> Decimal:
         total_amount = sum(product.get_total_amount() for product in self.products)
-        return total_amount + self.deliveryPrice
+        return total_amount + self.delivery_price
 
