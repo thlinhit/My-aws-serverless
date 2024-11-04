@@ -8,13 +8,13 @@ curl -X POST http://localhost:3000/ecommerce/products/validate \
                 {
                     "id": "product1",
                     "name": "Product 1",
-                    "price": "19.99",
+                    "price": 19.99,
                     "quantity": 2
                 },
                 {
                     "id": "product2",
                     "name": "Product 2",
-                    "price": "5.99"
+                    "price": 5.99
                 }
             ]
         }'
