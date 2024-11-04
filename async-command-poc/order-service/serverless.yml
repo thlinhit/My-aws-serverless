@@ -22,7 +22,32 @@ provider:
     RUNNING_STAGE: ${self:custom.stage}
     PAYMENT_URL_SSM: /${self:custom.servicePrefix}-payments-service/${self:custom.stage}/api-gateway-url
     PRODUCT_URL_SSM: /${self:custom.servicePrefix}-product-service/${self:custom.stage}/api-gateway-url
+    POWERTOOLS_LOG_LEVEL: DEBUG
   stage: local
+  iam:
+    role:
+      name: ${self:custom.servicePrefix}-order-svc-${self:custom.stage}-${self:custom.region}-custom-lambdaRole
+      statements:
+        - Effect: Allow
+          Sid: DynamoDBTableAccess
+          Action:
+            - dynamodb:Get*
+            - dynamodb:Query
+            - dynamodb:PutItem
+            - dynamodb:Update*
+            - dynamodb:BatchWriteItem
+            - dynamodb:BatchGet*
+          Resource:
+            - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${self:custom.orderTable}
+            - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${self:custom.orderTable}/index/*
+        - Effect: Allow
+          Sid: AllowGetSsm
+          Action:
+            - ssm:GetParameters
+            - ssm:GetParameter
+          Resource:
+            - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${self:custom.servicePrefix}-payments-service/${self:custom.stage}/api-gateway-url
+            - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${self:custom.servicePrefix}-product-service/${self:custom.stage}/api-gateway-url
 
 functions:
   order-apis:
@@ -33,20 +58,6 @@ functions:
       - httpApi:
           path: /ecommerce/{proxy+}
           method: '*'
-    iamRoleStatementsName: ${self:custom.servicePrefix}-order-svc-${self:custom.stage}-${self:custom.region}-custom-lambdaRole
-    iamRoleStatements:
-      - Effect: Allow
-        Sid: DynamoDBTableAccess
-        Action:
-          - dynamodb:Get*
-          - dynamodb:Query
-          - dynamodb:PutItem
-          - dynamodb:Update*
-          - dynamodb:BatchWriteItem
-          - dynamodb:BatchGet*
-        Resource:
-          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${self:custom.orderTable}
-          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${self:custom.orderTable}/index/*
     layers:
       - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:2
       - Ref: PythonRequirementsLambdaLayer
