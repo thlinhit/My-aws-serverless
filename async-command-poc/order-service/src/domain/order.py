@@ -1,12 +1,13 @@
 from typing import List, Optional
 
-from pydantic import Field, BaseModel
+from pydantic import Field
 
+from src.domain.Base import Base
 from src.domain.custom_type import NumDecimal
 from src.domain.order_status import OrderStatus
 
 
-class Product(BaseModel):
+class Product(Base):
     id: str
     name: str
     price: NumDecimal
@@ -16,7 +17,7 @@ class Product(BaseModel):
         return self.price * self.quantity
 
 
-class Address(BaseModel):
+class Address(Base):
     name: str
     street_address: str = Field(alias="streetAddress")
     city: str
@@ -24,7 +25,7 @@ class Address(BaseModel):
     phone_number: str = Field(alias="phoneNumber")
 
 
-class Order(BaseModel):
+class Order(Base):
     id: str
     user_id: str = Field(alias="userId")
     status: Optional[OrderStatus] = Field(default=OrderStatus.PENDING)

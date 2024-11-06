@@ -1,6 +1,8 @@
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from src.domain.Base import Base
 
 
-class ItemKey(BaseModel):
+class ItemKey(Base):
     pk: str = Field(frozen=True)
     sk: str = Field(frozen=True)

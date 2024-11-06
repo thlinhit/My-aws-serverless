@@ -15,7 +15,7 @@ class OrderProductItem(Item):
             self,
             Product,
             extra_fields={
-                "id": self.pk.replace("PRD#", "")
+                "id": self.sk.replace("PRD#", "")
             }
         )
 
