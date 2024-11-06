@@ -1,5 +1,4 @@
-from decimal import Decimal
-
+from src.domain.custom_type import NumDecimal
 from src.domain.order import Order, Product
 from src.mapper import generic_mapper
 from src.repository.model.item import Item
@@ -8,7 +7,7 @@ from src.repository.model.order_item import OrderItem
 
 class OrderProductItem(Item):
     name: str
-    price: Decimal
+    price: NumDecimal
     quantity: int
 
     def to_domain(self) -> Product:

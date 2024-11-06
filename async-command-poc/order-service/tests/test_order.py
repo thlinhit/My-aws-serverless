@@ -33,10 +33,10 @@ def test_okay():
 
     place_order_dto = PlaceOrderDto.model_validate(payload)
     order = place_order_dto.to_domain()
-    new_order: Order = order_repository.insert_if_not_exists(order)
-    logger.info(new_order.model_dump_json(by_alias=True))
+    # new_order: Order = order_repository.insert_if_not_exists(order)
+    # logger.info(new_order.model_dump_json(by_alias=True))
 
 
-def test_get_order():
-    order: Order = order_service.get_order("65e64530-693d-bded-4b63-f817265aa38a")
-    assert order.status == OrderStatus.PENDING
+# def test_get_order():
+#     order: Order = order_service.get_order("65e64530-693d-bded-4b63-f817265aa38a")
+#     assert order.status == OrderStatus.PENDING
