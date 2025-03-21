@@ -1,0 +1,19 @@
+{
+  "name": "template-sls",
+  "version": "1.0.0",
+  "scripts": {
+    "lint": "python3 -m black . && isort ."
+  },
+  "devDependencies": {
+    "husky": "^4.3.8",
+    "lint-staged": "^12.3.7",
+    "serverless-offline": "^14.3.2",
+    "serverless-python-requirements": "^6.0.1"
+  },
+  "lint-staged": {
+    "*.py": [
+      "black",
+      "python3 -m isort"
+    ]
+  }
+}

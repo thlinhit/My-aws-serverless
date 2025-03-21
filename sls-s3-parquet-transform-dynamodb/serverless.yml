@@ -1,0 +1,37 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: linhtruong
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: my-app
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: sls-s3-parquet-to-dynamodb
+
+custom:
+  serverless-offline:
+    printOutput: true
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: ${opt:region, 'eu-central-1'}
+  environment:
+    REGION: ${opt:region, 'eu-central-1'}
+    DYNAMODB_TABLE: template_table
+
+functions:
+  entityMgmt:
+    name: entity-mgmt
+    handler: src.index.handle
+    events:
+      - alb:
+          listenerArn: arn:aws:elasticloadbalancing:region:account-id:listener/app/load-balancer-name/listener-id
+          priority: 20
+          conditions:
+            path: /template/profiles/*
+            method:
+              - ANY # Due to the bug of serverless offline, use ANY as workaround https://github.com/dherault/serverless-offline/issues/1771
+    layers:
+      - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV2-Arm64:61
+      - Ref: PythonRequirementsLambdaLayer
+
+plugins:
+  - serverless-offline
