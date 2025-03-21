@@ -20,11 +20,12 @@ docker compose -p tc-lend-infra up -d
 3. Create dynamodb table
 ```shell
 AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy  aws dynamodb create-table \
-   --table-name template_table \
+   --table-name dummy_table \
    --attribute-definitions AttributeName=pk,AttributeType=S AttributeName=sk,AttributeType=S \
    --key-schema AttributeName=pk,KeyType=HASH AttributeName=sk,KeyType=RANGE \
    --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
-   --endpoint-url http://localhost:8000
+   --endpoint-url http://localhost:8000 \
+   --region eu-west-1
 ```
 
 4. Run sls in local mode

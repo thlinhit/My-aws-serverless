@@ -1,2 +1,4 @@
 pyspark>=3.3.0
 pandas==2.2.3
+pyarrow
+setuptools #distutils is no longer included by default in Python 3.12.

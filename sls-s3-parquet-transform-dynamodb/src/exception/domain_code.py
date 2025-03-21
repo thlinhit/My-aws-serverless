@@ -1,51 +1,31 @@
-from enum import Enum
+from enum import Enum, unique
 
+import re
 
+def convert_pattern(pattern: str) -> str:
+    def replacer(match: re.Match) -> str:
+        key = match.group(1)
+        return f"{key}='{{{key}}}'"
+
+    return re.sub(r'{(\w+)}', replacer, pattern)
+
+@unique
 class DomainCode(Enum):
     UNKNOWN = (
-        "000",
-        "Generic Error. errorMessage:{}",
+        "1340000",
+        "Generic Error. {error_message}",
+    )
+    NO_DATA_TRANSFORMER_FOUND = (
+        "1340001",
+        "No transformer found for data type. {data_type}",
     )
     VALIDATION_ERROR = (
-        "001",
-        "Validation Error. errorMessage:{}",
+        "1340002",
+        "Validation Error. {error_message}",
     )
-    FIREHOSE_PUT_ERROR = (
-        "002",
-        "Encountered Error While Putting Records to FireHose",
-    )
-    SQS_SEND_ERROR = (
-        "003",
-        "Failed at sending message to sqs, sqsName:{}, message:{}, error:{}",
-    )
-
     DYNAMODB_ERROR = (
-        "004",
-        "Failed integrate with DynamoDB, tableName:{}, error:{}",
-    )
-
-    EXCEEDED_MAX_ATTEMPTS = ("005", "Exceeded max attempts")
-
-    ITEM_NOT_FOUND = ("006", "Item not found, table:{}, pk:{}, sk:{}")
-
-    SQS_CHANGE_VISIBILITY_ERROR = (
-        "007",
-        "Couldn't change visibility, transactionKey:{}, queueUrl:{}, error:{}",
-    )
-
-    SQS_RETRY_NEXT_TIME = (
-        "008",
-        "The message will be retried in {} seconds, transactionKey:{}",
-    )
-
-    DYNAMODB_PUT_BATCH_ERROR = (
-        "009",
-        "The items can't put into DynamoDB, error:{}",
-    )
-
-    DYNAMODB_CONDITIONAL_CHECK_FAILED_ERROR = (
-        "010",
-        "Dynamodb conditional check failed table:{}, pk:{}, sk:{}",
+        "1340003",
+        "Failed integrate with DynamoDB, {table_name}, {error_message}",
     )
 
     def __new__(cls, *values):
@@ -54,7 +34,7 @@ class DomainCode(Enum):
         return instance
 
     def __init__(self, _: str, internal_msg: str = None):
-        self._internal_msg_ = internal_msg
+        self._internal_msg_ = convert_pattern(internal_msg)
 
     def __str__(self):
         return self.value
@@ -69,4 +49,4 @@ class DomainCode(Enum):
 
     @property
     def external_code(self):
-        return f"EXTERNAL_CODE {self.value}"
+        return self.value
