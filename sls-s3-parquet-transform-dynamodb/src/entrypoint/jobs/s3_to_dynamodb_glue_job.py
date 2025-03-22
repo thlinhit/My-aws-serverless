@@ -6,81 +6,145 @@ AWS Glue ETL job for processing Parquet files from S3 and loading them to Dynamo
 This job follows Domain-Driven Design principles with clear separation of concerns.
 """
 import os
+os.environ["SERVICE_NAME"] = "SPL_ETL_JOB" # dirty code which is just used for demonstrating
+import sys
 import time
+from typing import Dict, Any
 
-from application.etl.tranformation.transformation_factory import DataTransformerFactory
+from application.etl.etl_service import ETLService
 from exception.domain_code import DomainCode
 from exception.domain_error import DomainError
-from infrastructure.dynamodb_client import DynamoDBClient
 from infrastructure.local_parquet_reader import LocalParquetReader
 from infrastructure.logger import logger
 
-TABLE = os.getenv("TABLE", "dummy")
+# Environment configuration with sensible defaults
+TABLE = os.getenv("TABLE", "dummy_table")
+# Set default file type - in a real-world scenario, this could come from Glue job parameters
+DEFAULT_FILE_TYPE = "LOAN_APPLICATION"
+PARQUET_FILE_PATH = os.getenv("PARQUET_FILE_PATH", "input.parquet")
 
 
-def main():
-    # Set up clients
+def process_parquet_file(file_path: str, file_type: str, table_name: str) -> Dict[str, Any]:
+    """
+    Process a Parquet file and load the transformed data to DynamoDB.
+    
+    Args:
+        file_path: Path to the Parquet file
+        file_type: Type of data in the file
+        table_name: DynamoDB table name
+        
+    Returns:
+        Dictionary containing job results
+        
+    Raises:
+        DomainError: If an error occurs during processing
+    """
+    # Initialize infrastructure components
     parquet_reader = LocalParquetReader()
+    etl_service = ETLService()
+    
+    logger.info(
+        f"Starting Parquet file processing",
+        extra={
+            "file_path": file_path,
+            "file_type": file_type,
+            "table_name": table_name
+        }
+    )
+    
+    # Read and analyze the Parquet file
+    df = parquet_reader.read_parquet(file_path)
+    data_info = parquet_reader.get_data_info(df)
+    
+    # Skip processing if no data
+    if df.count() == 0:
+        logger.warning("No data found to process. Exiting job.")
+        return {
+            "status": "completed",
+            "message": "No data to process",
+            "record_count": 0
+        }
+    
+    logger.info(
+        "Data loaded successfully",
+        extra={"record_count": data_info['row_count']}
+    )
+    
+    # Process data through ETL service
+    result = etl_service.process_data(
+        df=df,
+        data_type=file_type,
+        table_name=table_name
+    )
+    
+    # Return job results
+    return {
+        "status": "completed",
+        "processed_count": result["processed"],
+        "error_count": result["errors"],
+        "total_count": result["total"],
+        "message": result["message"]
+    }
 
-    # Record job start time
-    job_start_time = time.time()
 
+def main() -> int:
+    """
+    Main entry point for the Glue job.
+    
+    Returns:
+        Exit code (0 for success, non-zero for failure)
+    """
+    start_time = time.time()
+    
     try:
-        file_type = "LOAN_APPLICATION"
-        logger.info(f"Starting Parquet file processing, fileType={file_type}")
-
-        # Read and analyze the Parquet file
-        df = parquet_reader.read_parquet("input.parquet")
-        data_info = parquet_reader.get_data_info(df)
-
-        # Skip processing if no data
-        if df.count() == 0:
-            logger.warning("No data found to process. Exiting job.")
-            return
-
-        logger.info("Data loaded", extra={"record_count": data_info['row_count']})
-
-        # Get appropriate transformation strategy
-        transformer = DataTransformerFactory.create(file_type)
-
-        # Transform the data using the strategy
-        transformation_result = transformer.transform(
-            df=df
+        # Get file type from parameters or use default
+        file_type = DEFAULT_FILE_TYPE
+        
+        # Process the file
+        result = process_parquet_file(
+            file_path=PARQUET_FILE_PATH,
+            file_type=file_type,
+            table_name=TABLE
         )
-
-        logger.info("Valid items:")
-        logger.info(transformation_result.valid_items.show(truncate=False))
-
-        logger.info("Invalid items:")
-        logger.info(transformation_result.error_items.show(truncate=False))
-
-        def write_to_dynamodb(partition):
-            dynamodb_update_result = DynamoDBClient.write_partition_to_dynamodb(
-                partition,
-                table_name=TABLE
-            )
-            return dynamodb_update_result.failed_items
-
-
-        failed_items = transformation_result.valid_items.rdd.mapPartitions(lambda x: write_to_dynamodb(x)).collect()
-
-        for item in failed_items:
-            logger.error(item)
-
-        # Log final statistics
+        
+        # Calculate execution time
+        execution_time = time.time() - start_time
+        
+        # Log job completion
         logger.info(
-            f"Job completed successfully. "
-            f"Total records: {transformation_result.total_count}, "
-            f"Valid records: {transformation_result.valid_count}, "
-            f"Error records: {transformation_result.error_count}"
+            "Job completed successfully",
+            extra={
+                "execution_time_seconds": execution_time,
+                "processed_count": result.get("processed_count", 0),
+                "error_count": result.get("error_count", 0),
+                "total_count": result.get("total_count", 0)
+            }
         )
+        
+        return 0  # Success exit code
+        
     except DomainError as domain_error:
-        logger.exception(f"test: {str(domain_error)}")
-        raise domain_error
+        logger.error(
+            "Domain error occurred",
+            extra={
+                "error_code": domain_error.domain_code.code,
+                "error_message": str(domain_error),
+                "execution_time_seconds": time.time() - start_time
+            }
+        )
+        return 1  # Error exit code
+        
     except Exception as e:
-        logger.exception(f"ETL job failed: {str(e)}")
+        logger.exception(
+            "Unexpected error occurred",
+            extra={
+                "error_message": str(e),
+                "execution_time_seconds": time.time() - start_time
+            }
+        )
+        # Wrap generic exceptions in domain error for consistent handling
         raise DomainError(DomainCode.UNKNOWN, error_message=str(e))
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -11,7 +11,7 @@ python3 -m black . && isort .
 
 1. Install dependencies
 ```shell
-npm i &&  pip install --upgrade pip && pip install -r requirements-dev.txt
+npm i &&  pip install --upgrade pip && pip install -r requirements.txt && pip install -r requirements-dev.txt
 ```
 2. Start Docker Desktop & Spin up containers for local development
 ```shell
@@ -28,24 +28,10 @@ AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy  aws dynamodb create-table \
    --region eu-west-1
 ```
 
-4. Run sls in local mode
-```shell
-serverless offline
-```
+4. Run main method
+[ENTRYPOINT](src/entrypoint/jobs/s3_to_dynamodb_glue_job.py)
 
-## Available endpoint
+5. Run test
 ```shell
-curl -X POST http://localhost:3003/dev/template/profiles/create \
-     -H "Content-Type: application/json" \
-     -d '{
-          "username": "johndoe",
-          "email": "johndoe@example.com",
-          "address": "123 Moon Street",
-          "profileId": "9999"
-         }'
-```
-
-
-```shell
-curl -X GET http://localhost:3003/dev/template/profiles/9999
+pytest
 ```
