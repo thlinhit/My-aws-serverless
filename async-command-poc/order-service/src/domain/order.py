@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pydantic import Field
 
-from src.domain.Base import Base
+from src.domain.base import Base
 from src.domain.custom_type import NumDecimal
 from src.domain.order_status import OrderStatus
 

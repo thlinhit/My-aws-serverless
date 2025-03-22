@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from src.domain.Base import Base
+from src.domain.base import Base
 
 
 class ItemKey(Base):
