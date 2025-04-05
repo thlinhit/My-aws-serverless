@@ -1,0 +1,69 @@
+service: aggregation-dynamodb-resources
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+
+resources:
+  Resources:
+    AggregationTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: lend-aggregation-table
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+          - AttributeName: gsi1_pk
+            AttributeType: S
+          - AttributeName: gsi1_sk
+            AttributeType: S
+          - AttributeName: gsi2_pk
+            AttributeType: S
+          - AttributeName: gsi2_sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: GSI1
+            KeySchema:
+              - AttributeName: gsi1_pk
+                KeyType: HASH
+              - AttributeName: gsi1_sk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: GSI2
+            KeySchema:
+              - AttributeName: gsi2_pk
+                KeyType: HASH
+              - AttributeName: gsi2_sk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
+        SSESpecification:
+          SSEEnabled: true
+        Tags:
+          - Key: Environment
+            Value: ${self:provider.stage}
+
+  Outputs:
+    AggregationTableName:
+      Value: !Ref AggregationTable
+      Export:
+        Name: ${self:service}-${self:provider.stage}-AggregationTableName
+    AggregationTableArn:
+      Value: !GetAtt AggregationTable.Arn
+      Export:
+        Name: ${self:service}-${self:provider.stage}-AggregationTableArn 

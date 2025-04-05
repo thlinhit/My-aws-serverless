@@ -1,0 +1,9 @@
+{
+  "name": "appsync-resources",
+  "version": "1.0.0",
+  "description": "AppSync API configuration",
+  "dependencies": {},
+  "devDependencies": {
+    "serverless-appsync-plugin": "1.12.0"
+  }
+} 

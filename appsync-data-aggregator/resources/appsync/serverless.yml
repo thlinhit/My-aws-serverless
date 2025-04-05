@@ -1,0 +1,118 @@
+service: aggregation-appsync-api
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+
+plugins:
+  - serverless-appsync-plugin
+
+custom:
+  dynamodbTableName: ${cf:aggregation-dynamodb-resources-${self:provider.stage}.AggregationTableName}
+  dynamodbTableArn: ${cf:aggregation-dynamodb-resources-${self:provider.stage}.AggregationTableArn}
+  appSync:
+    name: AggregationAPI
+    authenticationType: API_KEY
+    apiKeys:
+      - name: DefaultAPIKey
+        description: Default API Key for GraphQL API
+        expiresAfter: 30d
+    # Add logging configuration
+    logConfig:
+      loggingRoleArn: !GetAtt AppSyncLoggingServiceRole.Arn
+      level: ALL # Possible values: NONE, ERROR, ALL
+    schema: schema.graphql
+    mappingTemplatesLocation: mapping-templates
+    mappingTemplates:
+      # Earliest loan application resolver
+      - dataSource: AggregationDynamoDBTable
+        type: Query
+        field: getEarliestLoanApplication
+        request: getEarliestLoanApplication-request.vtl
+        response: getEarliestLoanApplication-response.vtl
+        substitutions:
+          table: ${self:custom.dynamodbTableName}
+      # Count applications within X months resolver
+      - dataSource: AggregationDynamoDBTable
+        type: Query
+        field: getLoanApplicationCountWithinMonths
+        request: getLoanApplicationCountWithinMonths-request.vtl
+        response: getLoanApplicationCountWithinMonths-response.vtl
+        substitutions:
+          table: ${self:custom.dynamodbTableName}
+      # Latest loan application by status resolver
+      - dataSource: AggregationDynamoDBTable
+        type: Query
+        field: getLatestLoanApplicationByStatus
+        request: getLatestLoanApplicationByStatus-request.vtl
+        response: getLatestLoanApplicationByStatus-response.vtl
+        substitutions:
+          table: ${self:custom.dynamodbTableName}
+    dataSources:
+      - type: AMAZON_DYNAMODB
+        name: AggregationDynamoDBTable
+        config:
+          tableName: ${self:custom.dynamodbTableName}
+          serviceRoleArn: !GetAtt AppSyncDynamoDBServiceRole.Arn
+
+resources:
+  Resources:
+    AppSyncDynamoDBServiceRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: appsync.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        Policies:
+          - PolicyName: DynamoDBAccess
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:GetItem
+                    - dynamodb:PutItem
+                    - dynamodb:DeleteItem
+                    - dynamodb:UpdateItem
+                    - dynamodb:Query
+                    - dynamodb:Scan
+                    - dynamodb:BatchGetItem
+                    - dynamodb:BatchWriteItem
+                    - dynamodb:ExecuteStatement
+                    - dynamodb:PartiQLSelect
+                  Resource:
+                    - ${self:custom.dynamodbTableArn}
+                    - !Join ["", ["${self:custom.dynamodbTableArn}", "/index/*"]]
+    # Add CloudWatch logging role
+    AppSyncLoggingServiceRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: appsync.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs
+
+  Outputs:
+    GraphQLApiEndpoint:
+      Value: !GetAtt GraphQlApi.GraphQLUrl
+      Export:
+        Name: ${self:service}-${self:provider.stage}-GraphQLApiEndpoint
+    GraphQLApiId:
+      Value: !GetAtt GraphQlApi.ApiId
+      Export:
+        Name: ${self:service}-${self:provider.stage}-GraphQLApiId 

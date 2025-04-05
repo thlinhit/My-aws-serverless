@@ -1,0 +1,22 @@
+#set($customerId = $ctx.args.customerId)
+#set($status = $ctx.args.status)
+#set($customerKey = "CUS#$customerId")
+#set($statusPrefix = "LOAN_APP#${status}#")
+
+$util.log.info("Searching for latest $status application for customer: $customerKey")
+$util.log.info("Using status prefix: $statusPrefix")
+
+{
+  "version": "2018-05-29",
+  "operation": "Query",
+  "index": "GSI2",
+  "query": {
+    "expression": "gsi2_pk = :partitionKey AND begins_with(gsi2_sk, :skPrefix)",
+    "expressionValues": {
+      ":partitionKey": $util.dynamodb.toDynamoDBJson($customerKey),
+      ":skPrefix": $util.dynamodb.toDynamoDBJson($statusPrefix)
+    }
+  },
+  "scanIndexForward": false,
+  "limit": 1
+} 

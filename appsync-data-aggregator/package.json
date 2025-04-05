@@ -1,0 +1,14 @@
+{
+  "name": "appsync-data-aggregator",
+  "version": "1.0.0",
+  "description": "AppSync API for data aggregation with DynamoDB",
+  "scripts": {
+    "deploy": "npx serverless-compose deploy",
+    "deploy:appsync": "cd resources/appsync && serverless deploy",
+    "deploy:dynamodb": "cd resources/dynamodb && serverless deploy"
+  },
+  "devDependencies": {
+    "@serverless/compose": "^1.3.0",
+    "serverless-appsync-plugin": "^2.5.0"
+  }
+}

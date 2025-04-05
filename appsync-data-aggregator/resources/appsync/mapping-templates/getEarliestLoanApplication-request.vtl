@@ -1,0 +1,19 @@
+#set($customerId = $ctx.args.customerId)
+#set($customerKey = "CUS#$customerId")
+
+$util.log.info($customerKey)
+
+{
+  "version": "2018-05-29",
+  "operation": "Query",
+  "index": "GSI1",
+  "query": {
+    "expression": "gsi1_pk = :partitionKey AND begins_with(gsi1_sk, :skPrefix)",
+    "expressionValues": {
+      ":partitionKey": $util.dynamodb.toDynamoDBJson($customerKey),
+      ":skPrefix": $util.dynamodb.toDynamoDBJson("LOAN_APP#")
+    }
+  },
+  "scanIndexForward": true,
+  "limit": 1
+}

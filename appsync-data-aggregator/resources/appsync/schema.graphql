@@ -1,0 +1,31 @@
+type Query {
+    # Get the earliest loan application for a customer
+    getEarliestLoanApplication(customerId: ID!): LoanApplication
+    
+    # Get number of applications created within a specified number of months
+    getLoanApplicationCountWithinMonths(customerId: ID!, months: Int!): Int
+    
+    # Get the latest loan application with a specific status for a customer
+    getLatestLoanApplicationByStatus(customerId: ID!, status: String!): LoanApplication
+}
+
+# Loan Application type with all fields
+type LoanApplication {
+    pk: ID!
+    sk: String!
+    customer_id: String!
+    application_id: String!
+    debtor_account_number: String
+    date_application_created: String
+    dateApplicationCreatedTimestamp: Int
+    status: String!
+    requested_amount: Float
+    accepted_amount: Float
+    contract_date: String
+    gross_income: Float
+    decline_reasons: String
+}
+
+schema {
+    query: Query
+}

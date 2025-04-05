@@ -1,0 +1,8 @@
+services:
+  dynamodb:
+    path: resources/dynamodb
+    dependsOn: []
+  appsync:
+    path: resources/appsync
+    dependsOn:
+      - dynamodb

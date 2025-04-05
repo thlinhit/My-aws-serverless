@@ -1,0 +1,31 @@
+#set($customerId = $ctx.args.customerId)
+#set($months = $ctx.args.months)
+#set($customerKey = "CUS#$customerId")
+
+## Calculate date from X months ago (using milliseconds)
+#set($now = $util.time.nowEpochMilliSeconds())
+#set($monthsInMillis = $months * 30 * 24 * 60 * 60 * 1000)
+#set($pastDateMillis = $now - $monthsInMillis)
+#set($pastDateSeconds = $pastDateMillis / 1000)
+#set($pastDateTimestamp = $util.time.epochMilliSecondsToISO8601($pastDateMillis))
+
+## Construct the minimum GSI1_SK value (LOAN_APP# + timestamp)
+#set($minimumSK = "LOAN_APP#$pastDateSeconds")
+
+$util.log.info("Filtering applications since: $pastDateTimestamp")
+$util.log.info("Minimum SK: $minimumSK")
+
+## use SELECT COUNT: Avoids the 1MB result limit entirely since it only returns a count
+{
+  "version": "2018-05-29",
+  "operation": "Query",
+  "index": "GSI1",
+  "query": {
+    "expression": "gsi1_pk = :partitionKey AND gsi1_sk >= :minimumSK",
+    "expressionValues": {
+      ":partitionKey": $util.dynamodb.toDynamoDBJson($customerKey),
+      ":minimumSK": $util.dynamodb.toDynamoDBJson($minimumSK)
+    }
+  },
+  "select": "COUNT"
+} 
