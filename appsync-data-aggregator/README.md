@@ -87,3 +87,49 @@ AWS_PROFILE=tx-sandbox aws dynamodb put-item \
 ```bash
 AWS_PROFILE=tx-sandbox sls appsync:deploy
 ```
+
+
+
+---
+### Main Resolver Kinds:
+* PIPELINE: For complex operations that can chain multiple functions
+* UNIT: For simple, direct operations with a single data source
+* None (default in v2 is PIPELINE)
+
+Note: To simulate a UNIT resolver, use a PIPELINE with only one function
+
+#### **PIPELINE Resolvers**
+- Can execute multiple functions in sequence (like a pipeline)
+- Use cases:
+  - Complex operations requiring multiple data sources
+  - Operations needing data transformation between steps
+  - When you need to combine data from multiple sources
+  - When you need pre/post processing of data
+  - Authentication/authorization checks before data access
+- Example: A query that needs to:
+  - First check user permissions
+  - Then fetch data from DynamoDB
+  - Then enrich it with data from another source
+  - Finally transform the result
+
+#### **UNIT Resolvers**
+- Single operation with one data source
+- Use cases:
+  - Simple CRUD operations
+  - Direct database queries
+  - When you only need to interact with one data source
+  - Simple transformations
+- Example: A simple query to fetch an item from DynamoDB
+
+
+You're using PIPELINE resolvers, which is the default in v2 of the plugin. Even though your operations are currently simple (one function each), using PIPELINE resolvers gives you the flexibility to add more functions later if needed.
+
+Best Practices:
+- Use UNIT when you're certain you'll only ever need one data source
+- Use PIPELINE when:
+  - You might need to add more functionality later
+  - You need to perform multiple operations
+  - You need to implement complex business logic
+  - You need to combine data from multiple sources
+
+In v2 of the serverless-appsync-plugin, PIPELINE is recommended even for simple operations, as it provides more flexibility for future extensions of your resolvers.
