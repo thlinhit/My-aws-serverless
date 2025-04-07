@@ -1,0 +1,416 @@
+---
+description: This rule provides best practices and coding standards for developing applications using AWS AppSync. It covers aspects like schema design, resolver implementation, data source integration, security, performance optimization, and testing.
+globs: 
+alwaysApply: false
+---
+---
+description: This rule provides best practices and coding standards for developing applications using AWS AppSync. It covers aspects like schema design, resolver implementation, data source integration, security, performance optimization, and testing.
+globs: **/*.{js,ts,jsx,tsx,py,graphql,vtl}
+---
+
+# AWS AppSync Development Best Practices
+
+This document outlines best practices for developing and maintaining data aggregation layers using AWS AppSync. Following these guidelines will help ensure your GraphQL API is maintainable, secure, and efficient.
+
+## Core Principles
+
+- **Design schema based on client needs, not data sources.** Your GraphQL schema should be driven by client requirements and query patterns rather than simply mirroring your backend data structure.
+- **Optimize resolver logic for performance.** Write efficient resolvers that minimize network calls and process data efficiently, especially for nested fields.
+- **Utilize caching at multiple levels.** Implement appropriate caching strategies at the API, resolver, and client levels to improve performance and reduce costs.
+- **Implement proper authentication and authorization.** Use fine-grained access control with AWS Cognito, API keys, IAM roles, or Lambda authorizers to secure your GraphQL API.
+- **Design for real-time capabilities from the start.** If your application needs real-time updates, incorporate subscriptions into your design from the beginning.
+- **Normalize schema but batch data fetching.** Normalize your GraphQL schema for maintenance while using batching techniques to reduce the N+1 query problem.
+- **Monitor and log API operations.** Implement comprehensive logging and monitoring to track performance, identify bottlenecks, and troubleshoot issues.
+
+## 1. Code Organization and Structure
+
+### 1.1 Directory Structure Best Practices
+
+- **schema/**: Contains GraphQL schema files (*.graphql)
+  - `schema.graphql`: Main schema file
+  - `types/`: Folder containing type definitions
+  - `queries/`: Folder containing query definitions
+  - `mutations/`: Folder containing mutation definitions
+  - `subscriptions/`: Folder containing subscription definitions
+  - `interfaces/`: Folder containing interface definitions
+  - `unions/`: Folder containing union type definitions
+- **resolvers/**: Contains resolver mapping templates and functions
+  - `Query/`: Resolvers for query operations
+  - `Mutation/`: Resolvers for mutation operations
+  - `Subscription/`: Resolvers for subscription operations
+  - `Type/`: Resolvers for specific GraphQL types
+  - `functions/`: Lambda functions used as resolvers
+  - `helpers/`: Helper functions and utilities
+- **datasources/**: Configuration for data sources
+  - `dynamodb/`: DynamoDB related configurations
+  - `lambda/`: Lambda function source code
+  - `http/`: HTTP endpoint configurations
+  - `opensearch/`: OpenSearch configurations
+- **tests/**: Contains test files
+  - `unit/`: Unit tests for resolvers and functions
+  - `integration/`: Integration tests for API
+  - `e2e/`: End-to-end tests
+- **infrastructure/**: IaC templates (CloudFormation, CDK, etc.)
+- **scripts/**: Utility scripts for development and deployment
+- **docs/**: API documentation
+
+### 1.2 File Naming Conventions
+
+- GraphQL schema files: `schema.graphql`, `types.graphql`, etc.
+- Resolver templates: 
+  - VTL templates: `<Type>.<field>.req.vtl` and `<Type>.<field>.res.vtl`
+  - JavaScript resolvers: `<Type><Field>Resolver.js|ts`
+- Lambda functions: `<descriptive-name>.js|ts`
+- Test files: `<file-being-tested>.test.js|ts`
+
+### 1.3 Module Organization Best Practices
+
+- **Schema Modularization**: Split large schemas into domain-specific modules
+- **Resolver Organization**: Group resolvers by type and function
+- **Common Utilities**: Create shared utilities for common resolver operations
+- **Type-Specific Logic**: Separate type-specific business logic
+
+### 1.4 Component Architecture Recommendations
+
+- **Layer Separation**: Maintain clear separation between GraphQL schema, resolvers, and data sources
+- **Domain-Driven Design**: Organize code around business domains
+- **Data Source Abstraction**: Abstract data source interactions to facilitate changes
+
+### 1.5 Code Splitting Strategies
+
+- **Schema Stitching**: Split schemas into manageable parts
+- **Function Isolation**: Keep Lambda functions focused on specific tasks
+- **Shared Logic Extraction**: Extract common logic into shared utilities
+- **Environment Separation**: Use different configurations for development, testing, and production
+
+## 2. Common Patterns and Anti-patterns
+
+### 2.1 Design Patterns
+
+- **Schema First Development**: Design your GraphQL schema before implementing resolvers
+- **Resolver Pattern**: Implement resolvers for each field that requires custom data fetching logic
+- **Data Loader Pattern**: Use DataLoader or similar batching mechanisms to avoid the N+1 query problem
+- **Pagination Pattern**: Implement cursor-based pagination for large result sets
+- **Federation Pattern**: Use Apollo Federation or similar approaches for distributed GraphQL schemas
+- **Event-Driven Updates**: Use DynamoDB Streams, EventBridge, or other event sources to trigger subscription events
+
+### 2.2 Recommended Approaches for Common Tasks
+
+- **Schema Definition**: Define a clean, client-focused schema that abstracts away backend complexity
+- **Data Fetching**: Use direct data source integrations where possible (DynamoDB, RDS, HTTP)
+- **Custom Authentication**: Implement custom authentication using Lambda authorizers
+- **Error Handling**: Provide clear, actionable error messages without leaking implementation details
+- **Versioning**: Use schema evolution techniques instead of explicit versioning
+- **Caching**: Configure appropriate caching at the API, resolver, and client levels
+- **Real-time Updates**: Use subscriptions for real-time data updates
+
+### 2.3 Anti-patterns and Code Smells
+
+- **Backend-Mirroring Schemas**: Avoid simply mirroring your backend data structure in your GraphQL schema
+- **Resolver Waterfalls**: Avoid serial execution of dependent resolvers when batching is possible
+- **Overfetching**: Retrieving more data than needed from data sources
+- **Underfetching**: Requiring multiple requests to get related data
+- **Type Explosion**: Creating too many similar types instead of using interfaces or unions
+- **Lambda Over-reliance**: Using Lambda resolvers for simple operations that could use direct integrations
+- **Excessive Custom Logic**: Implementing complex business logic in VTL templates
+- **Ignoring N+1 Problem**: Failing to batch related data fetching operations
+- **Hardcoding Configuration**: Embedding environment-specific configuration in code
+
+### 2.4 State Management Best Practices
+
+- **Client-Side State**: Use Apollo Client or similar libraries for client-side state management
+- **Server-Side State**: Maintain consistent data through proper resolver implementation
+- **Subscription State**: Manage subscription connections and lifecycles properly
+- **Cache Management**: Implement proper cache invalidation strategies
+
+### 2.5 Error Handling Patterns
+
+- **Structured Error Responses**: Return structured errors with meaningful codes and messages
+- **Error Extensions**: Use error extensions to provide additional context
+- **Partial Responses**: Return partial data even when errors occur for specific fields
+- **Error Logging**: Log errors with sufficient context for debugging
+- **Retry Logic**: Implement appropriate retry mechanisms for transient errors
+
+## 3. Performance Considerations
+
+### 3.1 Optimization Techniques
+
+- **Request Batching**: Batch similar requests to reduce network overhead
+- **Connection Pooling**: Reuse database connections when possible
+- **Field Selection**: Only fetch required fields from data sources
+- **Parallel Execution**: Execute independent resolvers in parallel
+- **Response Compression**: Enable compression for API responses
+- **Response Shaping**: Return optimized shapes for specific clients
+- **Selective Loading**: Only load data that will be returned to clients
+
+### 3.2 Caching Strategies
+
+- **API Cache**: Configure AppSync caching with appropriate TTL
+- **Resolver Cache**: Use result caching for expensive operations
+- **Client Cache**: Implement client-side caching with Apollo Client or similar
+- **Custom Cache Keys**: Define custom cache keys for fine-grained control
+- **Cache Invalidation**: Implement proper cache invalidation strategies
+- **Per-Resolver Caching**: Apply different caching policies to different resolvers
+
+### 3.3 Query Optimization
+
+- **Query Complexity Analysis**: Monitor and limit query complexity
+- **Query Depth Limiting**: Prevent deeply nested queries
+- **Query Cost Calculation**: Assign costs to fields and limit total query cost
+- **Query Planning**: Use efficient query plans for complex operations
+- **Pagination**: Implement efficient pagination for large result sets
+- **Filtering Optimization**: Push filtering down to data sources when possible
+
+### 3.4 Resolver Optimization
+
+- **Minimize Network Calls**: Reduce the number of calls to data sources
+- **Batching Related Data**: Use batching to fetch related items efficiently
+- **Direct Resolvers**: Use direct resolvers where possible instead of Lambda functions
+- **Lambda Performance**: Optimize Lambda functions for quick execution
+- **VTL Optimization**: Write efficient VTL templates for direct resolvers
+- **Field Filtering**: Only fetch required fields from data sources
+
+### 3.5 Real-Time Performance
+
+- **Subscription Filtering**: Filter subscription events at the source
+- **Connection Management**: Properly handle WebSocket connections
+- **Payload Optimization**: Keep subscription payloads small
+- **Connection Limits**: Be aware of service quotas for WebSocket connections
+
+## 4. Security Best Practices
+
+### 4.1 Common Vulnerabilities and Prevention
+
+- **Injection Attacks**: Prevent injection by using parameterized queries and input validation
+- **Broken Authentication**: Implement proper authentication mechanisms
+- **Sensitive Data Exposure**: Avoid exposing sensitive data in responses
+- **GraphQL-Specific Attacks**: Prevent introspection attacks and resource exhaustion
+- **Excessive Data Exposure**: Only expose necessary fields in the schema
+- **Insufficient Access Control**: Implement fine-grained access control
+- **Denial of Service**: Protect against DoS attacks with query limitations
+
+### 4.2 Authentication and Authorization Patterns
+
+- **Cognito Integration**: Use AWS Cognito User Pools for authentication
+- **IAM Authorization**: Use IAM roles for service-to-service communication
+- **API Key Authentication**: Use API keys for simple client authentication
+- **Lambda Authorizers**: Implement custom authorization logic with Lambda
+- **JWT Validation**: Properly validate JWTs and check claims
+- **Role-Based Access Control**: Implement RBAC using JWT claims
+- **Field-Level Authorization**: Control access at the field level using directives or resolver logic
+
+### 4.3 Data Protection Strategies
+
+- **Encryption in Transit**: Enforce HTTPS for all API communication
+- **Encryption at Rest**: Ensure data is encrypted at rest in all data sources
+- **Field-Level Encryption**: Encrypt sensitive fields before storage
+- **Data Masking**: Mask sensitive data in responses
+- **Audit Logging**: Maintain audit logs for sensitive operations
+- **Data Validation**: Validate all input data before processing
+
+### 4.4 Input Validation Best Practices
+
+- **Schema Validation**: Use GraphQL schema to define valid input types
+- **Custom Validators**: Implement custom validation logic for complex rules
+- **Sanitization**: Sanitize inputs to prevent injection attacks
+- **Custom Directives**: Use directives for declarative validation
+- **Error Messages**: Provide helpful error messages without exposing sensitive details
+- **Rate Limiting**: Implement rate limiting for mutations
+
+### 4.5 Secure API Configuration
+
+- **WAF Integration**: Use AWS WAF to protect against common web exploits
+- **CloudFront Integration**: Use CloudFront as a secure delivery network
+- **Private APIs**: Use VPC endpoints for internal-only APIs
+- **CORS Configuration**: Configure CORS properly to prevent unauthorized access
+- **Request Validation**: Validate requests early in the processing pipeline
+- **Log Protection**: Ensure logs don't contain sensitive information
+
+## 5. Testing Approaches
+
+### 5.1 Unit Testing Strategies
+
+- **Resolver Testing**: Test resolver logic in isolation
+- **Schema Validation**: Validate schema against best practices
+- **Mock Data Sources**: Use mocks for data sources in unit tests
+- **Template Testing**: Test VTL templates with mock contexts
+- **Lambda Testing**: Test Lambda functions with mock events
+
+### 5.2 Integration Testing Approaches
+
+- **API Testing**: Test the API as a whole with real requests
+- **Data Source Integration**: Test integration with actual data sources
+- **Authentication Testing**: Test different authentication scenarios
+- **Error Handling**: Test error conditions and responses
+- **Subscription Testing**: Test subscription delivery
+
+### 5.3 End-to-end Testing Recommendations
+
+- **Client Integration**: Test with actual client applications
+- **User Flow Testing**: Test complete user workflows
+- **Performance Testing**: Test under expected and peak loads
+- **Security Testing**: Perform security testing and penetration testing
+- **Cross-Platform Testing**: Test across different client platforms
+
+### 5.4 Test Organization Best Practices
+
+- **Test Structure**: Organize tests to mirror application structure
+- **Test Naming**: Use descriptive names for test cases
+- **Test Coverage**: Aim for high test coverage of resolvers and functions
+- **Test Independence**: Make tests independent and idempotent
+- **Test Data**: Create dedicated test data sets
+
+### 5.5 Mocking and Stubbing Techniques
+
+- **Data Source Mocking**: Create mock implementations of data sources
+- **Context Mocking**: Mock AppSync context for testing
+- **Event Mocking**: Create mock events for testing
+- **Response Stubbing**: Define stub responses for predictable testing
+- **AppSync Simulator**: Use tools like Amplify's AppSync Simulator for local testing
+
+## 6. Common Pitfalls and Gotchas
+
+### 6.1 Frequent Mistakes
+
+- **Overly Complex Schema**: Creating an unnecessarily complex schema
+- **N+1 Query Problem**: Not addressing the N+1 query problem
+- **Authorization Holes**: Incomplete authorization checks
+- **Resolver Timeouts**: Not handling or configuring timeouts properly
+- **Inappropriate Caching**: Caching dynamic data or failing to invalidate properly
+- **Schema Drift**: Allowing schema to drift from documentation
+- **Error Handling Omissions**: Incomplete error handling
+- **Subscription Overuse**: Using subscriptions for non-real-time data
+- **Direct Lambda Invocation**: Directly invoking Lambda functions rather than using AppSync integrations
+
+### 6.2 Edge Cases
+
+- **Recursive Types**: Handling recursive types in schema
+- **Large Response Payloads**: Dealing with response size limits
+- **Long-Running Operations**: Handling operations that exceed timeout limits
+- **Schema Evolution**: Evolving schema without breaking clients
+- **High-Concurrency Scenarios**: Handling concurrent access to the same data
+- **Cross-Region Deployments**: Managing multi-region deployments
+
+### 6.3 Version-Specific Issues
+
+- **AppSync Feature Compatibility**: Be aware of feature availability in different AppSync versions
+- **API Versioning**: Strategies for API versioning
+- **GraphQL Specification Changes**: Keeping up with GraphQL specification changes
+- **SDK Compatibility**: Ensuring client SDK compatibility
+
+### 6.4 Compatibility Concerns
+
+- **Client Library Compatibility**: Ensuring compatibility with client libraries
+- **Data Source Version Compatibility**: Managing data source version dependencies
+- **Resolver Runtime Compatibility**: Keeping up with resolver runtime changes
+- **Cross-Platform Support**: Supporting various client platforms
+
+### 6.5 Debugging Strategies
+
+- **CloudWatch Logs**: Using CloudWatch Logs for debugging
+- **X-Ray Integration**: Using AWS X-Ray for tracing
+- **Request Tracing**: Implementing custom request tracing
+- **GraphQL Playground**: Using GraphQL Playground for testing
+- **Client-Side Debugging**: Debugging from client perspective
+- **Response Analysis**: Analyzing responses for errors and performance issues
+
+## 7. Tooling and Environment
+
+### 7.1 Recommended Development Tools
+
+- **AWS Amplify**: Full-stack development framework with AppSync support
+- **AWS CDK**: Infrastructure as code for AppSync resources
+- **AWS CLI**: Command-line interface for managing AppSync
+- **AWS AppSync Console**: Web console for managing AppSync APIs
+- **GraphQL Playground/Sandbox**: Interactive environment for testing GraphQL queries
+- **Postman**: API testing tool with GraphQL support
+- **Apollo Client DevTools**: Browser extension for debugging Apollo Client
+- **VS Code Extensions**: Extensions for GraphQL and AppSync development
+
+### 7.2 Build Configuration Best Practices
+
+- **Infrastructure as Code**: Define AppSync resources using CDK, CloudFormation, or Terraform
+- **Environment Variables**: Use environment variables for configuration
+- **Resource Naming**: Follow consistent naming conventions for resources
+- **Resource Tagging**: Tag resources for cost allocation and organization
+- **Deployment Automation**: Automate deployment processes
+- **Schema Compilation**: Compile schema from modular files
+
+### 7.3 Linting and Formatting Recommendations
+
+- **ESLint**: Linting for JavaScript/TypeScript code
+- **Prettier**: Code formatting
+- **GraphQL Linting**: Use GraphQL-specific linting tools
+- **Schema Validation**: Validate schema against best practices
+- **VTL Linting**: Linting for VTL templates
+- **Pre-commit Hooks**: Enforce linting and formatting on commit
+
+### 7.4 Deployment Best Practices
+
+- **CI/CD Integration**: Automate deployment through CI/CD pipelines
+- **Environment Separation**: Maintain separate environments for development, testing, and production
+- **Blue/Green Deployments**: Implement blue/green deployments for zero-downtime updates
+- **Canary Deployments**: Use canary deployments for gradual rollouts
+- **Schema Validation**: Validate schema changes before deployment
+- **Rollback Strategies**: Implement rollback mechanisms for failed deployments
+- **Deployment Monitoring**: Monitor deployments for issues
+
+### 7.5 Monitoring and Logging Strategies
+
+- **CloudWatch Metrics**: Monitor key AppSync metrics
+- **CloudWatch Logs**: Configure detailed logging
+- **X-Ray Tracing**: Enable X-Ray for distributed tracing
+- **Custom Logging**: Implement custom logging in resolvers
+- **Dashboard Creation**: Create dashboards for service health
+- **Alerting**: Set up alerts for performance and error conditions
+- **Log Retention**: Configure appropriate log retention periods
+
+## 8. Advanced Techniques
+
+### 8.1 Schema Design Techniques
+
+- **Interface Types**: Use interfaces for polymorphic types
+- **Union Types**: Use unions for results that can be different types
+- **Custom Scalars**: Define custom scalar types for specific data formats
+- **Input Type Reuse**: Create reusable input types
+- **Directives**: Use directives for cross-cutting concerns
+- **Pagination Types**: Implement standard connection types for pagination
+- **Nullability Design**: Carefully consider field nullability
+
+### 8.2 Resolver Implementation Strategies
+
+- **Pipeline Resolvers**: Use pipeline resolvers for multi-step operations
+- **Direct Resolvers vs. Lambda**: Choose the appropriate resolver type
+- **Middleware Pattern**: Implement resolver middleware for common operations
+- **Result Caching**: Cache resolver results for improved performance
+- **Batched Resolvers**: Implement batching for related data fetching
+- **Transactions**: Handle multi-operation transactions properly
+- **Error Mapping**: Map backend errors to appropriate GraphQL errors
+
+### 8.3 Real-Time Integration Techniques
+
+- **Subscription Filtering**: Filter subscription events at the source
+- **Multi-Source Subscriptions**: Combine events from multiple sources
+- **Subscription Authorization**: Implement fine-grained authorization for subscriptions
+- **Client Presence**: Track client presence with subscriptions
+- **Broadcast vs. Targeted**: Choose between broadcast and targeted subscription patterns
+- **Event-Driven Architecture**: Integrate with broader event-driven architecture
+
+### 8.4 Multi-Environment Configuration
+
+- **Environment-Specific Resources**: Configure environment-specific resources
+- **Feature Flags**: Implement feature flags for controlled rollouts
+- **Configuration Management**: Use SSM Parameter Store or similar for configuration
+- **Cross-Account Deployment**: Manage deployments across multiple AWS accounts
+- **Regional Configuration**: Handle region-specific configuration differences
+- **Dev/Test/Prod Parity**: Maintain close parity between environments
+
+### 8.5 Client Integration Best Practices
+
+- **Apollo Client**: Best practices for Apollo Client integration
+- **Amplify Integration**: Integrate with AWS Amplify for full-stack development
+- **Code Generation**: Generate typed clients from schema
+- **Optimistic UI**: Implement optimistic updates for better UX
+- **Offline Support**: Develop offline-capable applications
+- **Error Handling**: Handle GraphQL errors in client applications
+- **State Management**: Integrate with client-side state management
