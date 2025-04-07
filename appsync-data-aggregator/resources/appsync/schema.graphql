@@ -1,12 +1,15 @@
 type Query {
     # Get the earliest loan application for a customer
     getEarliestLoanApplication(customerId: ID!): LoanApplication
-    
+
     # Get number of applications created within a specified number of months
     getLoanApplicationCountWithinMonths(customerId: ID!, months: Int!): Int
     
     # Get the latest loan application with a specific status for a customer
     getLatestLoanApplicationByStatus(customerId: ID!, status: String!): LoanApplication
+    
+    # Get aggregated loan application statistics for a specific customer
+    getLoanApplicationStats(customerId: ID!): LoanApplicationStats
 }
 
 # Loan Application type with all fields
@@ -24,6 +27,12 @@ type LoanApplication {
     contract_date: String
     gross_income: Float
     decline_reasons: String
+}
+
+# Loan Application statistics
+type LoanApplicationStats {
+    totalDeclinedAmount: Float
+    totalApprovedAmount: Float
 }
 
 schema {

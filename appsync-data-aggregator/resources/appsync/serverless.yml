@@ -7,30 +7,75 @@ provider:
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
+  environment:
+    DYNAMODB_TABLE: ${self:custom.dynamodbTableName}
 
 plugins:
   - serverless-appsync-plugin
-
+  - serverless-python-requirements
+  - serverless-iam-roles-per-function
+  
 custom:
   dynamodbTableName: ${cf:aggregation-dynamodb-resources-${self:provider.stage}.AggregationTableName}
   dynamodbTableArn: ${cf:aggregation-dynamodb-resources-${self:provider.stage}.AggregationTableArn}
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+  pythonRequirements:
+    slim: true
+    layer:
+      name: python-deps
+      description: Python dependencies for Lambda functions
+    noDeploy:
+      - pytest
+    pythonBin: python3
+    removeExtraRequirements: true
+    dockerizePip: true
 
-# Moving appSync from custom to root level
+# Lambda functions
+functions:
+  GetLoanApplicationStats:
+    handler: functions/getLoanApplicationStats/index.handler
+    runtime: python3.12
+    memorySize: 256
+    timeout: 30
+    environment:
+      DYNAMODB_TABLE: ${self:custom.dynamodbTableName}
+      POWERTOOLS_SERVICE_NAME: loan-stats-service
+      POWERTOOLS_LOGGER_LOG_EVENT: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+          - dynamodb:Query
+          - dynamodb:GetItem
+        Resource:
+          - ${self:custom.dynamodbTableArn}
+          - !Join ["", ["${self:custom.dynamodbTableArn}", "/index/*"]]
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+    package:
+      individually: true
+      patterns:
+        - '!**'
+        - 'functions/**'
+        - '!functions/**/__pycache__/**'
+        - '!functions/**/*.pyc'
+        - '!functions/**/*.pyo'
+        - '!functions/**/*.pyd'
+
+
 appSync:
   name: AggregationAPI
-  # Moving authentication configuration
   authentication:
     type: API_KEY
     apiKeys:
       - name: DefaultAPIKey
         description: Default API Key for GraphQL API
         expiresAfter: 30d
-  # Renamed logConfig to logging
   logging:
     loggingRoleArn: !GetAtt AppSyncLoggingServiceRole.Arn
-    level: ALL # Possible values: NONE, ERROR, ALL
+    level: ALL
   schema: schema.graphql
-  # mappingTemplatesLocation is no longer needed as paths are relative to serverless.yml
   
   # Define pipeline functions
   pipelineFunctions:
@@ -54,8 +99,12 @@ appSync:
       response: mapping-templates/getLatestLoanApplicationByStatus-response.vtl
       substitutions:
         table: ${self:custom.dynamodbTableName}
+    
+    getLoanApplicationStatsFunction:
+      dataSource: LoanStatsLambdaDataSource
+      request: mapping-templates/getLoanApplicationStats-request.vtl
+      response: mapping-templates/getLoanApplicationStats-response.vtl
 
-  # Resolvers now reference the pipeline functions
   resolvers:
     Query.getEarliestLoanApplication:
       kind: PIPELINE
@@ -71,17 +120,34 @@ appSync:
       kind: PIPELINE
       functions:
         - getLatestLoanApplicationByStatusFunction
+    
+    Query.getLoanApplicationStats:
+      kind: PIPELINE
+      functions:
+        - getLoanApplicationStatsFunction
 
-  # Converted dataSources from array to key-value pairs
   dataSources:
     AggregationDynamoDBTable:
       type: AMAZON_DYNAMODB
       config:
         tableName: ${self:custom.dynamodbTableName}
         serviceRoleArn: !GetAtt AppSyncDynamoDBServiceRole.Arn
+    
+    LoanStatsLambdaDataSource:
+      type: AWS_LAMBDA
+      config:
+        functionArn: !GetAtt GetLoanApplicationStatsLambdaFunction.Arn
 
 resources:
   Resources:
+    AppSyncLambdaInvokePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !GetAtt GetLoanApplicationStatsLambdaFunction.Arn
+        Principal: appsync.amazonaws.com
+        SourceArn: !GetAtt GraphQlApi.Arn
+
     AppSyncDynamoDBServiceRole:
       Type: AWS::IAM::Role
       Properties:
