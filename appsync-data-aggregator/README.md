@@ -1,20 +1,36 @@
+# Introduction
+This guide provides step-by-step instructions for deploying and testing the Lending Service, which uses AWS DynamoDB for data storage and AWS AppSync for API functionality.
 
-## How to deploy to aws profile
+# Prerequisites
+* AWS CLI installed and configured
+* Serverless Framework installed (npm install -g serverless)
+* Access to the TymeX AWS account and Get the credentials for tymex-sandbox
 
-### ACloudGuru
-```bash
+## AWS Configuration
+
+```
 aws configure --profile tx-sandbox
-aws configure set aws_session_token <>
+aws configure set aws_session_token <your-session-token> --profile tx-sandbox
 ```
 
+# Deployment Steps
 
-### Deploy DynamoDB
+## Deploy DynamoDB
+
 ```bash
 AWS_PROFILE=tx-sandbox sls dynamodb:deploy
 ```
 
-### Insert the example items
-```bash
+## Deploy DynamoDB
+```
+AWS_PROFILE=tx-sandbox sls appsync:deploy
+```
+
+
+# Testing
+Insert sample loan application records into DynamoDB for testing:
+
+```
 AWS_PROFILE=tx-sandbox aws dynamodb put-item \
 --region us-east-1 \
 --table-name lend-aggregation-table \
@@ -37,8 +53,7 @@ AWS_PROFILE=tx-sandbox aws dynamodb put-item \
   "gross_income": {"N": "36000.00"}
 }'
 ```
-
-```bash
+```
 AWS_PROFILE=tx-sandbox aws dynamodb put-item \
 --region us-east-1 \
 --table-name lend-aggregation-table \
@@ -60,7 +75,8 @@ AWS_PROFILE=tx-sandbox aws dynamodb put-item \
   "decline_reasons": {"S": "[\"Insufficient income\", \"High existing debt\"]"}
 }'
 ```
-```bash
+
+```
 AWS_PROFILE=tx-sandbox aws dynamodb put-item \
 --region us-east-1 \
 --table-name lend-aggregation-table \
@@ -82,54 +98,14 @@ AWS_PROFILE=tx-sandbox aws dynamodb put-item \
 }'
 ```
 
+After inserting the sample data, you can verify it by:
+1. Using the AWS Console to view the items in DynamoDB
+2. Testing queries through the AppSync console
+3. Running the application's test suite (if available)
 
-### Deploy AppSync
-```bash
-AWS_PROFILE=tx-sandbox sls appsync:deploy
-```
-
-
-
----
-### Main Resolver Kinds:
-* PIPELINE: For complex operations that can chain multiple functions
-* UNIT: For simple, direct operations with a single data source
-* None (default in v2 is PIPELINE)
-
-Note: To simulate a UNIT resolver, use a PIPELINE with only one function
-
-#### **PIPELINE Resolvers**
-- Can execute multiple functions in sequence (like a pipeline)
-- Use cases:
-  - Complex operations requiring multiple data sources
-  - Operations needing data transformation between steps
-  - When you need to combine data from multiple sources
-  - When you need pre/post processing of data
-  - Authentication/authorization checks before data access
-- Example: A query that needs to:
-  - First check user permissions
-  - Then fetch data from DynamoDB
-  - Then enrich it with data from another source
-  - Finally transform the result
-
-#### **UNIT Resolvers**
-- Single operation with one data source
-- Use cases:
-  - Simple CRUD operations
-  - Direct database queries
-  - When you only need to interact with one data source
-  - Simple transformations
-- Example: A simple query to fetch an item from DynamoDB
-
-
-You're using PIPELINE resolvers, which is the default in v2 of the plugin. Even though your operations are currently simple (one function each), using PIPELINE resolvers gives you the flexibility to add more functions later if needed.
-
-Best Practices:
-- Use UNIT when you're certain you'll only ever need one data source
-- Use PIPELINE when:
-  - You might need to add more functionality later
-  - You need to perform multiple operations
-  - You need to implement complex business logic
-  - You need to combine data from multiple sources
-
-In v2 of the serverless-appsync-plugin, PIPELINE is recommended even for simple operations, as it provides more flexibility for future extensions of your resolvers.
+# Troubleshooting
+* If deployment fails, check AWS credentials and permissions
+* Verify that your serverless.yml configuration is valid
+* If data insertion fails, ensure the DynamoDB table exists and has the correct schema
+* For AppSync issues, check the CloudWatch logs for detailed error messages
+For more information, consult the project's internal documentation or reach out to the DevOps team.
