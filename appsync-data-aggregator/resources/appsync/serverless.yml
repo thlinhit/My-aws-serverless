@@ -30,6 +30,7 @@ custom:
     pythonBin: python3
     removeExtraRequirements: true
     dockerizePip: true
+  apiKeyExpiration: ${file(./calculate-expiration.js):getExpirationTimestamp}
 
 # Lambda functions
 functions:
@@ -68,10 +69,6 @@ appSync:
   name: AggregationAPI
   authentication:
     type: API_KEY
-    apiKeys:
-      - name: DefaultAPIKey
-        description: Default API Key for GraphQL API
-        expiresAfter: 30d
   logging:
     loggingRoleArn: !GetAtt AppSyncLoggingServiceRole.Arn
     level: ALL
@@ -193,6 +190,12 @@ resources:
               Action: sts:AssumeRole
         ManagedPolicyArns:
           - arn:aws:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs
+    AggregationApiKey:
+      Type: AWS::AppSync::ApiKey
+      Properties:
+        ApiId: !GetAtt GraphQlApi.ApiId
+        Description: Aggregation AppSync API Key
+        Expires: ${self:custom.apiKeyExpiration}
 
   Outputs:
     GraphQLApiEndpoint:
@@ -202,4 +205,4 @@ resources:
     GraphQLApiId:
       Value: !GetAtt GraphQlApi.ApiId
       Export:
-        Name: ${self:service}-${self:provider.stage}-GraphQLApiId 
+        Name: ${self:service}-${self:provider.stage}-GraphQLApiId

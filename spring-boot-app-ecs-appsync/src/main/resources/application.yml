@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+# AWS AppSync Configuration
+aws:
+  appsync:
+    endpoint: <ENDPOINT>
+    region: us-east-1
+    api-key: <API_KEY>
+
+# Log configuration
+logging:
+  level:
+    root: INFO
+    com:
+      example:
+        appsync: DEBUG
+    org:
+      springframework:
+        cloud:
+          openfeign: DEBUG
+
+# Feign client configuration
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 10000
+        read-timeout: 60000
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+
+# Jackson configuration
+spring:
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null 
