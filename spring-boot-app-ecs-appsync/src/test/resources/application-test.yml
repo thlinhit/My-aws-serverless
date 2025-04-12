@@ -1,0 +1,49 @@
+server:
+  port: 0
+
+# Test AWS AppSync Configuration with mock values
+aws:
+  appsync:
+    endpoint: http://localhost:9999
+    region: us-east-1
+    api-key: test-api-key
+
+# Test logging configuration
+logging:
+  level:
+    root: INFO
+    com:
+      example:
+        appsync: DEBUG
+    org:
+      springframework:
+        cloud:
+          openfeign: DEBUG
+
+# Test Feign client configuration
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 5000
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+
+# Disable Kafka for tests
+spring:
+  cloud:
+    stream:
+      kafka:
+        binder:
+          auto-create-topics: false
+      bindings:
+        input:
+          destination: test-topic
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null 
