@@ -60,14 +60,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, status);
     }
 
-    @ExceptionHandler(GraphQLExecutionException.class)
-    public ResponseEntity<ApiResponse<?>> handleGraphQLExecutionException(GraphQLExecutionException ex) {
-        log.error("GraphQL execution error: {}", ex.getMessage(), ex);
-        
-        ApiResponse<?> response = ApiResponse.error(ex.getMessage(), "LEGACY-ERROR");
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(IllegalArgumentException ex) {
         log.error("Invalid argument: {}", ex.getMessage(), ex);
