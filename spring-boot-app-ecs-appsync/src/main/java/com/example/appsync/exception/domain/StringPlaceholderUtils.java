@@ -1,5 +1,7 @@
 package com.example.appsync.exception.domain;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -8,6 +10,7 @@ import java.util.regex.Pattern;
 /**
  * Utility class for handling string placeholders in error messages
  */
+@UtilityClass
 public class StringPlaceholderUtils {
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}");
 
