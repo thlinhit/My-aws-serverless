@@ -1,0 +1,457 @@
+---
+description: This document outlines best practices for developing and maintaining serverless applications using Serverless Framework v3. Following these guidelines will help ensure your code is maintainable, secure, and efficient.
+globs: 
+alwaysApply: false
+---
+---
+description: This document outlines best practices for developing and maintaining serverless applications using Serverless Framework v3. Following these guidelines will help ensure your code is maintainable, secure, and efficient.
+globs: serverless.yml
+alwaysApply: true
+---
+
+# Serverless Framework v3 Development Best Practices
+
+This document outlines best practices for developing and maintaining serverless applications using Serverless Framework v3. Following these guidelines will help ensure your code is maintainable, secure, and efficient.
+
+## 1. Code Organization and Structure
+
+### 1.1 Directory Structure
+
+- **Root Directory**: The primary entry point for your serverless application definition. Contains `serverless.yml`, `package.json`, and environment configuration files.
+- **Functions Directory**: Contains handler files for Lambda functions, organized by domain or feature.
+- **Resources Directory**: CloudFormation resources and custom resource definitions.
+- **Layers Directory**: Lambda layers with shared code and dependencies.
+- **Config Directory**: Environment-specific configuration files.
+- **Utils Directory**: Utility functions and helper code shared across functions.
+- **Models Directory**: Data models and schema definitions.
+- **Middlewares Directory**: Middleware functions for Lambda handlers.
+- **Tests Directory**: Unit, integration, and end-to-end tests.
+- **Scripts Directory**: Deployment, local development, and utility scripts.
+- **.env Files**: Environment variables for different deployment stages (e.g., `.env.dev`, `.env.prod`).
+
+Example:
+
+```
+├── serverless.yml            # Main service configuration
+├── package.json
+├── webpack.config.js         # If using webpack for bundling
+├── tsconfig.json             # If using TypeScript
+├── src/
+│   ├── functions/
+│   │   ├── auth/
+│   │   │   ├── login.js
+│   │   │   ├── register.js
+│   │   ├── users/
+│   │   │   ├── create.js
+│   │   │   ├── get.js
+│   │   │   ├── update.js
+│   │   │   ├── delete.js
+│   │   ├── products/
+│   │   │   ├── list.js
+│   │   │   ├── get.js
+│   ├── resources/
+│   │   ├── dynamodb-tables.yml
+│   │   ├── s3-buckets.yml
+│   │   ├── cognito.yml
+│   ├── layers/
+│   │   ├── common/
+│   │   │   ├── nodejs/
+│   │   │   │   ├── package.json
+│   │   │   │   ├── node_modules/
+│   │   │   │   ├── utils.js
+│   ├── utils/
+│   │   ├── logger.js
+│   │   ├── validator.js
+│   │   ├── response.js
+│   ├── models/
+│   │   ├── user.js
+│   │   ├── product.js
+│   ├── middlewares/
+│   │   ├── auth.js
+│   │   ├── validator.js
+│   │   ├── errorHandler.js
+├── config/
+│   ├── dev.yml
+│   ├── staging.yml
+│   ├── prod.yml
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   ├── e2e/
+├── scripts/
+│   ├── deploy.sh
+│   ├── seed-data.js
+├── .env.dev
+├── .env.staging
+├── .env.prod
+├── .gitignore
+├── README.md
+```
+
+### 1.2 File Naming Conventions
+
+- **serverless.yml**: Main service configuration file.
+- **serverless.common.yml**: Shared configuration across services (for multi-service projects).
+- **package.json**: Node.js dependencies and scripts.
+- **functions/<domain>/<action>.js**: Lambda handler files named after their purpose.
+- **resources/<resource-type>.yml**: CloudFormation resource definitions.
+- **config/<stage>.yml**: Stage-specific configurations.
+- **.env.<stage>**: Environment variables for different stages.
+
+### 1.3 Service Organization
+
+- **Microservice Architecture**: Define separate services for distinct business domains.
+- **Service Composition**: Compose complex applications by combining smaller, focused services.
+- **Service Versioning**: Use version control (e.g., Git tags) to manage service versions.
+- **Service Communication**: Use well-defined interfaces (API Gateway, EventBridge, SQS) for inter-service communication.
+
+### 1.4 Component Architecture
+
+- **Function-Focused Design**: Design Lambda functions to perform a single, well-defined task.
+- **Event-Driven Architecture**: Use events and messages to coordinate between components.
+- **Stateless Functions**: Design Lambda functions to be stateless, storing state in dedicated services (DynamoDB, S3).
+- **Layered Architecture**: Separate business logic from infrastructure concerns.
+
+### 1.5 Code Splitting Strategies
+
+- **Function Separation**: Split code into smaller, specialized Lambda functions.
+- **Common Code in Layers**: Move shared code to Lambda layers.
+- **Resources by Type**: Group related CloudFormation resources into separate files.
+- **Environment Separation**: Use separate configuration files for different environments.
+
+## 2. Common Patterns and Anti-patterns
+
+### 2.1 Design Patterns Specific to Serverless
+
+- **Function Composition**: Chain Lambda functions together using Step Functions or event mechanisms.
+- **Event-Driven Architecture**: Use events to trigger functions and coordinate workflows.
+- **API Gateway Integration**: Design RESTful or GraphQL APIs using API Gateway.
+- **Database-Per-Service**: Give each service its own data storage to maintain service independence.
+- **Fan-Out Pattern**: Process large workloads in parallel by distributing tasks across multiple functions.
+- **Circuit Breaker Pattern**: Implement circuit breakers to handle external service failures gracefully.
+
+### 2.2 Recommended Approaches for Common Tasks
+
+- **Authentication**: Use Cognito or a custom authorizer with API Gateway.
+- **Database Access**: Use DynamoDB for most serverless applications, with indexes designed for access patterns.
+- **File Storage**: Use S3 with pre-signed URLs for secure file uploads/downloads.
+- **Background Processing**: Use SQS or EventBridge for reliable asynchronous processing.
+- **Workflow Orchestration**: Use Step Functions for complex workflows and error handling.
+- **Logging and Monitoring**: Implement structured logging with CloudWatch Logs and X-Ray for tracing.
+- **Service Discovery**: Use SSM Parameter Store or AppConfig for service discovery.
+
+### 2.3 Anti-patterns and Code Smells to Avoid
+
+- **Monolithic Functions**: Avoid creating large Lambda functions that do too many things.
+- **Tight Coupling Between Services**: Avoid direct dependencies between services.
+- **Long-Running Functions**: Avoid functions that run close to the timeout limit.
+- **Synchronous Chains**: Avoid long chains of synchronous Lambda invocations.
+- **Keeping Connections Open**: Don't maintain persistent connections across invocations.
+- **Large Deployment Packages**: Keep deployment packages small to minimize cold start times.
+- **Ignoring Cold Starts**: Design with cold starts in mind, especially for user-facing functions.
+- **Hard-Coding Configuration**: Use environment variables or parameter store instead.
+- **Over-Provisioning**: Avoid setting unnecessarily high memory or concurrency limits.
+
+### 2.4 State Management Best Practices
+
+- **Use DynamoDB for State**: Store state in DynamoDB or another appropriate database.
+- **Avoid Local State**: Don't rely on in-memory or container state between invocations.
+- **Session Management**: Use cookies, JWTs, or DynamoDB for session storage.
+- **Ephemeral Storage**: Use `/tmp` directory for temporary file processing, but don't rely on it persisting.
+- **Idempotent Operations**: Design functions to be idempotent to handle duplicate events.
+- **Transaction Support**: Use DynamoDB transactions or Step Functions for coordinating multi-step operations.
+- **State Machines**: Use Step Functions for complex workflows with state.
+
+### 2.5 Error Handling Patterns
+
+- **Dead Letter Queues**: Configure DLQs for asynchronous invocations.
+- **Retry Policies**: Implement configurable retry policies for transient errors.
+- **Circuit Breakers**: Implement circuit breakers for downstream service calls.
+- **Error Response Standardization**: Standardize error response formats across functions.
+- **Graceful Degradation**: Design systems to function with reduced capabilities when components fail.
+- **Correlation IDs**: Use correlation IDs to track requests across services.
+
+## 3. Performance Considerations
+
+### 3.1 Optimization Techniques
+
+- **Function Size Optimization**: Keep deployment packages small (< 5MB).
+- **Dependency Management**: Only include necessary dependencies.
+- **Code Splitting**: Use webpack or other bundlers to optimize code packages.
+- **Memory Allocation**: Benchmark and right-size Lambda memory settings.
+- **Database Connection Pooling**: Use connection pooling for RDS or other databases.
+- **Caching**: Implement caching with API Gateway, CloudFront, or ElastiCache.
+- **Parallel Processing**: Use async/await and Promise.all for parallel operations.
+- **Concurrency Management**: Set appropriate function concurrency limits.
+
+### 3.2 Cold Start Mitigation
+
+- **Keep Functions Warm**: Use scheduled events to periodically invoke functions.
+- **Provision Concurrency**: Use provisioned concurrency for critical functions.
+- **Language Selection**: Choose languages with faster cold start times (Node.js vs Java).
+- **Code Optimization**: Minimize initialization code in the handler.
+- **Lazy Loading**: Lazy-load heavy dependencies only when needed.
+- **Package Size Reduction**: Remove unnecessary files and dependencies.
+- **Keep Functions Simple**: Split complex functions into simpler ones.
+
+### 3.3 Database Optimization
+
+- **Access Pattern Design**: Design DynamoDB tables based on access patterns.
+- **Index Optimization**: Create appropriate secondary indexes.
+- **Query Efficiency**: Avoid full table scans and inefficient queries.
+- **Connection Management**: Re-use database connections when possible.
+- **Data Partitioning**: Implement effective partition strategies.
+- **Read/Write Capacity**: Configure appropriate capacity settings.
+- **Batch Operations**: Use batch operations for multiple items.
+
+### 3.4 API Optimization
+
+- **Response Compression**: Enable compression for API responses.
+- **Pagination**: Implement pagination for large result sets.
+- **Request Validation**: Validate requests early to avoid unnecessary processing.
+- **API Caching**: Configure API Gateway caching for frequently accessed endpoints.
+- **GraphQL Optimization**: Use selective queries and optimize resolvers.
+- **Binary Media Types**: Configure binary media types for efficient file transfers.
+- **HTTP Keep-Alive**: Enable keep-alive for functions that make HTTP requests.
+
+### 3.5 Event Processing Optimization
+
+- **Batch Processing**: Process events in batches when possible.
+- **Event Filtering**: Use event filtering to trigger functions only when needed.
+- **Event Size Optimization**: Keep event size small to reduce processing time.
+- **Asynchronous Processing**: Use async invocation for non-critical tasks.
+- **Queue-Based Load Leveling**: Use SQS to smooth out traffic spikes.
+- **Event Bridge Rules**: Optimize EventBridge rules for efficient routing.
+
+## 4. Security Best Practices
+
+### 4.1 Common Vulnerabilities and How to Prevent Them
+
+- **Injection Attacks**: Validate and sanitize all inputs.
+- **Broken Authentication**: Implement proper authentication mechanisms.
+- **Sensitive Data Exposure**: Encrypt sensitive data at rest and in transit.
+- **XML External Entities**: Disable XXE processing in XML parsers.
+- **Broken Access Control**: Implement proper authorization checks.
+- **Security Misconfiguration**: Follow security best practices for all services.
+- **Cross-Site Scripting**: Sanitize outputs and implement proper content security policies.
+- **Insecure Deserialization**: Validate serialized data before processing.
+- **Using Components with Known Vulnerabilities**: Regularly update dependencies.
+- **Insufficient Logging & Monitoring**: Implement comprehensive logging and monitoring.
+
+### 4.2 IAM Permission Management
+
+- **Least Privilege Principle**: Grant only necessary permissions to Lambda functions.
+- **Resource-Based Policies**: Use resource-based policies where appropriate.
+- **IAM Roles Per Function**: Create specific IAM roles for each function.
+- **Policy Conditions**: Use conditions in IAM policies to restrict access.
+- **Temporary Credentials**: Use temporary credentials for external service access.
+- **Regular Audits**: Regularly audit and review IAM permissions.
+- **Permission Boundaries**: Implement permission boundaries for developers.
+
+### 4.3 Authentication and Authorization Patterns
+
+- **JWT Authentication**: Implement JWT-based authentication for API endpoints.
+- **Cognito Integration**: Use Amazon Cognito for user management and authentication.
+- **Custom Authorizers**: Create custom authorizers for complex authorization requirements.
+- **OAuth 2.0/OpenID Connect**: Implement standard protocols for authentication.
+- **API Keys**: Use API keys for simple machine-to-machine authentication.
+- **Role-Based Access Control**: Implement RBAC for authorization.
+- **MFA**: Enforce multi-factor authentication for sensitive operations.
+
+### 4.4 Data Protection Strategies
+
+- **Encryption at Rest**: Encrypt data stored in databases and S3 buckets.
+- **Encryption in Transit**: Use HTTPS and TLS for all API communication.
+- **Client-Side Encryption**: Implement client-side encryption for sensitive data.
+- **Key Management**: Use KMS for encryption key management.
+- **Data Classification**: Classify data based on sensitivity.
+- **Data Masking**: Mask or tokenize sensitive data in logs and responses.
+- **Data Retention**: Implement data retention policies.
+
+### 4.5 Secure API Configuration
+
+- **Rate Limiting**: Implement rate limiting to prevent abuse.
+- **CORS Configuration**: Configure CORS properly to prevent unauthorized access.
+- **HTTP Security Headers**: Implement security headers to prevent attacks.
+- **WAF Integration**: Use WAF to protect APIs from common web attacks.
+- **API Gateway Authorization**: Configure proper authorization mechanisms.
+- **Request Validation**: Validate request parameters, headers, and body.
+- **Response Validation**: Validate and sanitize responses to prevent data leakage.
+
+## 5. Testing Approaches
+
+### 5.1 Unit Testing Strategies
+
+- **Function Isolation**: Test Lambda handler logic in isolation.
+- **Mocking AWS Services**: Use mocks for AWS services in unit tests.
+- **Test Framework**: Use Jest, Mocha, or other test frameworks.
+- **Code Coverage**: Aim for high code coverage in unit tests.
+- **Test Organization**: Organize tests to mirror application structure.
+- **Input Validation**: Test input validation logic thoroughly.
+- **Error Handling**: Test error handling paths.
+
+### 5.2 Integration Testing
+
+- **Local Invocation**: Test functions locally using serverless-offline.
+- **Service Integration**: Test integration with other AWS services.
+- **API Testing**: Test API endpoints with tools like Postman or Supertest.
+- **Database Integration**: Test database interactions with local DynamoDB.
+- **Event Processing**: Test event processing flows.
+- **Environment Isolation**: Use separate resources for integration tests.
+
+### 5.3 End-to-End Testing
+
+- **Deployed Environment Testing**: Test against a deployed environment.
+- **User Flow Testing**: Test complete user flows.
+- **Performance Testing**: Test performance characteristics.
+- **Load Testing**: Test under expected and peak loads.
+- **Chaos Testing**: Test resilience under failure conditions.
+- **Security Testing**: Perform security scans and penetration testing.
+- **Monitoring Verification**: Verify that monitoring and alerts work correctly.
+
+### 5.4 Test Automation and CI/CD
+
+- **Automated Testing**: Automate all tests as part of CI/CD pipeline.
+- **Test Environments**: Create ephemeral test environments for testing.
+- **Stage Progression**: Progress through stages (dev, test, prod) with automated tests.
+- **Rollback Testing**: Test rollback procedures.
+- **Canary Deployments**: Use canary deployments to validate changes.
+- **Blue/Green Deployments**: Implement blue/green deployments for zero-downtime updates.
+- **Feature Flags**: Use feature flags to enable/disable features in production.
+
+### 5.5 Monitoring and Observability
+
+- **Structured Logging**: Implement structured logging for better analysis.
+- **Log Levels**: Use appropriate log levels (DEBUG, INFO, WARN, ERROR).
+- **Tracing**: Implement distributed tracing with X-Ray.
+- **Metrics Collection**: Collect and monitor key metrics.
+- **Alerting**: Set up alerts for anomalies and errors.
+- **Dashboard Creation**: Create dashboards for service health.
+- **Error Tracking**: Track and analyze errors systematically.
+
+## 6. Common Pitfalls and Gotchas
+
+### 6.1 Frequent Mistakes Developers Make
+
+- **Ignoring Cold Starts**: Not considering cold start impact on user experience.
+- **Overusing Synchronous Patterns**: Using synchronous communication where asynchronous would be better.
+- **Not Handling Partial Failures**: Failing to handle partial failures in distributed systems.
+- **Ignoring Regional Differences**: Not accounting for AWS regional differences.
+- **Hardcoding Dependencies**: Hardcoding service endpoints or resource ARNs.
+- **Timeout Misconfigurations**: Setting timeouts too high or too low.
+- **Large Function Packages**: Creating bloated Lambda deployment packages.
+- **Poor Error Handling**: Not implementing robust error handling.
+- **Ignoring Idempotency**: Not designing functions to be idempotent.
+- **Neglecting Least Privilege**: Granting excessive permissions to functions.
+
+### 6.2 Edge Cases to be Aware Of
+
+- **Concurrency Limits**: AWS account Lambda concurrency limits.
+- **API Gateway Throttling**: Throttling and quota limits on API Gateway.
+- **Event Source Mapping Failures**: Handling failures in event source mappings.
+- **Payload Size Limits**: API Gateway, Lambda, SQS, and other service payload limits.
+- **Cold Start Variability**: Variations in cold start times across regions and runtimes.
+- **VPC Networking Delays**: Additional latency when using VPC networking.
+- **Regional Service Differences**: Feature availability differences across regions.
+- **Resource Quotas**: Account-level service quotas and limits.
+- **Time Drift**: Clock synchronization issues across distributed components.
+- **Transaction Limitations**: Understanding transaction support and limitations.
+
+### 6.3 Version-Specific Issues
+
+- **Serverless Framework Updates**: Breaking changes between Serverless Framework versions.
+- **Plugin Compatibility**: Plugin compatibility with Serverless Framework v3.
+- **AWS Service Updates**: Breaking changes in AWS service APIs.
+- **Node.js Runtime Updates**: Runtime deprecations and feature changes.
+- **Dependency Management**: Managing package.json dependencies properly.
+- **Configuration Changes**: Changes in serverless.yml configuration format.
+- **Integration Points**: Changes in how the framework integrates with AWS services.
+
+### 6.4 Compatibility Concerns
+
+- **Cross-Region Deployment**: Ensuring compatibility across AWS regions.
+- **Multi-Account Strategy**: Managing deployments across multiple AWS accounts.
+- **Cross-Stack References**: Handling references between CloudFormation stacks.
+- **External Service Integration**: Ensuring compatibility with external services.
+- **Client Compatibility**: Maintaining compatibility with client applications.
+- **API Versioning**: Managing API versions for backward compatibility.
+- **Schema Evolution**: Handling database schema changes safely.
+
+### 6.5 Debugging Strategies
+
+- **Local Debugging**: Using serverless-offline for local debugging.
+- **CloudWatch Logs**: Using structured logging and log groups effectively.
+- **X-Ray Tracing**: Implementing X-Ray for request tracing.
+- **Error Handling**: Implementing comprehensive error handling.
+- **Environment Variables**: Checking environment variable configuration.
+- **IAM Permissions**: Verifying IAM permissions and policies.
+- **CloudFormation Outputs**: Using outputs for debugging resource creation.
+- **AWS CLI**: Using AWS CLI for checking resource state.
+- **Monitoring**: Setting up proper monitoring and alerting.
+- **Correlation IDs**: Using correlation IDs to track requests across services.
+
+## 7. Tooling and Environment
+
+### 7.1 Recommended Development Tools
+
+- **Serverless Framework**: Core tool for serverless development.
+- **serverless-offline**: Local development and testing.
+- **serverless-webpack**: Bundling and optimization.
+- **serverless-dynamodb-local**: Local DynamoDB for testing.
+- **AWS CLI**: Command-line interface for AWS.
+- **AWS SAM CLI**: Complementary tool for local testing.
+- **Node.js**: Runtime for serverless applications.
+- **TypeScript**: Type safety for JavaScript applications.
+- **VSCode**: IDE with serverless plugins.
+- **Postman/Insomnia**: API testing tools.
+- **Terraform**: For infrastructure not covered by Serverless Framework.
+
+### 7.2 Plugin Recommendations
+
+- **serverless-offline**: Local development and testing.
+- **serverless-webpack**: Bundle optimization and TypeScript support.
+- **serverless-dynamodb-local**: Local DynamoDB development.
+- **serverless-step-functions**: Step Functions integration.
+- **serverless-appsync-plugin**: AppSync GraphQL API support.
+- **serverless-domain-manager**: Custom domain management.
+- **serverless-iam-roles-per-function**: Fine-grained IAM role management.
+- **serverless-plugin-canary-deployments**: Canary deployment support.
+- **serverless-plugin-tracing**: AWS X-Ray tracing support.
+- **serverless-prune-plugin**: Prune old Lambda versions.
+
+### 7.3 Linting and Formatting
+
+- **ESLint**: JavaScript/TypeScript linting.
+- **Prettier**: Code formatting.
+- **serverless-lint**: Serverless configuration linting.
+- **Husky**: Git hooks for pre-commit checks.
+- **lint-staged**: Run linters on staged files.
+- **EditorConfig**: Consistent editor configuration.
+- **TypeScript**: Type checking.
+- **JSDoc**: Code documentation.
+
+### 7.4 Deployment Best Practices
+
+- **Environment Segregation**: Separate dev/test/prod environments.
+- **Infrastructure as Code**: Define all infrastructure as code.
+- **Immutable Deployments**: Deploy new versions instead of updating.
+- **Blue/Green Deployments**: Implement for zero-downtime deployments.
+- **Canary Releases**: Gradually roll out changes to reduce risk.
+- **Rollback Strategy**: Implement automated rollback mechanisms.
+- **Deployment Notifications**: Notify team of deployments and issues.
+- **Artifact Management**: Store deployment artifacts securely.
+- **Version Tagging**: Tag deployments with version information.
+- **Deployment Approval**: Implement approval workflows for production.
+
+### 7.5 CI/CD Integration
+
+- **GitHub Actions**: Automated workflows for GitHub repositories.
+- **AWS CodePipeline**: AWS native CI/CD service.
+- **CircleCI/Travis/Jenkins**: Alternative CI/CD platforms.
+- **CodeBuild**: AWS build service for serverless applications.
+- **Automated Testing**: Run tests automatically as part of CI/CD.
+- **Infrastructure Validation**: Validate infrastructure changes before deployment.
+- **Security Scanning**: Scan code and dependencies for vulnerabilities.
+- **Deployment Approval**: Implement approval workflows for production.
+- **Multi-Environment Pipeline**: Progress through environments automatically.
+- **Monitoring Integration**: Integrate monitoring and alerting with deployments.

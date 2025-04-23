@@ -1,0 +1,13 @@
+{
+  "name": "saas-gw-api",
+  "version": "1.0.0",
+  "description": "API Gateway with Lambda backend requiring API key authentication",
+  "scripts": {
+    "deploy": "AWS_PROFILE=tx-sandbox sls deploy --stage dev",
+    "remove": "serverless remove"
+  },
+  "devDependencies": {
+    "serverless": "^3.32.2",
+    "serverless-python-requirements": "^6.0.0"
+  }
+} 

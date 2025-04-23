@@ -1,0 +1,37 @@
+service: saas-gw-api
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.12
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+  apiGateway:
+    apiKeys:
+      - name: ${self:service}-${self:provider.stage}-apikey
+        enabled: true
+  environment:
+    STAGE: ${self:provider.stage}
+
+functions:
+  hello:
+    handler: src/handlers/hello.handler
+    events:
+      - http:
+          path: api/abc/hello
+          method: post
+          private: true  # Requires API key
+          cors: true
+
+plugins:
+  - serverless-python-requirements
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules/**'
+    - '!.gitignore'
+    - '!.git/**'
+    - '!.pytest_cache/**'
+    - '!tests/**' 

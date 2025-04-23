@@ -1,0 +1,2 @@
+# No specific requirements for this basic Lambda function
+# Add any additional requirements here as needed 
