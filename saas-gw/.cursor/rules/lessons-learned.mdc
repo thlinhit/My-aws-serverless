@@ -13,3 +13,118 @@ description: Stores important patterns, preferences, and project intelligence, l
 globs: 
 alwaysApply: true
 ---
+
+# Project Intelligence - API Gateway with Serverless Framework v3
+
+## Architectural Patterns
+
+### API Gateway with Lambda Backend
+- API Gateway serves as the entry point for API requests, handling authentication and routing
+- Lambda functions process requests and generate responses
+- API keys provide simple authentication for API endpoints
+- CORS configuration is essential for browser-based clients
+
+### CloudFront Integration with API Gateway
+- CloudFront can be used to front API Gateway for improved performance and security
+- CloudFront distributions should be configured to forward necessary headers like API keys
+- Setting appropriate cache behaviors is critical for API Gateway integration
+- Origin path must include the stage (e.g., /dev) for proper routing
+
+### Serverless Framework Best Practices
+- Define all infrastructure in serverless.yml for reproducibility
+- Use environment variables and stage parameters for different environments
+- Configure proper packaging to optimize deployment size
+- Use plugins like serverless-python-requirements to manage dependencies
+
+### Lambda Function Design
+- Implement structured logging for better debugging
+- Use consistent response formatting for all endpoints
+- Add proper error handling and status codes
+- Keep Lambda functions focused on a single responsibility
+
+## Project Preferences
+
+### Code Organization
+- Organize Lambda functions by domain in src/handlers directory
+- Keep configuration in the root directory
+- Document architecture and design decisions thoroughly
+
+### Deployment Strategy
+- Use AWS profiles for different deployment targets
+- Deploy to development environment before production
+- Use stage parameters to manage environment-specific configuration
+
+### Authentication Approach
+- API keys for simple machine-to-machine authentication
+- Consider OAuth or Cognito for user authentication in future phases
+- Ensure proper forwarding of authentication headers through CloudFront
+
+## Technical Insights
+
+### CloudFront Configuration
+- Minimize cache TTLs for API endpoints that need fresh data
+- Forward critical headers like x-api-key and Authorization
+- Configure custom error responses for improved user experience
+- Use appropriate price class based on geographical user distribution
+
+### Lambda Performance Optimization
+- Minimize package size to reduce cold start times
+- Limit dependencies to essential libraries
+- Use async/await for efficient asynchronous operations
+- Implement connection pooling for database connections (when needed)
+
+### API Gateway Configuration
+- Enable CORS for browser-based clients
+- Configure request validation to reject invalid requests
+- Use API keys for simple authentication
+- Consider usage plans for rate limiting
+
+### Logging and Monitoring
+- Implement structured logging with appropriate log levels
+- Log request and response data for debugging
+- Configure CloudWatch metrics and alarms for monitoring
+- Consider distributed tracing for complex systems
+
+## Common Challenges and Solutions
+
+### CloudFront and API Gateway Integration
+- **Challenge**: Forwarding API keys through CloudFront
+- **Solution**: Configure ForwardedValues to include the x-api-key header
+
+### Cold Start Latency
+- **Challenge**: Lambda functions can experience cold start delays
+- **Solution**: Minimize package size, reduce dependencies, consider provisioned concurrency
+
+### Authentication Complexity
+- **Challenge**: Balancing security with ease of use
+- **Solution**: Start with API keys, evolve to more sophisticated authentication as needed
+
+### Environment Management
+- **Challenge**: Managing configuration across different environments
+- **Solution**: Use stage parameters and environment variables in serverless.yml
+
+### Error Handling Consistency
+- **Challenge**: Ensuring consistent error responses across endpoints
+- **Solution**: Implement standardized error handling middleware or utility functions
+
+## Future Improvement Areas
+
+### Enhanced Security
+- Implement AWS WAF for CloudFront for additional protection
+- Add OAuth/Cognito authentication for user-specific access
+- Implement IP-based restrictions for admin endpoints
+
+### Performance Optimization
+- Implement CloudFront cache strategies for frequently accessed data
+- Use Lambda provisioned concurrency for critical endpoints
+- Optimize database queries and connections
+
+### Monitoring and Observability
+- Implement custom CloudWatch dashboards
+- Add distributed tracing with AWS X-Ray
+- Set up alerting for critical metrics
+
+### Developer Experience
+- Create automated testing frameworks
+- Implement CI/CD pipeline for automated deployment
+- Add API documentation with Swagger/OpenAPI

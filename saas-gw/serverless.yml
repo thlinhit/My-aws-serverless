@@ -24,6 +24,67 @@ functions:
           private: true  # Requires API key
           cors: true
 
+resources:
+  Description: CloudFront distribution with API Gateway origin
+  Resources:
+    CloudFrontDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          Comment: "CloudFront for API Gateway"
+          Origins:
+            - Id: ApiGatewayOrigin
+              DomainName: 
+                Fn::Join:
+                  - ""
+                  - - Ref: "ApiGatewayRestApi"
+                    - ".execute-api.${self:provider.region}.amazonaws.com"
+              OriginPath: "/${self:provider.stage}"
+              CustomOriginConfig:
+                HTTPPort: 80
+                HTTPSPort: 443
+                OriginProtocolPolicy: https-only
+                OriginSSLProtocols:
+                  - TLSv1.2
+          DefaultCacheBehavior:
+            AllowedMethods:
+              - DELETE
+              - GET
+              - HEAD
+              - OPTIONS
+              - PATCH
+              - POST
+              - PUT
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            TargetOriginId: ApiGatewayOrigin
+            ForwardedValues:
+              QueryString: true
+              Headers:
+                - x-api-key
+                - Authorization
+                - Content-Type
+              Cookies:
+                Forward: none
+            ViewerProtocolPolicy: redirect-to-https
+            MinTTL: 0
+            DefaultTTL: 0
+            MaxTTL: 0
+          PriceClass: PriceClass_100
+          ViewerCertificate:
+            CloudFrontDefaultCertificate: true
+
+  Outputs:
+    CloudFrontDomainName:
+      Value:
+        Fn::GetAtt:
+          - CloudFrontDistribution
+          - DomainName
+      Description: Domain name of CloudFront distribution
+
 plugins:
   - serverless-python-requirements
 

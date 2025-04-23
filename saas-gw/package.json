@@ -4,7 +4,10 @@
   "description": "API Gateway with Lambda backend requiring API key authentication",
   "scripts": {
     "deploy": "AWS_PROFILE=tx-sandbox sls deploy --stage dev",
-    "remove": "serverless remove"
+    "deploy:prod": "AWS_PROFILE=tx-sandbox sls deploy --stage prod",
+    "deploy:verbose": "AWS_PROFILE=tx-sandbox sls deploy --stage dev --verbose",
+    "remove": "serverless remove",
+    "cloudfront:info": "AWS_PROFILE=tx-sandbox aws cloudformation describe-stacks --stack-name saas-gw-api-dev --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomainName`]' --output table"
   },
   "devDependencies": {
     "serverless": "^3.32.2",

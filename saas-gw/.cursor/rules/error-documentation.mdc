@@ -12,3 +12,223 @@ alwaysApply: false
 description: Document major failure points in this project and they were solved.  To be filled by AI. 
 globs: 
 ---
+
+# Error Documentation - API Gateway with Serverless Framework v3
+
+This document tracks common issues, errors, and their resolutions encountered during the development and deployment of the API Gateway service.
+
+## Serverless Framework Deployment Issues
+
+### API Gateway Endpoint Not Created
+
+**Issue**: API Gateway endpoint is not created during deployment.
+
+**Causes**:
+- Incorrect configuration in the `serverless.yml` file
+- Missing permissions for CloudFormation to create API Gateway resources
+
+**Resolution**:
+- Verify the events section in the `serverless.yml` file is correctly configured
+- Ensure the IAM role used for deployment has sufficient permissions
+- Check CloudFormation events for detailed error messages
+
+### API Key Not Generated
+
+**Issue**: API key is not generated during deployment.
+
+**Causes**:
+- Incorrect API key configuration in `serverless.yml`
+- Missing `private: true` flag in the HTTP event configuration
+
+**Resolution**:
+- Verify the `apiKeys` section in the provider configuration
+- Ensure the HTTP event has `private: true` set
+- Check CloudFormation events for detailed error messages
+
+### CloudFront Distribution Deployment Failure
+
+**Issue**: CloudFront distribution fails to deploy.
+
+**Causes**:
+- Syntax errors in CloudFormation template
+- Incorrect references to API Gateway resources
+- Service quota limits reached
+
+**Resolution**:
+- Verify the CloudFront distribution configuration in `serverless.yml`
+- Check that API Gateway references are correct
+- Review CloudFormation events for specific error messages
+- Ensure you're within service quota limits for CloudFront distributions
+
+## Lambda Function Issues
+
+### Lambda Function Cold Start Performance
+
+**Issue**: Lambda function experiences high latency during cold starts.
+
+**Causes**:
+- Large deployment package
+- Excessive dependencies
+- Runtime initialization overhead
+
+**Resolution**:
+- Minimize deployment package size
+- Only include necessary dependencies
+- Consider provisioned concurrency for critical functions
+- Initialize global resources outside the handler function
+
+### Lambda Function Execution Role Permissions
+
+**Issue**: Lambda function fails with permission errors.
+
+**Causes**:
+- Missing IAM permissions in the Lambda execution role
+- Access to AWS services not explicitly allowed
+
+**Resolution**:
+- Add required permissions to the `iamRoleStatements` section in `serverless.yml`
+- Review CloudWatch Logs for specific permission errors
+- Apply least privilege principle when adding permissions
+
+## API Gateway Issues
+
+### CORS Configuration Issues
+
+**Issue**: Browser clients receive CORS errors when accessing the API.
+
+**Causes**:
+- Incomplete CORS configuration in `serverless.yml`
+- Missing CORS headers in Lambda responses
+
+**Resolution**:
+- Ensure `cors: true` is set in the HTTP event configuration
+- Add appropriate CORS headers to Lambda responses
+- For complex CORS requirements, use custom CORS configuration
+
+### API Key Authentication Failures
+
+**Issue**: Requests with API keys are rejected with 403 Forbidden errors.
+
+**Causes**:
+- Incorrect API key in request header
+- API key not properly associated with the endpoint
+- Missing `x-api-key` header in request
+
+**Resolution**:
+- Verify the API key value in the AWS Console
+- Ensure the `private: true` flag is set in the HTTP event configuration
+- Check that the request includes the `x-api-key` header with the correct key
+
+## CloudFront Issues
+
+### API Key Authentication Through CloudFront Fails
+
+**Issue**: Requests through CloudFront with API keys are rejected with 403 Forbidden errors.
+
+**Causes**:
+- CloudFront not configured to forward the `x-api-key` header
+- Cache behavior settings overriding the authentication headers
+- API Gateway configuration incompatibility with CloudFront
+
+**Resolution**:
+- Add `x-api-key` to the forwarded headers list in CloudFront configuration
+- Verify cache behavior settings for header forwarding
+- Test API key authentication directly against API Gateway to isolate the issue
+
+### CloudFront Caching Issues
+
+**Issue**: API responses are cached when they shouldn't be, or not cached when they should be.
+
+**Causes**:
+- Inappropriate TTL settings in CloudFront configuration
+- Cache behavior not correctly configured for the API
+- Missing or incorrect cache control headers
+
+**Resolution**:
+- Adjust MinTTL, DefaultTTL, and MaxTTL settings in CloudFront configuration
+- Set appropriate caching behaviors based on HTTP methods
+- Configure cache control headers in API responses
+- For dynamic API endpoints, consider setting TTL to 0
+
+### CloudFront Origin Access Issues
+
+**Issue**: CloudFront can't access the API Gateway origin.
+
+**Causes**:
+- Incorrect origin path configuration
+- API Gateway endpoint URL format issues
+- Region mismatch between CloudFront and API Gateway
+
+**Resolution**:
+- Verify the origin path includes the correct stage (e.g., `/dev`)
+- Check the API Gateway endpoint URL format
+- Ensure both resources are in the same AWS account and compatible regions
+
+## Python Lambda Issues
+
+### JSON Serialization Errors
+
+**Issue**: Lambda function fails with JSON serialization errors.
+
+**Causes**:
+- Non-serializable Python objects in the response
+- Circular references in the response object
+
+**Resolution**:
+- Ensure all objects in the response are JSON serializable
+- Use custom JSON encoders for complex objects
+- Verify the structure of the response object
+
+### Logging Configuration Issues
+
+**Issue**: Lambda function logs are not formatted correctly or missing.
+
+**Causes**:
+- Incorrect logging configuration
+- Using print statements instead of logger
+- Log level set too high
+
+**Resolution**:
+- Use the Python logging module
+- Set appropriate log levels
+- Format logs as JSON for better parsing
+
+## Deployment Environment Issues
+
+### AWS Profile Configuration
+
+**Issue**: Deployment fails with authentication errors.
+
+**Causes**:
+- Incorrect AWS profile configuration
+- Missing or expired AWS credentials
+- Insufficient permissions for the AWS profile
+
+**Resolution**:
+- Verify AWS profile configuration in `~/.aws/credentials`
+- Update expired credentials
+- Ensure the profile has sufficient permissions for deployment
+
+### Stage Configuration
+
+**Issue**: Deployment to specific stage fails.
+
+**Causes**:
+- Incorrect stage parameter
+- Missing stage-specific configuration
+- Stage name conflicts
+
+**Resolution**:
+- Verify the stage parameter in the deployment command
+- Check stage-specific configuration in `serverless.yml`
+- Use unique stage names to avoid conflicts
+
+## Common Resolution Strategies
+
+1. **Check CloudWatch Logs**: Always check CloudWatch Logs for detailed error messages from Lambda functions.
+2. **Review CloudFormation Events**: For deployment issues, review CloudFormation events in the AWS Console.
+3. **Validate Configuration**: Verify the `serverless.yml` file against the Serverless Framework documentation.
+4. **Test Locally**: Use the `serverless invoke local` command to test Lambda functions locally.
+5. **Incremental Deployment**: Make small changes and deploy incrementally to isolate issues.
+6. **Use Verbose Mode**: Run Serverless Framework commands with the `--verbose` flag for detailed output.
+7. **Test Direct vs. CloudFront**: When troubleshooting, test both direct API Gateway access and CloudFront access to isolate issues.
