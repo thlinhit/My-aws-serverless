@@ -15,6 +15,11 @@ provider:
     STAGE: ${self:provider.stage}
 
 functions:
+  # Lambda Authorizer function
+  authorizer:
+    handler: src/handlers/authorizer.handler
+    description: Lambda authorizer that adds partnerId to the request context
+
   hello:
     handler: src/handlers/hello.handler
     events:
@@ -23,17 +28,29 @@ functions:
           method: post
           private: true  # Requires API key
           cors: true
+          # authorizer: 
+          #   name: authorizer
+          #   resultTtlInSeconds: 0  # Don't cache results
+          #   type: request
       # Add partner-specific paths that all route to the same handler
       - http:
           path: api/tymebank/hello
           method: post
           private: true
           cors: true
+          authorizer: 
+            name: authorizer
+            resultTtlInSeconds: 0
+            type: request
       - http:
           path: api/sanlam/hello
           method: post
           private: true
           cors: true
+          authorizer: 
+            name: authorizer
+            resultTtlInSeconds: 0
+            type: request
 
 resources:
   Description: CloudFront distribution with API Gateway origin

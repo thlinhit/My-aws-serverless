@@ -1,141 +1,117 @@
-# API Gateway with Lambda Backend
+# SaaS Gateway API
 
-This project provisions an AWS API Gateway with a Lambda function backend using Serverless Framework v3, now fronted by CloudFront for improved performance and additional capabilities.
+A multi-tenant serverless API gateway built with AWS API Gateway, Lambda, and CloudFront using the Serverless Framework.
 
 ## Features
 
-- API Gateway endpoint at `api/abc/hello` (POST method)
-- API key authentication required
-- Python 3.12 Lambda function backend
-- Returns a simple "HELLO" response
-- CloudFront distribution for improved performance and global reach
+- Partner-specific API endpoints
+- Lambda Authorizer that extracts `partnerId` from URL path
+- API Key authentication
+- CloudFront distribution for global content delivery
+- Python 3.12 runtime
+
+## Architecture
+
+The API uses a Lambda Authorizer to extract the partner ID from the API path and inject it into the request context. This allows downstream Lambda functions to know which partner/tenant is making the request without having to parse the path themselves.
+
+```
+Client --> CloudFront --> API Gateway --> Lambda Authorizer --> Lambda Function
+```
+
+The authorizer extracts the partner ID from paths like:
+- `/api/abc/hello` → partner: abc
+- `/api/tymebank/hello` → partner: tymebank
+- `/api/sanlam/hello` → partner: sanlam
 
 ## Prerequisites
 
-- Node.js (v14+)
-- npm or yarn
+- Node.js 14+
+- Serverless Framework v3
 - AWS CLI configured with appropriate credentials
-- Serverless Framework installed (`npm install -g serverless`)
+- Python 3.12
 
-## Installation
+## Setup
 
-1. Clone this repository
-2. Install dependencies:
+1. Install dependencies:
 
 ```bash
 npm install
 ```
 
+2. Install Python requirements plugin:
+
+```bash
+npm install serverless-python-requirements --save-dev
+```
+
 ## Deployment
 
-To deploy to the development environment:
+Deploy to the default stage (dev):
 
 ```bash
-npm run deploy
+serverless deploy
 ```
 
-To deploy to production:
+Deploy to a specific stage:
 
 ```bash
-npm run deploy:prod
+serverless deploy --stage production
 ```
 
-For verbose deployment logs:
+After deployment, you'll receive the CloudFront domain name and API key.
+
+## Testing
+
+1. Set your API key and CloudFront domain in the test_api.sh script:
 
 ```bash
-npm run deploy:verbose
+# Edit test_api.sh
+API_KEY="your-api-key"
+CF_DOMAIN="your-cloudfront-domain"
 ```
 
-## CloudFront Distribution
-
-After deployment, you can retrieve your CloudFront domain name by running:
+2. Run the test script:
 
 ```bash
-npm run cloudfront:info
+./test_api.sh
 ```
 
-This will display the CloudFront domain name that you can use to access your API.
-
-## Authentication
-
-After deployment, you can find your API key in the AWS Console under API Gateway > API Keys, or by running:
+You can also test the authorizer locally:
 
 ```bash
-aws apigateway get-api-keys --name-query "saas-gw-api-dev-apikey" --include-values
+python test_authorizer.py
 ```
 
-## Usage
-
-### Via API Gateway (Direct)
-
-To test the API directly through API Gateway, use curl or any API client with your API key:
+And test the hello handler:
 
 ```bash
-curl -X POST https://your-api-id.execute-api.us-east-1.amazonaws.com/dev/api/abc/hello \
-  -H "x-api-key: your-api-key" \
-  -H "Content-Type: application/json"
+python test_hello.py
 ```
 
-### Via CloudFront
-
-To access the API through CloudFront, use the CloudFront domain name:
-
-```bash
-curl -X POST https://your-cloudfront-domain.cloudfront.net/api/abc/hello \
-  -H "x-api-key: your-api-key" \
-  -H "Content-Type: application/json"
-```
-
-The response should be:
-
-```json
-{
-  "message": "HELLO"
-}
-```
-
-## Benefits of CloudFront
-
-- **Improved Performance**: Content is cached at edge locations closer to users
-- **Reduced Latency**: Faster response times for global users
-- **Cost Savings**: Reduced data transfer costs from your origin server
-- **DDoS Protection**: Built-in protection against certain attacks
-- **SSL/TLS**: Managed HTTPS certificates and encryption
-- **Custom Domain Support**: Ability to use your own domain name (future enhancement)
-
-## Partner-Specific Endpoints
-
-This API supports partner-specific endpoints through CloudFront path patterns:
-
-1. **Tymebank**:
-   ```
-   https://your-cloudfront-domain.cloudfront.net/api/tymebank/hello
-   ```
-
-2. **Sanlam**:
-   ```
-   https://your-cloudfront-domain.cloudfront.net/api/sanlam/hello
-   ```
-
-3. **Default path** (original):
-   ```
-   https://your-cloudfront-domain.cloudfront.net/api/abc/hello
-   ```
-
-All paths route to the same Lambda function, which identifies the partner based on the path pattern. The response includes the partner identifier.
-
-Example response from a partner-specific endpoint:
-```json
-{
-  "message": "HELLO",
-  "partner": "tymebank"
-}
-```
-
-Authentication is required for all endpoints using the same API key.
-
-## Cleanup
-
-To remove all deployed resources:
+## Folder Structure
 
 ```
+├── serverless.yml          # Serverless Framework configuration
+├── src/
+│   └── handlers/
+│       ├── authorizer.py   # Lambda Authorizer
+│       └── hello.py        # Example Lambda Function
+├── test_api.sh             # API test script
+├── test_authorizer.py      # Authorizer test script
+└── test_hello.py           # Hello handler test script
+```
+
+## Customization
+
+To add more endpoints:
+
+1. Add a new Lambda function in the `src/handlers/` directory
+2. Update the `serverless.yml` file to include the new function and its endpoints
+3. Configure the endpoints with the authorizer
+
+## Troubleshooting
+
+- If you receive 401 Unauthorized errors, ensure you're including the `x-api-key` header with your API key
+- Check CloudWatch Logs for detailed error messages from the Lambda functions
+- Verify that the CloudFront distribution is configured to forward the necessary headers (x-api-key, Authorization, etc.)
+- Test directly against the API Gateway endpoint to isolate CloudFront-related issues

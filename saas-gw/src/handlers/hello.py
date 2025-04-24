@@ -28,19 +28,21 @@ def handler(event, context):
     # Log the incoming event for debugging
     logger.info(f"Event: {json.dumps(event)}")
     
-    # Determine which partner is calling (if any)
-    partner = "default"
+    # Get partnerId from the authorizer context
+    # This will be available if the request went through our authorizer
+    # Otherwise fall back to extracting from path
+    partner_id = "default"
     
-    # Check if this is a partner-specific path
-    tymebank_pattern = r'^/api/tymebank.*'
-    sanlam_pattern = r'^/api/sanlam.*'
+    # Try to get partnerId from authorizer context
+    if 'requestContext' in event and 'authorizer' in event['requestContext']:
+        authorizer_context = event['requestContext']['authorizer']
+        # Check if partnerId is in the authorizer context
+        if 'partnerId' in authorizer_context:
+            partner_id = authorizer_context['partnerId']
+            logger.info(f"Using partnerId from authorizer context: {partner_id}")
+
     
-    if re.match(tymebank_pattern, path):
-        partner = "tymebank"
-    elif re.match(sanlam_pattern, path):
-        partner = "sanlam"
-    
-    logger.info(f"Request from partner: {partner}")
+    logger.info(f"Request from partner: {partner_id}")
     
     # Create response with partner information
     response = {
@@ -52,7 +54,7 @@ def handler(event, context):
         },
         "body": json.dumps({
             "message": "HELLO",
-            "partner": partner
+            "partnerId": partner_id
         })
     }
     
