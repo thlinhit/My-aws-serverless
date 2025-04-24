@@ -11,6 +11,11 @@ provider:
     apiKeys:
       - name: ${self:service}-${self:provider.stage}-apikey
         enabled: true
+  logs:
+    restApi:
+      accessLogging: true
+      executionLogging: true
+      level: INFO
   environment:
     STAGE: ${self:provider.stage}
 
@@ -28,11 +33,11 @@ functions:
           method: post
           private: true  # Requires API key
           cors: true
-          # authorizer: 
-          #   name: authorizer
-          #   resultTtlInSeconds: 0  # Don't cache results
-          #   type: request
-      # Add partner-specific paths that all route to the same handler
+          authorizer: 
+            name: authorizer
+            resultTtlInSeconds: 0
+            type: request
+            identitySource: method.request.header.x-api-key
       - http:
           path: api/tymebank/hello
           method: post
@@ -42,6 +47,7 @@ functions:
             name: authorizer
             resultTtlInSeconds: 0
             type: request
+            identitySource: method.request.header.x-api-key
       - http:
           path: api/sanlam/hello
           method: post
@@ -51,6 +57,7 @@ functions:
             name: authorizer
             resultTtlInSeconds: 0
             type: request
+            identitySource: method.request.header.x-api-key
 
 resources:
   Description: CloudFront distribution with API Gateway origin
