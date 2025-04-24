@@ -103,12 +103,39 @@ The response should be:
 - **SSL/TLS**: Managed HTTPS certificates and encryption
 - **Custom Domain Support**: Ability to use your own domain name (future enhancement)
 
+## Partner-Specific Endpoints
+
+This API supports partner-specific endpoints through CloudFront path patterns:
+
+1. **Tymebank**:
+   ```
+   https://your-cloudfront-domain.cloudfront.net/api/tymebank/hello
+   ```
+
+2. **Sanlam**:
+   ```
+   https://your-cloudfront-domain.cloudfront.net/api/sanlam/hello
+   ```
+
+3. **Default path** (original):
+   ```
+   https://your-cloudfront-domain.cloudfront.net/api/abc/hello
+   ```
+
+All paths route to the same Lambda function, which identifies the partner based on the path pattern. The response includes the partner identifier.
+
+Example response from a partner-specific endpoint:
+```json
+{
+  "message": "HELLO",
+  "partner": "tymebank"
+}
+```
+
+Authentication is required for all endpoints using the same API key.
+
 ## Cleanup
 
 To remove all deployed resources:
 
-```bash
-npm run remove
 ```
-
-This will remove the CloudFront distribution, API Gateway, Lambda function, and all associated resources. 

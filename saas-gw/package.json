@@ -6,7 +6,7 @@
     "deploy": "AWS_PROFILE=tx-sandbox sls deploy --stage dev",
     "deploy:prod": "AWS_PROFILE=tx-sandbox sls deploy --stage prod",
     "deploy:verbose": "AWS_PROFILE=tx-sandbox sls deploy --stage dev --verbose",
-    "remove": "serverless remove",
+    "remove": "AWS_PROFILE=tx-sandbox serverless remove",
     "cloudfront:info": "AWS_PROFILE=tx-sandbox aws cloudformation describe-stacks --stack-name saas-gw-api-dev --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomainName`]' --output table"
   },
   "devDependencies": {

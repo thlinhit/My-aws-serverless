@@ -23,6 +23,17 @@ functions:
           method: post
           private: true  # Requires API key
           cors: true
+      # Add partner-specific paths that all route to the same handler
+      - http:
+          path: api/tymebank/hello
+          method: post
+          private: true
+          cors: true
+      - http:
+          path: api/sanlam/hello
+          method: post
+          private: true
+          cors: true
 
 resources:
   Description: CloudFront distribution with API Gateway origin
@@ -47,6 +58,7 @@ resources:
                 OriginProtocolPolicy: https-only
                 OriginSSLProtocols:
                   - TLSv1.2
+          # Default behavior for any unmatched paths
           DefaultCacheBehavior:
             AllowedMethods:
               - DELETE
@@ -73,6 +85,62 @@ resources:
             MinTTL: 0
             DefaultTTL: 0
             MaxTTL: 0
+          # Partner-specific cache behaviors
+          CacheBehaviors:
+            # Tymebank path pattern
+            - PathPattern: "api/tymebank/*"
+              TargetOriginId: ApiGatewayOrigin
+              AllowedMethods:
+                - DELETE
+                - GET
+                - HEAD
+                - OPTIONS
+                - PATCH
+                - POST
+                - PUT
+              CachedMethods:
+                - GET
+                - HEAD
+                - OPTIONS
+              ForwardedValues:
+                QueryString: true
+                Headers:
+                  - x-api-key
+                  - Authorization
+                  - Content-Type
+                Cookies:
+                  Forward: none
+              ViewerProtocolPolicy: redirect-to-https
+              MinTTL: 0
+              DefaultTTL: 0
+              MaxTTL: 0
+            # Sanlam path pattern  
+            - PathPattern: "api/sanlam/*"
+              TargetOriginId: ApiGatewayOrigin
+              AllowedMethods:
+                - DELETE
+                - GET
+                - HEAD
+                - OPTIONS
+                - PATCH
+                - POST
+                - PUT
+              CachedMethods:
+                - GET
+                - HEAD
+                - OPTIONS
+              ForwardedValues:
+                QueryString: true
+                Headers:
+                  - x-api-key
+                  - Authorization
+                  - Content-Type
+                Cookies:
+                  Forward: none
+              ViewerProtocolPolicy: redirect-to-https
+              MinTTL: 0
+              DefaultTTL: 0
+              MaxTTL: 0
           PriceClass: PriceClass_100
           ViewerCertificate:
             CloudFrontDefaultCertificate: true
