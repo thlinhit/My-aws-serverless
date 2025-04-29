@@ -49,13 +49,7 @@ npm install serverless-python-requirements --save-dev
 Deploy to the default stage (dev):
 
 ```bash
-serverless deploy
-```
-
-Deploy to a specific stage:
-
-```bash
-serverless deploy --stage production
+npm run deploy
 ```
 
 After deployment, you'll receive the CloudFront domain name and API key.
@@ -73,7 +67,7 @@ CF_DOMAIN="your-cloudfront-domain"
 2. Run the test script:
 
 ```bash
-./test_api.sh
+./test_partners.sh
 ```
 
 You can also test the authorizer locally:

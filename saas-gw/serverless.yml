@@ -9,8 +9,19 @@ provider:
   region: us-east-1
   apiGateway:
     apiKeys:
-      - name: ${self:service}-${self:provider.stage}-apikey
-        enabled: true
+      - name: tymebank-key
+        value: ${ssm:/saas/apikey/tymebank}
+      - name: sanlam-key
+        value: ${ssm:/saas/apikey/sanlam}
+      - name: abc-key
+        value: ${ssm:/saas/apikey/abc}
+    usagePlan:
+      quota:
+        limit: 5000
+        period: MONTH
+      throttle:
+        burstLimit: 200
+        rateLimit: 100
   logs:
     restApi:
       accessLogging: true
@@ -18,6 +29,27 @@ provider:
       level: INFO
   environment:
     STAGE: ${self:provider.stage}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - ssm:GetParameter
+            - ssm:PutParameter
+          Resource: 
+            - Fn::Join:
+              - ":"
+              - - "arn:aws:ssm"
+                - Ref: "AWS::Region"
+                - Ref: "AWS::AccountId"
+                - "parameter/saas/apikey/*"
+            # Add the path with leading slash
+            - Fn::Join:
+              - ":"
+              - - "arn:aws:ssm"
+                - Ref: "AWS::Region"
+                - Ref: "AWS::AccountId"
+                - "parameter//saas/apikey/*"
 
 functions:
   # Lambda Authorizer function
@@ -29,29 +61,9 @@ functions:
     handler: src/handlers/hello.handler
     events:
       - http:
-          path: api/abc/hello
+          path: api/hello
           method: post
           private: true  # Requires API key
-          cors: true
-          authorizer: 
-            name: authorizer
-            resultTtlInSeconds: 0
-            type: request
-            identitySource: method.request.header.x-api-key
-      - http:
-          path: api/tymebank/hello
-          method: post
-          private: true
-          cors: true
-          authorizer: 
-            name: authorizer
-            resultTtlInSeconds: 0
-            type: request
-            identitySource: method.request.header.x-api-key
-      - http:
-          path: api/sanlam/hello
-          method: post
-          private: true
           cors: true
           authorizer: 
             name: authorizer
@@ -71,28 +83,49 @@ resources:
         FunctionConfig:
           Comment: "CloudFront Function to rewrite partner-specific paths to standard API paths"
           Runtime: cloudfront-js-1.0
-        FunctionCode: 
-          Fn::Join:
-            - ""
-            - - |
-                function handler(event) {
-                  var request = event.request;
-                  var uri = request.uri;
-                  
-                  // Check if the path starts with any of the partner-specific paths
-                  if (uri.startsWith('/api/tymebank/hello') || uri.startsWith('/api/sanlam/hello')) {
-                    // Store the original URI for reference
-                    var originalUri = uri;
-                    
-                    // Rewrite to the generic path
-                    request.uri = '/api/abc/hello';
-                    
-                    // Log the rewrite (visible in CloudWatch Logs if you enable logging)
-                    console.log('Path rewritten from ' + originalUri + ' to ' + request.uri);
-                  }
-                  
-                  return request;
-                }
+        FunctionCode: |
+          function handler(event) {
+            var request = event.request;
+            var uri = request.uri;
+            
+            // Make sure the URI is properly formatted with a leading slash if needed
+            if (!uri.startsWith('/')) {
+              uri = '/' + uri;
+            }
+            
+            // Define a regular expression to match partner-specific paths
+            // This will match patterns like /api/{partnerId}/hello
+            var regex = /^\/api\/([^\/]+)\/hello(\/.*)?$/;
+            var match = uri.match(regex);
+            
+            if (match) {
+              // Capture the original URI for reference
+              var originalUri = uri;
+              
+              // Extract the partner ID from the path
+              var partnerId = match[1];
+              
+              // Rewrite to the generic path
+              request.uri = '/api/hello';
+              
+              // Initialize headers object if it doesn't exist
+              if (!request.headers) {
+                request.headers = {};
+              }
+              
+              // Add the original path as a header for reference - MUST use lowercase header names
+              request.headers['x-original-path'] = {value: originalUri};
+              
+              // Add the partner ID as a custom header - MUST use lowercase header names
+              request.headers['x-partner-id'] = {value: partnerId};
+              
+              // Log the rewrite (visible in CloudWatch Logs if logging is enabled)
+              console.log('Path rewritten from ' + originalUri + ' to ' + request.uri);
+              console.log('Extracted partner ID: ' + partnerId);
+            }
+            
+            return request;
+          }
 
     CloudFrontDistribution:
       Type: AWS::CloudFront::Distribution
@@ -114,6 +147,7 @@ resources:
                 OriginProtocolPolicy: https-only
                 OriginSSLProtocols:
                   - TLSv1.2
+
           # Default behavior for any unmatched paths
           DefaultCacheBehavior:
             AllowedMethods:
@@ -135,16 +169,17 @@ resources:
                 - x-api-key
                 - Authorization
                 - Content-Type
+                - x-original-path
+                - x-partner-id
               Cookies:
                 Forward: none
             ViewerProtocolPolicy: redirect-to-https
             MinTTL: 0
             DefaultTTL: 0
             MaxTTL: 0
-          # Partner-specific cache behaviors
+          # Partner-specific cache behaviors - using a wildcard to match all partner paths
           CacheBehaviors:
-            # Tymebank path pattern
-            - PathPattern: "api/tymebank/*"
+            - PathPattern: "api/*/hello*"
               TargetOriginId: ApiGatewayOrigin
               AllowedMethods:
                 - DELETE
@@ -164,36 +199,8 @@ resources:
                   - x-api-key
                   - Authorization
                   - Content-Type
-                Cookies:
-                  Forward: none
-              ViewerProtocolPolicy: redirect-to-https
-              MinTTL: 0
-              DefaultTTL: 0
-              MaxTTL: 0
-              FunctionAssociations:
-                - EventType: viewer-request
-                  FunctionARN: !GetAtt CloudFrontPathRewriteFunction.FunctionARN
-            # Sanlam path pattern  
-            - PathPattern: "api/sanlam/*"
-              TargetOriginId: ApiGatewayOrigin
-              AllowedMethods:
-                - DELETE
-                - GET
-                - HEAD
-                - OPTIONS
-                - PATCH
-                - POST
-                - PUT
-              CachedMethods:
-                - GET
-                - HEAD
-                - OPTIONS
-              ForwardedValues:
-                QueryString: true
-                Headers:
-                  - x-api-key
-                  - Authorization
-                  - Content-Type
+                  - x-original-path
+                  - x-partner-id
                 Cookies:
                   Forward: none
               ViewerProtocolPolicy: redirect-to-https
@@ -220,7 +227,6 @@ resources:
           - CloudFrontPathRewriteFunction
           - FunctionARN
       Description: ARN of the CloudFront path rewrite function
-
 plugins:
   - serverless-python-requirements
 

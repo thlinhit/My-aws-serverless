@@ -1,38 +1,46 @@
 #!/bin/bash
 
-# API Gateway endpoint and API key from serverless deploy output
-API_KEY="Ax7IFITSpb8ERQzmbJZQS3E1aeAY4WFL6kGTNhu7"
+# Get partner API keys from SSM
+get_partner_api_key() {
+  local partner=$1
+  local api_key=$(AWS_PROFILE=tx-sandbox aws ssm get-parameter --name "/saas/apikey/$partner" --with-decryption --query "Parameter.Value" --output text)
+  echo "$api_key"
+}
 
-# Get CloudFront domain
-echo "Getting CloudFront distribution info..."
-CLOUDFRONT_ID=$(AWS_PROFILE=tx-sandbox aws cloudformation list-stack-resources --stack-name saas-gw-api-dev | grep -A 1 CloudFrontDistribution | grep PhysicalResourceId | awk -F'"' '{print $4}')
-echo "CloudFront ID: $CLOUDFRONT_ID"
+# Get the CloudFront domain name
+CF_DOMAIN=$(AWS_PROFILE=tx-sandbox aws cloudformation describe-stacks --stack-name saas-gw-api-dev --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDomainName'].OutputValue" --output text)
+if [ -z "$CF_DOMAIN" ]; then
+  echo "CloudFront domain not found. Make sure the service is deployed correctly."
+  exit 1
+fi
 
-if [ -n "$CLOUDFRONT_ID" ]; then
-  CLOUDFRONT_DOMAIN=$(AWS_PROFILE=tx-sandbox aws cloudfront get-distribution --id $CLOUDFRONT_ID | grep DomainName | head -1 | awk -F'"' '{print $4}')
-  echo "CloudFront Domain: $CLOUDFRONT_DOMAIN"
+echo "Testing partner endpoints via CloudFront distribution: $CF_DOMAIN"
+echo
+
+# Test different partner paths
+partners=("tymebank" "sanlam" "abc")
+
+for partner in "${partners[@]}"; do
+  echo "Testing $partner endpoint..."
   
-  # Test for Tymebank
-  echo -e "\nTesting Tymebank Partner Path:"
-  TYMEBANK_ENDPOINT="https://$CLOUDFRONT_DOMAIN/api/tymebank/hello"
-  echo "Endpoint: $TYMEBANK_ENDPOINT"
-  curl -X POST "$TYMEBANK_ENDPOINT" \
-    -H "x-api-key: $API_KEY" \
-    -H "Content-Type: application/json"
+  # Skip newpartner for API key retrieval (not in SSM)
+  if [ "$partner" == "newpartner" ]; then
+    echo "Note: 'newpartner' is not configured - expecting auth failure"
+    API_KEY="invalid-key"
+  else
+    # Get partner-specific API key from SSM
+    API_KEY=$(get_partner_api_key "$partner")
+    echo "Using API Key for $partner: ${API_KEY:0:5}...${API_KEY: -5}"
+  fi
   
-  # Test for Sanlam
-  echo -e "\nTesting Sanlam Partner Path:"
-  SANLAM_ENDPOINT="https://$CLOUDFRONT_DOMAIN/api/sanlam/hello"
-  echo "Endpoint: $SANLAM_ENDPOINT"
-  curl -X POST "$SANLAM_ENDPOINT" \
+  # Make request to partner-specific endpoint
+  response=$(curl -s -X POST "https://$CF_DOMAIN/api/$partner/hello" \
     -H "x-api-key: $API_KEY" \
-    -H "Content-Type: application/json"
+    -H "Content-Type: application/json" \
+    -d '{"test": "data"}')
   
-  # Test original path
-  echo -e "\nTesting Original Path:"
-  ORIGINAL_ENDPOINT="https://$CLOUDFRONT_DOMAIN/api/abc/hello"
-  echo "Endpoint: $ORIGINAL_ENDPOINT"
-  curl -X POST "$ORIGINAL_ENDPOINT" \
-    -H "x-api-key: $API_KEY" \
-    -H "Content-Type: application/json"
-fi 
+  echo "Response: $response"
+  echo
+done
+
+echo "Testing complete!" 
