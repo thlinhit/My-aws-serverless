@@ -4,7 +4,7 @@ frameworkVersion: '3'
 
 provider:
   name: aws
-  runtime: python3.12
+  runtime: python3.11
   stage: ${opt:stage, 'dev'}
   region: us-east-1
   apiGateway:
@@ -62,6 +62,38 @@ functions:
 resources:
   Description: CloudFront distribution with API Gateway origin
   Resources:
+    # CloudFront Function for path rewriting
+    CloudFrontPathRewriteFunction:
+      Type: AWS::CloudFront::Function
+      Properties:
+        Name: ${self:service}-${self:provider.stage}-path-rewrite
+        AutoPublish: true
+        FunctionConfig:
+          Comment: "CloudFront Function to rewrite partner-specific paths to standard API paths"
+          Runtime: cloudfront-js-1.0
+        FunctionCode: 
+          Fn::Join:
+            - ""
+            - - |
+                function handler(event) {
+                  var request = event.request;
+                  var uri = request.uri;
+                  
+                  // Check if the path starts with any of the partner-specific paths
+                  if (uri.startsWith('/api/tymebank/hello') || uri.startsWith('/api/sanlam/hello')) {
+                    // Store the original URI for reference
+                    var originalUri = uri;
+                    
+                    // Rewrite to the generic path
+                    request.uri = '/api/abc/hello';
+                    
+                    // Log the rewrite (visible in CloudWatch Logs if you enable logging)
+                    console.log('Path rewritten from ' + originalUri + ' to ' + request.uri);
+                  }
+                  
+                  return request;
+                }
+
     CloudFrontDistribution:
       Type: AWS::CloudFront::Distribution
       Properties:
@@ -138,6 +170,9 @@ resources:
               MinTTL: 0
               DefaultTTL: 0
               MaxTTL: 0
+              FunctionAssociations:
+                - EventType: viewer-request
+                  FunctionARN: !GetAtt CloudFrontPathRewriteFunction.FunctionARN
             # Sanlam path pattern  
             - PathPattern: "api/sanlam/*"
               TargetOriginId: ApiGatewayOrigin
@@ -165,6 +200,9 @@ resources:
               MinTTL: 0
               DefaultTTL: 0
               MaxTTL: 0
+              FunctionAssociations:
+                - EventType: viewer-request
+                  FunctionARN: !GetAtt CloudFrontPathRewriteFunction.FunctionARN
           PriceClass: PriceClass_100
           ViewerCertificate:
             CloudFrontDefaultCertificate: true
@@ -176,6 +214,12 @@ resources:
           - CloudFrontDistribution
           - DomainName
       Description: Domain name of CloudFront distribution
+    CloudFrontFunctionARN:
+      Value:
+        Fn::GetAtt:
+          - CloudFrontPathRewriteFunction
+          - FunctionARN
+      Description: ARN of the CloudFront path rewrite function
 
 plugins:
   - serverless-python-requirements
