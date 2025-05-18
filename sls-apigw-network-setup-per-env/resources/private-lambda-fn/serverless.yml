@@ -43,12 +43,9 @@ functions:
       - alb:
           listenerArn: ${param:albListenerArn}
           conditions:
-            path: /hello
+            path: /transaction
+            method: POST
           priority: 1
-          method:
-            - GET
-            - PATCH
-            - POST
           timeoutSeconds: 30
     layers:
       - !Ref PythonRequirementsLambdaLayer

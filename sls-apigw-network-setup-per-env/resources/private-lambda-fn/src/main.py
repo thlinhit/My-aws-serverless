@@ -9,9 +9,9 @@ logger = Logger()
 
 @logger.inject_lambda_context
 def handler(event, context: LambdaContext):
-    logger.info(f"Received event: {event}")
+    logger.info(f"Received transaction event: {event}")
     return response({
-        "message": "Hello World"
+        "message": "Transaction received!"
     })
 
 
@@ -20,7 +20,7 @@ def response(
         status_code: int = 200,
         allow_origin: str = "*",
         allow_headers: str = "Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with",
-        allow_methods: str = "GET,POST,PUT,DELETE,OPTIONS"
+        allow_methods: str = "POST"
 ) -> Dict[str, Union[int, str]]:
     if isinstance(msg, str):
         msg = {"message": msg}
