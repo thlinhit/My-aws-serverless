@@ -35,3 +35,9 @@ services:
       privateSubnetTwoId: subnet-0ab0591900f5bcf03
       privateSubnetThreeId: subnet-0c1ed3d86e04dd4ad
       albArn: ${private-alb.albArn}
+
+  private-rest-apigw:
+    path: private-rest-apigw
+    params:
+      vpcLinkId: ${vpclink.VPCLinkId}
+      privateNlbDnsName: ${vpclink.NlbDnsName}
