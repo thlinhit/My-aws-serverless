@@ -1,0 +1,123 @@
+service: ${self:custom.servicePrefix}-vpc
+frameworkVersion: "3"
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: ap-southeast-1
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Mappings:
+    SubnetConfig:
+      VPC:
+        CIDR: "10.90.64.0/19"
+      PublicOne:
+        CIDR: "10.90.64.0/24"
+      PublicTwo:
+        CIDR: "10.90.65.0/24"
+      PrivateOne:
+        CIDR: "10.90.72.0/22"
+      PrivateTwo:
+        CIDR: "10.90.76.0/22"
+  Resources:
+    MyVpc:
+      Type: AWS::EC2::VPC
+      Properties:
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
+        CidrBlock: !FindInMap ["SubnetConfig", "VPC", "CIDR"]
+        Tags:
+          - Key: Name
+            Value: VPC
+    PublicSubnetOne:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 0
+          - Fn::GetAZs: !Ref "AWS::Region"
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap ["SubnetConfig", "PublicOne", "CIDR"]
+        MapPublicIpOnLaunch: true
+    PublicSubnetTwo:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 1
+          - Fn::GetAZs: !Ref "AWS::Region"
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap ["SubnetConfig", "PublicTwo", "CIDR"]
+        MapPublicIpOnLaunch: true
+
+    # Two private subnets where containers will only have private
+    # IP addresses, and will only be reachable by other members of the
+    # VPC and API Gateway
+    PrivateSubnetOne:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 0
+          - Fn::GetAZs: !Ref "AWS::Region"
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap ["SubnetConfig", "PrivateOne", "CIDR"]
+    PrivateSubnetTwo:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: !Select
+          - 1
+          - Fn::GetAZs: !Ref "AWS::Region"
+        VpcId: !Ref MyVpc
+        CidrBlock: !FindInMap ["SubnetConfig", "PrivateTwo", "CIDR"]
+
+    # Setup networking resources for the public subnets.
+    InternetGateway:
+      Type: AWS::EC2::InternetGateway
+      DependsOn: MyVpc
+
+    GatewayAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        VpcId: !Ref MyVpc
+        InternetGatewayId: !Ref InternetGateway
+
+    PublicRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref MyVpc
+
+    PublicRoute:
+      Type: AWS::EC2::Route
+      DependsOn: GatewayAttachment
+      Properties:
+        RouteTableId: !Ref "PublicRouteTable"
+        DestinationCidrBlock: "0.0.0.0/0"
+        GatewayId: !Ref InternetGateway
+    PublicSubnetOneRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PublicSubnetOne
+        RouteTableId: !Ref PublicRouteTable
+    PublicSubnetTwoRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PublicSubnetTwo
+        RouteTableId: !Ref PublicRouteTable
+
+  Outputs:
+    vpcId:
+      Value: !Ref MyVpc
+    privateSubnetOneId:
+      Value: !Ref PrivateSubnetOne
+    privateSubnetTwoId:
+      Value: !Ref PrivateSubnetTwo
+    publicSubnetOneId:
+      Value: !Ref PublicSubnetOne
+    publicSubnetTwoId:
+      Value: !Ref PublicSubnetTwo

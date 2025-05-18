@@ -1,0 +1,71 @@
+service: ${self:custom.servicePrefix}-private-alb
+frameworkVersion: "3"
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: ap-southeast-1
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    Vpc:
+      Type: String
+      Default: ${param:vpcId}
+    PrivateSubnetOne:
+      Type: String
+      Default: ${param:privateSubnetOneId}
+    PrivateSubnetTwo:
+      Type: String
+      Default: ${param:privateSubnetTwoId}
+    PrivateSubnetThree:
+      Type: String
+      Default: ${param:privateSubnetThreeId}
+    InfrastructureBaseSecurityGroupId:
+      Type: String
+      Default: ${param:infrastructureBaseSecurityGroupId}
+
+  Resources:
+    PrivateLoadBalancer:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        Name: private-alb
+        Scheme: internal
+        Type: application
+        #        LoadBalancerAttributes:
+        #          - Key: idle_timeout.timeout_seconds
+        #            Value: '30'
+        Subnets:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        IpAddressType: ipv4
+        SecurityGroups:
+          - !Ref InfrastructureBaseSecurityGroupId
+
+    LoadBalancerListener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        DefaultActions:
+          - Type: fixed-response
+            FixedResponseConfig:
+              ContentType: application/json
+              MessageBody: "Page Not Found"
+              StatusCode: "404"
+        LoadBalancerArn: !Ref PrivateLoadBalancer
+        Port: 80
+        Protocol: HTTP
+  Outputs:
+    albArn:
+      Value: !Ref PrivateLoadBalancer
+    albListenerArn:
+      Value: !Ref LoadBalancerListener
+    albDnsName:
+      Value: !GetAtt PrivateLoadBalancer.DNSName

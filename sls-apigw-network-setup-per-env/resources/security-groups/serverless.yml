@@ -1,0 +1,98 @@
+service: ${self:custom.servicePrefix}-vpc
+frameworkVersion: "3"
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: ap-southeast-1
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    Vpc:
+      Type: String
+      Default: ${param:vpcId}
+    VpcCIDR:
+      Type: String
+      Default: ${param:vpcIdCIDR}
+  Resources:
+    ManagedSgTxToolingBaseSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Security group for Infrastructure base
+        GroupName: managed-sg-tx-tooling-base
+        VpcId: !Ref Vpc
+        SecurityGroupEgress:
+          - IpProtocol: tcp
+            FromPort: 443
+            ToPort: 443
+            CidrIp: 0.0.0.0/0
+            Description: Allow HTTPS outbound
+
+    ManagedSgTxInfrastructureBaseSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Security group for Infrastructure base
+        GroupName: managed-sg-tx-infrastructure-base
+        VpcId: !Ref Vpc
+        SecurityGroupIngress:
+          - CidrIp: !Ref VpcCIDR
+            IpProtocol: -1 # Allow all protocols
+            FromPort: -1 # Allow all ports
+            ToPort: -1
+            Description: Allow Self VPC inbound
+        SecurityGroupEgress:
+          - IpProtocol: tcp
+            FromPort: 443
+            ToPort: 443
+            CidrIp: 0.0.0.0/0
+            Description: Allow HTTPS outbound
+          - CidrIp: !Ref VpcCIDR
+            IpProtocol: -1 # Allow all protocols
+            FromPort: -1 # Allow all ports
+            ToPort: -1
+            Description: Allow all traffic outbound internal
+          - IpProtocol: tcp
+            FromPort: 80
+            ToPort: 80
+            CidrIp: 0.0.0.0/0
+            Description: Allow HTTP outbound
+          - IpProtocol: tcp
+            FromPort: 53
+            ToPort: 53
+            CidrIp: 0.0.0.0/0
+            Description: Allow DNS traffic
+          - IpProtocol: udp
+            FromPort: 53
+            ToPort: 53
+            CidrIp: 0.0.0.0/0
+            Description: Allow DNS traffic
+          - IpProtocol: udp
+            FromPort: 123
+            ToPort: 123
+            CidrIp: 0.0.0.0/0
+            Description: Allow NTP traffic
+
+    ManagedSgTxInfrastructureBaseSelfIngress:
+      Type: AWS::EC2::SecurityGroupIngress
+      DependsOn: ManagedSgTxInfrastructureBaseSecurityGroup
+      Properties:
+        GroupId: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        SourceSecurityGroupId: !Ref ManagedSgTxInfrastructureBaseSecurityGroup
+        IpProtocol: -1 # Allow all protocols
+        FromPort: -1 # Allow all ports
+        ToPort: -1
+        Description: Allow self traffic
+
+  Outputs:
+    managedSgTxToolingBaseSecurityGroup:
+      Value: !Ref ManagedSgTxToolingBaseSecurityGroup
+    infrastructureBaseSecurityGroupId:
+      Value: !Ref ManagedSgTxInfrastructureBaseSecurityGroup

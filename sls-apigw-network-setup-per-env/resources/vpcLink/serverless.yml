@@ -1,0 +1,90 @@
+service: ${self:custom.servicePrefix}-vpclink
+frameworkVersion: "3"
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: ap-southeast-1
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    Vpc:
+      Type: String
+      Default: ${param:vpcId}
+    PrivateSubnetOne:
+      Type: String
+      Default: ${param:privateSubnetOneId}
+    PrivateSubnetTwo:
+      Type: String
+      Default: ${param:privateSubnetTwoId}
+    PrivateSubnetThree:
+      Type: String
+      Default: ${param:privateSubnetThreeId}
+    PrivateLoadBalancer:
+      Type: String
+      Default: ${param:albArn}
+  Resources:
+    privateNlb:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        Name: ${self:custom.servicePrefix}-private-nlb
+        Type: network
+        Subnets:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+
+    # Create Target Group from Nlb To Alb
+    PrivateNlbToAlbTargetGroup:
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        Name: private-nlb-to-alb-target-group
+        Protocol: TCP
+        Port: 80
+        VpcId: !Ref Vpc
+        TargetType: alb
+        Targets:
+          - Id: !Ref PrivateLoadBalancer
+            Port: 80
+        HealthCheckEnabled: true
+        HealthCheckProtocol: HTTP
+        HealthCheckPort: traffic-port
+        HealthCheckPath: "/health"
+        HealthCheckIntervalSeconds: 30
+        HealthCheckTimeoutSeconds: 5
+        HealthyThresholdCount: 3
+        UnhealthyThresholdCount: 5
+
+    NetworkLoadBalancerListener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn: !Ref PrivateNlbToAlbTargetGroup
+        LoadBalancerArn: !Ref privateNlb
+        Port: 80
+        Protocol: TCP
+
+    VpcLink:
+      Type: AWS::ApiGateway::VpcLink
+      Properties:
+        Name: ${self:custom.servicePrefix}-vpclink
+        Description: VPC link for my RestAPI
+        TargetArns:
+          - !Ref privateNlb
+
+  Outputs:
+    VPCLinkId:
+      Description: Vpc Link Id
+      Value: !Ref VpcLink
+    NlbDnsName:
+      Description: Nlb Dns Name
+      Value: !GetAtt privateNlb.DNSName

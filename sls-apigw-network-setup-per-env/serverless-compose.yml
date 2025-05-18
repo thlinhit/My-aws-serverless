@@ -1,0 +1,37 @@
+services:
+  # vpc:
+  #   path: resources/vpc
+
+  security-groups:
+    path: resources/security-groups
+    params:
+      # vpcId: ${vpc.vpcId}
+      # vpcIdCIDR: ${vpc.vpcIdCIDR}
+      vpcId: vpc-02c8144a24a3ffac0
+      vpcIdCIDR: 172.31.0.0/16
+
+  private-alb:
+    path: resources/private-alb
+    params:
+      # vpcId: ${vpc.vpcId}
+      # privateSubnetOneId: ${vpc.privateSubnetOneId}
+      # privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      # privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      vpcId: vpc-02c8144a24a3ffac0
+      privateSubnetOneId: subnet-0e86645e1b6f47da4
+      privateSubnetTwoId: subnet-0ab0591900f5bcf03
+      privateSubnetThreeId: subnet-0c1ed3d86e04dd4ad
+      infrastructureBaseSecurityGroupId: ${security-groups.infrastructureBaseSecurityGroupId}
+
+  vpclink:
+    path: resources/vpcLink
+    params:
+      # vpcId: ${vpc.vpcId}
+      # privateSubnetOneId: ${vpc.privateSubnetOneId}
+      # privateSubnetTwoId: ${vpc.privateSubnetTwoId}
+      # privateSubnetThreeId: ${vpc.privateSubnetThreeId}
+      vpcId: vpc-02c8144a24a3ffac0
+      privateSubnetOneId: subnet-0e86645e1b6f47da4
+      privateSubnetTwoId: subnet-0ab0591900f5bcf03
+      privateSubnetThreeId: subnet-0c1ed3d86e04dd4ad
+      albArn: ${private-alb.albArn}
