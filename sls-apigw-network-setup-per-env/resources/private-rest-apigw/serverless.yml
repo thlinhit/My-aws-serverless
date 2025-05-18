@@ -1,0 +1,44 @@
+service: ${self:custom.servicePrefix}-private-rest-api-gateway
+frameworkVersion: "3"
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+
+provider:
+  stage: local
+  region: ap-southeast-1
+  name: aws
+
+#############
+# RESOURCES #
+#############
+resources:
+  Parameters:
+    vpcLink:
+      Type: String
+      Default: ${param:vpcLinkId}
+    privateNlbDnsName:
+      Type: String
+      Default: ${param:privateNlbDnsName}
+  Resources:
+    RestApiGateway:
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        Name: ${self:custom.servicePrefix}-private-rest-api-gateway
+        Description: Private - Rest Api Gateway
+        EndpointConfiguration:
+          Types:
+            - PRIVATE
+
+  Outputs:
+    RestApiId:
+      Description: Rest Api Id
+      Value: !Ref RestApiGateway
+    RestApiRootResourceId:
+      Description: Rest Api Root Resource Id
+      Value: !GetAtt RestApiGateway.RootResourceId
+    APIURL:
+      Description: Invoke URL
+      Value: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/
