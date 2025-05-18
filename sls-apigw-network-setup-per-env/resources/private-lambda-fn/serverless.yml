@@ -1,0 +1,88 @@
+service: ${self:custom.servicePrefix}-test-private-lambda-fn
+frameworkVersion: "3"
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+  pythonRequirements:
+    slim: true
+    layer: true
+    noDeploy:
+      - pytest
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+
+provider:
+  name: aws
+  stage: local
+  runtime: python3.12
+  memorySize: 128
+  region: ap-southeast-1
+  lambdaHashingVersion: 20201221
+  environment:
+    RUNNING_STAGE: ${self:custom.stage}
+    EXTENSION_DEBUG: "false"
+    TZ: "Asia/Ho_Chi_Minh"
+
+#############
+# FUNCTIONS #
+#############
+functions:
+  testFn:
+    name: ${self:custom.servicePrefix}-test-private-lambda-fn
+    handler: src/main.handler
+    vpc:
+      securityGroupIds:
+        - ${param:infrastructureBaseSecurityGroupId}
+      subnetIds:
+        - ${param:privateSubnetOneId}
+        - ${param:privateSubnetTwoId}
+        - ${param:privateSubnetThreeId}
+    events:
+      - alb:
+          listenerArn: ${param:albListenerArn}
+          conditions:
+            path: /hello
+          priority: 1
+          method:
+            - GET
+            - PATCH
+            - POST
+          timeoutSeconds: 30
+    layers:
+      - !Ref PythonRequirementsLambdaLayer
+    environment:
+      POWERTOOLS_SERVICE_NAME: ${self:custom.servicePrefix}-test-private-lambda-fn
+      LOG_LEVEL: DEBUG
+      DEFAULT_REGION: ${self:custom.region}
+    architecture: arm64
+
+###########
+# PLUGINS #
+###########
+plugins:
+  - serverless-python-requirements
+  - serverless-cloudformation-sub-variables
+  - serverless-iam-roles-per-function
+
+#############
+# RESOURCES #
+#############
+#resources:
+
+package:
+  individually: true
+  patterns:
+    - "!node_modules"
+    - "!.serverless/requirements"
+    - "!${opt:package, '.serverless'}"
+    - "!configs"
+    - "!*.yml*"
+    - "!*.yaml*"
+    - "!*.json"
+    - "!*.sh"
+    - "lib"
+    - "*.py"
+    - "!requirements.txt"
+  excludeDevDependencies: true
