@@ -23,12 +23,12 @@ provider:
 
 functions:
   transaction-api:
-    handler: empty.handler
+    handler: src/empty.handler
     events:
       - http:
-          path: transaction
+          path: /transaction
           integration: http_proxy
-          connectionType: vpc-link
+          connectionType: VPC_LINK
           connectionId: ${param:vpcLinkId}
           method: POST
           request:
@@ -36,5 +36,4 @@ functions:
 
 package:
   patterns:
-    - "!**/*"
-    - "empty.py"
+    - src/empty.js
