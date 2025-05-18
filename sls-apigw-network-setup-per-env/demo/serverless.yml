@@ -1,0 +1,40 @@
+service: ${self:custom.servicePrefix}-demo
+frameworkVersion: "3"
+configValidationMode: warn
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  servicePrefix: thlinh
+  # No plugins needed
+plugins: []
+
+provider:
+  stage: local
+  region: ap-southeast-1
+  versionFunctions: false
+  name: aws
+  apiGateway:
+    restApiId: ${param:restApiId}
+    restApiRootResourceId: ${param:restApiRootResourceId}
+    restApiResources:
+      demo: "demo-resource-id"
+    stage: ${self:provider.stage}
+
+functions:
+  transaction-api:
+    handler: empty.handler
+    events:
+      - http:
+          path: transaction
+          integration: http_proxy
+          connectionType: vpc-link
+          connectionId: ${param:vpcLinkId}
+          method: POST
+          request:
+            uri: "http://${param:nlbDnsName}/transaction"
+
+package:
+  patterns:
+    - "!**/*"
+    - "empty.py"
