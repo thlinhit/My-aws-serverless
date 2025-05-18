@@ -37,7 +37,31 @@ services:
       albArn: ${private-alb.albArn}
 
   private-rest-apigw:
-    path: private-rest-apigw
+    path: resources/private-rest-apigw
     params:
       vpcLinkId: ${vpclink.VPCLinkId}
       privateNlbDnsName: ${vpclink.NlbDnsName}
+      managedSgTxToolingBaseSecurityGroupId: ${security-groups.managedSgTxToolingBaseSecurityGroup}
+      managedSgTxInfrastructureBaseSecurityGroupId: ${security-groups.infrastructureBaseSecurityGroupId}
+      vpcId: vpc-02c8144a24a3ffac0
+      privateSubnetOneId: subnet-0e86645e1b6f47da4
+      privateSubnetTwoId: subnet-0ab0591900f5bcf03
+      privateSubnetThreeId: subnet-0c1ed3d86e04dd4ad
+
+  private-lambda-fn:
+    path: resources/private-lambda-fn
+    params:
+      infrastructureBaseSecurityGroupId: ${security-groups.infrastructureBaseSecurityGroupId}
+      albListenerArn: ${private-alb.albListenerArn}
+      privateSubnetOneId: subnet-0e86645e1b6f47da4
+      privateSubnetTwoId: subnet-0ab0591900f5bcf03
+      privateSubnetThreeId: subnet-0c1ed3d86e04dd4ad
+
+  demo:
+    path: demo
+    params:
+      vpcLinkId: ${vpclink.VPCLinkId}
+      nlbDnsName: ${vpclink.NlbDnsName}
+      restApiId: ${private-rest-apigw.RestApiId}
+      restApiRootResourceId: ${private-rest-apigw.RestApiRootResourceId}
+      enablePrivateLink: true

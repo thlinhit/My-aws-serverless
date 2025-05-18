@@ -10,30 +10,94 @@ custom:
 plugins: []
 
 provider:
+  runtime: python3.12
   stage: local
   region: ap-southeast-1
   versionFunctions: false
   name: aws
-  apiGateway:
-    restApiId: ${param:restApiId}
-    restApiRootResourceId: ${param:restApiRootResourceId}
-    restApiResources:
-      demo: "demo-resource-id"
-    stage: ${self:provider.stage}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: "*"
 
 functions:
-  transaction-api:
+  transactionApi:
     handler: src/empty.handler
-    events:
-      - http:
-          path: /transaction
-          integration: http_proxy
-          connectionType: VPC_LINK
-          connectionId: ${param:vpcLinkId}
-          method: POST
-          request:
-            uri: "http://${param:nlbDnsName}/transaction"
+
+resources:
+  Parameters:
+    RestApiId:
+      Type: String
+      Default: ${param:restApiId}
+    EnablePrivateLink:
+      Type: String
+      AllowedValues: ["true", "false"]
+      Default: ${param:enablePrivateLink}
+    RestApiRootResourceId:
+      Type: String
+      Default: ${param:restApiRootResourceId}
+    VpcLinkId:
+      Type: String
+      Default: ${param:vpcLinkId}
+    NlbDnsName:
+      Type: String
+      Default: ${param:nlbDnsName}
+  Conditions:
+    PrivateLink: !Equals [!Ref EnablePrivateLink, "true"]
+    NotPrivateLink: !Not [!Condition PrivateLink]
+  Resources:
+    GWTransactionResource:
+      Type: AWS::ApiGateway::Resource
+      Properties:
+        RestApiId: !Ref RestApiId
+        ParentId: !Ref RestApiRootResourceId
+        PathPart: transaction
+
+    GWTransactionMethod:
+      Type: AWS::ApiGateway::Method
+      Properties:
+        RestApiId: !Ref RestApiId
+        ResourceId: !Ref GWTransactionResource
+        HttpMethod: POST
+        AuthorizationType: NONE
+        Integration:
+          Fn::If:
+            - PrivateLink
+            - # PrivateLink integration block
+              Type: HTTP_PROXY
+              IntegrationHttpMethod: POST
+              Uri: !Sub "http://${NlbDnsName}/transaction"
+              ConnectionType: VPC_LINK
+              ConnectionId: !Ref VpcLinkId
+            - # Lambda Proxy integration block
+              Type: AWS_PROXY
+              IntegrationHttpMethod: POST
+              Uri: !Sub
+                - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+                - { LambdaArn: !GetAtt TransactionApiLambdaFunction.Arn }
+
+    GWDeploymentPrivate:
+      Type: AWS::ApiGateway::Deployment
+      DependsOn: GWTransactionMethod
+      Properties:
+        RestApiId: !Ref RestApiId
+        StageName: ${opt:stage, self:provider.stage}
+
+    LambdaInvokePermission:
+      Type: AWS::Lambda::Permission
+      Condition: NotPrivateLink
+      DependsOn: GWTransactionMethod
+      Properties:
+        FunctionName: !GetAtt TransactionApiLambdaFunction.Arn
+        Action: lambda:InvokeFunction
+        Principal: apigateway.amazonaws.com
+        SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiId}/*/POST/transaction
 
 package:
   patterns:
-    - src/empty.js
+    - src/empty.python
